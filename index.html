@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#0b2748">
+  <title>Sistema Turimiquire DataGov · Acceso</title>
+  
+  <!-- Enlace a DaisyUI y Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Reproductor de LottieFiles para las olas -->
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
+  <!-- Rutas relativas para tus assets -->
+  <link rel="icon" type="image/png" sizes="64x64" href="./assets/favicon-64.png">
+  <link rel="apple-touch-icon" href="./assets/favicon.png">
+
+  <style>
+    body {
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    }
+    
+    body, html {
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        width: 100vw;
+    }
+  </style>
+</head>
+<body class="bg-white flex relative w-full h-full">
+
+    <!-- ========================================================================= -->
+    <!-- CAPA 1: EL LIENZO DE FONDO GLOBAL (Círculo Azul y Diseños Abstractos)     -->
+    <!-- ========================================================================= -->
+    <div class="absolute inset-0 z-0 pointer-events-none">
+        
+        <div class="absolute top-1/2 left-0 -translate-y-1/2 -translate-x-[18%] h-[140vh] aspect-square bg-[#0b2748] rounded-full overflow-hidden shadow-[inset_0_0_50px_rgba(0,0,0,0.5)]">
+            <!-- OLAS ANIMADAS -->
+            <div class="absolute bottom-0 right-0 w-[80%] opacity-90">
+                <lottie-player 
+                    src="./wave_login_animation.json" 
+                    background="transparent" 
+                    speed="1" 
+                    style="width: 100%; height: auto; transform: scale(1.1) translateY(-30%);" 
+                    loop 
+                    autoplay>
+                </lottie-player>
+            </div>
+        </div>
+
+        <!-- ELEMENTOS GEOMÉTRICOS "MEMPHIS" -->
+        <div class="absolute inset-y-0 right-0 w-1/2 flex justify-end overflow-hidden">
+            <svg class="absolute -top-10 -right-[5%] w-[500px] h-[500px] text-gray-100/80" fill="currentColor" viewBox="0 0 200 200">
+                <path d="M45.7,-76.4C58.8,-69.3,68.9,-54.9,76.5,-40.1C84.1,-25.3,89.3,-10.1,87.6,4.4C85.9,18.9,77.3,32.7,67.2,44.5C57.1,56.3,45.5,66.1,31.7,73.4C17.9,80.7,2,85.5,-12.3,84C-26.6,82.5,-39.3,74.7,-50.2,64.4C-61.1,54.1,-70.2,41.4,-77.3,27.1C-84.4,12.8,-89.5,-3.1,-86.3,-17.1C-83.1,-31.1,-71.6,-43.2,-58.5,-51.7C-45.4,-60.2,-30.7,-65.1,-16.5,-68.8C-2.3,-72.5,11.4,-75,24.8,-75.7C38.2,-76.4,32.6,-83.5,45.7,-76.4Z" transform="translate(100 100)" />
+            </svg>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- CAPA 2: CONTENIDO REAL (Textos y Formulario de Inicio)                    -->
+    <!-- ========================================================================= -->
+    <div class="relative z-10 w-full h-full flex">
+        
+        <div class="hidden md:flex w-[45%] h-full flex-col items-center justify-center px-12 lg:px-20 text-white">
+            <div class="w-full max-w-2xl flex flex-col items-center text-center">
+                <img src="./assets/logo-turimiquire.png" alt="Sistema Turimiquire DataGov" class="max-w-[240px] h-auto mb-8 drop-shadow-xl rounded-full">
+                
+                <p class="text-[#9ed8d0] font-bold text-xs uppercase tracking-widest mb-3">Plataforma institucional de datos</p>
+                <h1 class="text-3xl lg:text-4xl font-bold leading-tight mb-5 drop-shadow-md">Datos conectados.<br>Decisiones más claras.</h1>
+                <p class="text-sm text-blue-100/90 mb-8 drop-shadow-sm leading-relaxed">Administra bases, conexiones, trazabilidad y APIs desde una experiencia visual orientada por roles, sin obligar al usuario operativo a trabajar directamente con código.</p>
+                
+                <div class="flex flex-wrap justify-center gap-2 mb-10">
+                    <span class="bg-white/10 border border-white/20 px-4 py-1.5 rounded-full text-xs font-semibold backdrop-blur-md shadow-sm">Diseñador visual</span>
+                    <span class="bg-white/10 border border-white/20 px-4 py-1.5 rounded-full text-xs font-semibold backdrop-blur-md shadow-sm">RBAC por rol</span>
+                    <span class="bg-white/10 border border-white/20 px-4 py-1.5 rounded-full text-xs font-semibold backdrop-blur-md shadow-sm">APIs de servicio</span>
+                    <span class="bg-white/10 border border-white/20 px-4 py-1.5 rounded-full text-xs font-semibold backdrop-blur-md shadow-sm">PostgreSQL + MySQL</span>
+                </div>
+            </div>
+            
+            <div class="absolute bottom-6 left-0 w-[45%] text-center">
+                <span class="text-[10px] text-blue-200/50 uppercase tracking-widest">Acceso protegido · Mínimo privilegio · Actividad Trazable</span>
+            </div>
+        </div>
+
+        <div class="w-full md:w-[55%] h-full flex flex-col justify-center items-center px-8 lg:px-16">
+            <div class="w-full max-w-[450px]">
+                <p class="text-blue-600 font-bold text-xs uppercase tracking-widest mb-2">Acceso Institucional</p>
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">Bienvenido de nuevo</h2>
+                <p class="text-sm text-gray-500 mb-10 font-medium leading-relaxed">Ingresa tus credenciales. La navegación y herramientas se organizarán automáticamente según tu perfil.</p>
+
+                <form id="login-form">
+                    
+                    <div class="form-control w-full mb-5 shadow-sm">
+                        <label class="label pb-1 px-1"><span class="label-text font-bold text-gray-700">Usuario</span></label>
+                        <label class="input flex items-center gap-3 bg-white border-gray-300 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-200 rounded-lg transition-all h-12">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-5 h-5 text-gray-400"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM12.735 14c.618 0 1.093-.561.872-1.139a6.002 6.002 0 0 0-11.215 0c-.22.578.254 1.139.872 1.139h9.47Z" /></svg>
+                            <input type="text" id="username" name="username" class="grow text-sm text-gray-700 font-medium outline-none" placeholder="Escribe tu usuario" required autofocus />
+                        </label>
+                    </div>
+
+                    <div class="form-control w-full mb-4 shadow-sm">
+                        <label class="label pb-1 px-1"><span class="label-text font-bold text-gray-700">Contraseña</span></label>
+                        <label class="input flex items-center gap-3 bg-white border-gray-300 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-200 rounded-lg transition-all h-12">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-5 h-5 text-gray-400"><path fill-rule="evenodd" d="M14 6a4 4 0 0 1-4.899 3.899l-1.955 1.955a.5.5 0 0 1-.353.146H5v1.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-2.293a.5.5 0 0 1 .146-.353l3.955-3.955A4 4 0 1 1 14 6Zm-4-2a.75.75 0 0 0 0 1.5.5.5 0 0 1 .5.5.75.75 0 0 0 1.5 0 2 2 0 0 0-2-2Z" clip-rule="evenodd" /></svg>
+                            <input type="password" id="password" name="password" class="grow text-sm text-gray-700 font-medium outline-none" placeholder="••••••••••" required />
+                            <span id="toggle-password" class="text-[11px] font-bold text-gray-400 cursor-pointer hover:text-blue-600 transition-colors uppercase tracking-wider pr-1">Mostrar</span>
+                        </label>
+                    </div>
+
+                    <div class="flex items-center justify-between mb-8 mt-3 px-1">
+                        <label class="label cursor-pointer gap-2 p-0 justify-start">
+                            <input type="checkbox" id="remember" checked="checked" class="checkbox checkbox-sm checkbox-primary border-gray-400 rounded" />
+                            <span class="label-text text-xs font-bold text-gray-500">Recordarme en este equipo</span> 
+                        </label>
+                        <a href="#" class="text-xs font-bold text-gray-400 hover:text-blue-600 hover:underline transition-colors">¿Olvidaste tu contraseña?</a>
+                    </div>
+
+                    <div id="login-message" class="hidden mb-5 p-3 bg-red-50 text-red-600 text-xs font-bold rounded-lg border border-red-200 text-center"></div>
+
+                    <button type="submit" id="login-button" class="btn bg-[#0b2748] hover:bg-blue-900 border-none text-white w-full rounded-lg shadow-xl mb-6 hover:-translate-y-0.5 transition-transform font-bold tracking-wide h-12">
+                        Iniciar Sesión
+                    </button>
+
+                    <div class="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-200 flex gap-3 items-start shadow-sm">
+                        <div class="w-2 h-2 rounded-full bg-blue-500 mt-1 flex-shrink-0 shadow-[0_0_5px_rgba(59,130,246,0.8)]"></div>
+                        <p class="text-[10px] text-gray-500 font-medium leading-tight">Las cuentas de servicio se autentican por sus endpoints autorizados y no usan esta interfaz humana.</p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script de Lógica Javascript aportada por Leonardo -->
+    <script src="./assets/auth.js"></script>
+    <script src="./assets/ui.js"></script>
+    <script>
+      const passwordInput = document.getElementById('password');
+      const togglePasswordBtn = document.getElementById('toggle-password');
+
+      togglePasswordBtn.addEventListener('click', () => {
+        const isPassword = passwordInput.type === 'password';
+        passwordInput.type = isPassword ? 'text' : 'password';
+        togglePasswordBtn.textContent = isPassword ? 'OCULTAR' : 'MOSTRAR';
+      });
+
+      document.getElementById('login-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const button = document.getElementById('login-button');
+        const message = document.getElementById('login-message');
+
+        button.disabled = true;
+        button.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Verificando...';
+        message.classList.add('hidden');
+
+        try {
+          // Usamos la ruta original que diseñaste
+          const response = await fetch('http://localhost:8080/v1/seguridad/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+              username: document.getElementById('username').value.trim(),
+              password: passwordInput.value
+            })
+          });
+
+          const data = await response.json().catch(() => ({}));
+
+          // CORRECCIÓN: Buscamos accessToken en formato CamelCase o el formato original
+          const tokenFinal = data.accessToken || data.access_token;
+
+          if (!response.ok || !tokenFinal) {
+            throw new Error(data.message || data.error || 'Usuario o contraseña inválidos.');
+          }
+
+          storeToken(tokenFinal, document.getElementById('remember').checked);
+
+          button.classList.replace('bg-[#0b2748]', 'bg-green-600');
+          button.textContent = '¡Acceso concedido!';
+
+          window.setTimeout(() => window.location.replace('./dashboard.html'), 800);
+
+        } catch (error) {
+          message.textContent = error.message || 'No se pudo iniciar sesión. Verifica la conexión con el servidor.';
+          message.classList.remove('hidden');
+          button.disabled = false;
+          button.textContent = 'Iniciar Sesión';
+        }
+      });
+    </script>
+</body>
+</html>

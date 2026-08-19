@@ -1,0 +1,976 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sistema Turimiquire DataGov · Panel</title>
+  <link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png">
+  <link rel="apple-touch-icon" href="/assets/favicon.png">
+  <link rel="stylesheet" href="/assets/app.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand-lockup">
+        <img class="brand-logo-icon brand-logo-sidebar" src="/assets/favicon.png" alt="Logo Turimiquire DataGov">
+        <div>
+          <div class="brand-title">Turimiquire DataGov</div>
+          <div class="brand-subtitle">Gobierno de datos</div>
+        </div>
+      </div>
+      <div class="env-chip"><span style="display:flex;align-items:center;gap:8px"><span class="env-dot"></span> Entorno local</span><strong>LAN</strong></div>
+
+      <nav class="nav" id="main-nav">
+        <div class="nav-section">Panel</div>
+        <button class="nav-link active" data-view="home"><span class="nav-icon">⌂</span> Inicio</button>
+        <button class="nav-link hidden" id="nav-data" data-view="data"><span class="nav-icon">▦</span> Explorador de datos</button>
+        <button class="nav-link hidden" id="nav-audit" data-view="audit"><span class="nav-icon">◎</span> Auditoría</button>
+        <button class="nav-link hidden" id="nav-connections" data-view="connections"><span class="nav-icon">⇄</span> Conexiones y bases</button>
+        <button class="nav-link hidden" id="nav-designer" data-view="designer"><span class="nav-icon">◇</span> Diseñador visual</button>
+        <button class="nav-link hidden" id="nav-services" data-view="services"><span class="nav-icon">↗</span> APIs de servicio</button>
+        <div class="nav-section">Administración</div>
+        <button class="nav-link hidden" id="nav-users"><span class="nav-icon">♙</span> Usuarios registrados</button>
+      </nav>
+      <!-- Se eliminó el sidebar-foot de aquí (Nombre y Cerrar sesión) -->
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="btn btn-ghost btn-sm mobile-menu" data-mobile-menu>☰</button>
+        </div>
+        
+        <!-- NUEVO TOPBAR ACTIONS (Círculo de Usuario y Tarjeta) -->
+        <div class="topbar-actions" style="position: relative;">
+          
+          <!-- Botón Circular -->
+          <button id="user-menu-btn" onclick="document.getElementById('user-dropdown').classList.toggle('hidden')" style="width: 42px; height: 42px; border-radius: 50%; background-color: #0b2748; color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: transform 0.2s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+              <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
+            </svg>
+          </button>
+
+          <!-- Tarjeta Desplegable (Oculta por defecto con la clase 'hidden') -->
+          <div id="user-dropdown" class="hidden" style="position: absolute; top: 55px; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); width: 240px; z-index: 1000; padding: 20px 16px; text-align: center;">
+            <div style="margin-bottom: 16px;">
+              <!-- IDs mantenidos aquí para que el script JS los siga rellenando mágicamente -->
+              <strong id="sidebar-user" style="display: block; font-size: 17px; color: #1e293b; margin-bottom: 6px;">Cargando…</strong>
+              <span id="role-pill" style="display: inline-block; font-size: 11px; font-weight: bold; color: #0b2748; background: #e0f2fe; padding: 4px 10px; border-radius: 20px; text-transform: uppercase;">Perfil</span>
+              <span id="sidebar-role" style="display: none;"></span>
+            </div>
+            
+            <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 0 0 16px 0;">
+            
+            <button onclick="logout()" style="background: #ef4444; color: white; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/>
+                <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
+              </svg>
+              Cerrar sesión
+            </button>
+          </div>
+
+        </div>
+      </header>
+
+      <!-- Se eliminó el module-tabs-shell (Menú del centro) de aquí -->
+
+      <div class="content">
+        <section id="view-home" class="app-view">
+          <div class="page-head hero-head">
+            <div>
+              <p class="kicker">Espacio de trabajo por rol</p>
+              <h1 id="welcome-title">Bienvenido</h1>
+              <p id="role-description">Cargando responsabilidades y límites del perfil…</p>
+            </div>
+            <span class="role-pill" id="profile-state">Sesión protegida por JWT</span>
+          </div>
+
+          <div class="grid grid-4">
+            <article class="card card-pad stat"><span>Plataforma</span><strong id="health-status">Verificando…</strong><span id="health-detail">API y base principal</span></article>
+            <article class="card card-pad stat"><span>Rol activo</span><strong id="role-stat">—</strong><span>Funciones filtradas por RBAC</span></article>
+            <article class="card card-pad stat"><span>Permisos efectivos</span><strong id="permission-count">0</strong><span>Aplicados también en backend</span></article>
+            <article class="card card-pad stat"><span>Red local</span><strong id="network-url" style="font-size:1rem">—</strong><span>Interfaz HTTP compartida</span></article>
+          </div>
+
+          <section class="section card card-pad">
+            <div class="section-title"><div><h2>Ruta rápida</h2></div></div>
+            <div class="quick-route">
+              <article class="quick-step"><span class="quick-step-number">1</span><h3>Conecta una base</h3><p>Registra PostgreSQL o MySQL/MariaDB, prueba la conexión y guárdala de forma segura.</p><button class="btn btn-secondary btn-sm" type="button" data-guide-view="connections">Ir a conexiones</button></article>
+              <article class="quick-step"><span class="quick-step-number">2</span><h3>Explora los datos</h3><p>Abre una conexión, elige esquema y tabla y consulta registros reales sin escribir SQL.</p><button class="btn btn-secondary btn-sm" type="button" data-guide-view="connections">Abrir explorador</button></article>
+              <article class="quick-step"><span class="quick-step-number">3</span><h3>Diseña cambios</h3><p>Crea tablas, columnas, relaciones e índices con el asistente visual Diseñar → Validar → Aplicar.</p><button class="btn btn-secondary btn-sm" type="button" data-guide-view="designer">Ir al diseñador</button></article>
+              <article class="quick-step"><span class="quick-step-number">4</span><h3>Publica un servicio</h3><p>Expón únicamente los datos autorizados como API y genera una clave técnica independiente.</p><button class="btn btn-secondary btn-sm" type="button" data-guide-view="services">Ir a APIs</button></article>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="section-title"><div><h2>Funciones principales del perfil</h2><p>Accesos visibles según responsabilidad y mínimo privilegio.</p></div></div>
+            <div class="grid grid-3" id="role-actions"></div>
+          </section>
+
+          <section class="section grid grid-2">
+            <article class="card card-pad">
+              <div class="section-title"><div><h2 id="process-title">Proceso del rol</h2><p id="process-subtitle">Secuencia de trabajo adaptada al documento de roles.</p></div></div>
+              <ol class="process-list" id="role-process"></ol>
+            </article>
+            <article class="card card-pad">
+              <div class="section-title"><div><h2>Límite operativo</h2><p>Lo que este perfil no debe hacer.</p></div></div>
+              <p id="role-limit" class="muted" style="line-height:1.7;margin:0"></p>
+              <div class="notice notice-info" id="role-result" style="margin-top:18px"></div>
+            </article>
+          </section>
+
+          <section class="section card card-pad">
+            <div class="section-title"><div><h2>Flujo de trabajo conjunto</h2><p>Cadena de colaboración para un nuevo módulo o servicio de datos.</p></div></div>
+            <div class="flow-wrap"><div class="flow-track" id="workflow-track"></div></div>
+          </section>
+        </section>
+
+        <section id="view-data" class="app-view hidden">
+          <div class="page-head">
+            <div><p class="kicker">Consulta autorizada</p><h1>Explorador de datos</h1><p>Solo aparecen tablas para las que el backend confirma permiso de lectura.</p></div>
+          </div>
+          <div class="module-guide"><div class="module-guide-icon">1</div><div><strong>¿Qué puedes hacer aquí?</strong><p>Consulta rápidamente las tablas internas que tu rol tiene autorizadas. No modifica información.</p><div class="module-guide-steps"><span>Elige una tabla</span><span>Revisa filas</span><span>Actualiza</span><span>Exporta si tienes permiso</span></div></div></div>
+          <article class="card card-pad">
+            <div class="toolbar" style="margin-bottom:12px">
+              <select class="select" id="table-select"><option value="">Seleccionar tabla…</option></select>
+              <button class="btn btn-secondary btn-sm" id="refresh-table">Refrescar</button>
+              <button class="btn btn-ghost btn-sm" id="export-table">Exportar CSV</button>
+              <span class="muted small" id="table-count"></span>
+            </div>
+            <div class="table-shell"><table><thead id="data-head"></thead><tbody id="data-body"><tr><td class="panel-empty">Selecciona una tabla autorizada.</td></tr></tbody></table></div>
+          </article>
+        </section>
+
+        <section id="view-audit" class="app-view hidden">
+          <div class="page-head"><div><p class="kicker">Trazabilidad</p><h1>Bitácora de auditoría</h1><p>Consulta pasiva de eventos sensibles, accesos y resultados registrados.</p></div></div>
+          <div class="module-guide"><div class="module-guide-icon">2</div><div><strong>¿Qué puedes hacer aquí?</strong><p>Revisa quién accedió, qué operación se ejecutó y cuándo ocurrió. Esta vista es de supervisión y trazabilidad.</p><div class="module-guide-steps"><span>Actualiza eventos</span><span>Revisa accesos</span><span>Detecta incidencias</span></div></div></div>
+          <article class="card card-pad">
+            <div class="toolbar" style="margin-bottom:12px"><button class="btn btn-secondary btn-sm" id="refresh-audit">Actualizar eventos</button><span class="muted small" id="audit-count"></span></div>
+            <div class="table-shell"><table><thead id="audit-head"></thead><tbody id="audit-body"><tr><td class="panel-empty">Cargando auditoría…</td></tr></tbody></table></div>
+          </article>
+        </section>
+
+        <section id="view-connections" class="app-view hidden">
+          <div class="page-head"><div><p class="kicker">Interoperabilidad</p><h1>Conexiones y bases de datos</h1><p>Registra conexiones PostgreSQL o MySQL/MariaDB. La contraseña no vuelve al navegador después del registro.</p></div></div>
+          <div class="module-guide"><div class="module-guide-icon">3</div><div><strong>Empieza aquí para conectar una base real</strong><p>Completa host, puerto, usuario, contraseña y base inicial. Primero usa “Probar conexión”; después guarda y pulsa “Abrir datos”.</p><div class="module-guide-steps"><span>1 · Completa credenciales</span><span>2 · Probar conexión</span><span>3 · Guardar</span><span>4 · Abrir datos</span></div></div></div>
+          <article class="card card-pad" id="connection-admin-card">
+            <form id="connection-form">
+              <div class="form-grid">
+                <div class="field"><label>Nombre</label><input class="input" id="conn-name" placeholder="Sistema futuro" required></div>
+                <div class="field"><label>Motor</label><select class="select" id="conn-engine"><option value="postgresql">PostgreSQL / compatible</option><option value="mysql">MySQL / MariaDB</option></select></div>
+                <div class="field"><label>Host</label><input class="input" id="conn-host" placeholder="172.16.4.20" required></div>
+                <div class="field"><label>Puerto</label><input class="input" id="conn-port" type="number" value="5432" required></div>
+                <div class="field"><label>Usuario</label><input class="input" id="conn-user" required></div>
+                <div class="field"><label>Contraseña</label><input class="input" id="conn-password" type="password"></div>
+                <div class="field"><label>Base inicial</label><input class="input" id="conn-database" required></div>
+                <div class="field"><label>SSL</label><select class="select" id="conn-ssl"><option value="disable">Desactivado</option><option value="require">Requerido</option><option value="verify-full">Verificar certificado</option></select></div>
+              </div>
+              <label class="checkbox-line"><input id="conn-readonly" type="checkbox"> Conexión de solo lectura</label>
+              <div class="toolbar"><button type="button" class="btn btn-ghost btn-sm" id="test-connection">Probar conexión</button><button type="submit" class="btn btn-primary btn-sm">Guardar y conectar</button><span class="muted small" id="connection-message"></span></div>
+            </form>
+          </article>
+          <section class="section card card-pad">
+            <div class="section-title"><div><h2>Conexiones activas</h2><p>Los perfiles se conservan entre reinicios; las contraseñas se almacenan cifradas y nunca vuelven al navegador.</p></div><button class="btn btn-secondary btn-sm" id="refresh-connections">Actualizar</button></div>
+            <div id="connection-list"><div class="panel-empty">Sin conexiones cargadas.</div></div>
+          </section>
+
+          <section class="section card card-pad" id="external-data-explorer">
+            <div class="section-title">
+              <div><h2>Explorador de base conectada</h2><p>Selecciona una conexión real, carga sus esquemas y tablas y consulta los registros sin escribir SQL.</p></div>
+              <span class="badge badge-ok" id="external-db-status">Listo</span>
+            </div>
+            <div class="form-grid">
+              <div class="field"><label>Conexión</label><select class="select" id="external-connection"><option value="">Seleccionar conexión…</option></select></div>
+              <div class="field"><label>Esquema / base</label><select class="select" id="external-schema"><option value="">Seleccionar…</option></select></div>
+              <div class="field"><label>Tabla</label><select class="select" id="external-table"><option value="">Seleccionar…</option></select></div>
+              <div class="field"><label>Filas por página</label><select class="select" id="external-limit"><option value="50">50</option><option value="100" selected>100</option><option value="200">200</option><option value="500">500</option></select></div>
+            </div>
+            <div class="toolbar" style="margin-top:14px">
+              <button class="btn btn-primary btn-sm" id="external-load" type="button">Cargar datos</button>
+              <button class="btn btn-secondary btn-sm" id="external-prev" type="button">Anterior</button>
+              <button class="btn btn-secondary btn-sm" id="external-next" type="button">Siguiente</button>
+              <button class="btn btn-ghost btn-sm" id="external-export" type="button">Exportar CSV</button>
+              <span class="muted small" id="external-count">Selecciona una conexión.</span>
+            </div>
+            <div class="table-shell" style="margin-top:14px"><table><thead id="external-data-head"></thead><tbody id="external-data-body"><tr><td class="panel-empty">Sin datos cargados.</td></tr></tbody></table></div>
+          </section>
+        </section>
+
+        <section id="view-services" class="app-view hidden">
+          <div class="page-head">
+            <div><p class="kicker">Integración entre sistemas</p><h1>APIs de servicio</h1><p>Publica lectura controlada de una tabla seleccionada sin exponer usuarios, contraseñas ni acceso directo al motor.</p></div>
+            <span class="role-pill">Servicio máquina a máquina</span>
+          </div>
+          <div class="module-guide"><div class="module-guide-icon">4</div><div><strong>Publicar datos sin entregar acceso directo a la base</strong><p>Selecciona una conexión ya registrada, el esquema y la tabla. Turimiquire crea el endpoint y una clave técnica para el sistema consumidor.</p><div class="module-guide-steps"><span>Selecciona origen</span><span>Define servicio</span><span>Publica</span><span>Guarda la API Key</span></div></div></div>
+
+          <article class="card card-pad hidden" id="service-publish-card">
+            <div class="section-title"><div><h2>Publicar una API</h2><p>Selecciona el origen; Turimiquire genera el endpoint y una credencial técnica única.</p></div><span class="badge badge-admin">Publicación controlada</span></div>
+            <form id="service-form">
+              <div class="form-grid">
+                <div class="field"><label>Nombre del servicio</label><input class="input" id="service-name" placeholder="Municipios del estado" required></div>
+                <div class="field"><label>Identificador URL</label><input class="input" id="service-slug" placeholder="municipios" required></div>
+                <div class="field"><label>Conexión</label><select class="select" id="service-connection" required><option value="">Seleccionar…</option></select></div>
+                <div class="field"><label>Esquema / base</label><select class="select" id="service-schema" required><option value="">Seleccionar…</option></select></div>
+                <div class="field"><label>Tabla</label><select class="select" id="service-table" required><option value="">Seleccionar…</option></select></div>
+                <div class="field"><label>Máximo por solicitud</label><input class="input" id="service-max" type="number" min="1" max="500" value="100"></div>
+                <div class="field" style="grid-column:span 2"><label>Descripción</label><input class="input" id="service-description" placeholder="Datos autorizados para consumo institucional"></div>
+              </div>
+              <div class="toolbar" style="margin-top:14px"><button class="btn btn-primary" type="submit">Publicar API</button><span class="muted small" id="service-message">La clave se mostrará una sola vez.</span></div>
+            </form>
+          </article>
+
+          <article class="card card-pad hidden" id="service-credential" style="margin-top:16px">
+            <div class="section-title"><div><h2>Credencial generada</h2><p>Guárdala ahora. Turimiquire conserva únicamente su hash.</p></div><span class="badge badge-tech">Se muestra una sola vez</span></div>
+            <div class="credential-box"><code id="service-key"></code><button class="btn btn-secondary btn-sm" id="copy-service-key">Copiar clave</button></div>
+            <p class="muted small" id="service-endpoint"></p>
+          </article>
+
+          <section class="section card card-pad">
+            <div class="section-title"><div><h2>Catálogo de APIs</h2><p>Servicios creados desde la interfaz y su origen autorizado.</p></div><button class="btn btn-secondary btn-sm" id="refresh-services">Actualizar</button></div>
+            <div class="table-shell"><table><thead><tr><th>Servicio</th><th>Endpoint</th><th>Origen</th><th>Límite</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="services-body"><tr><td colspan="6" class="panel-empty">Sin consultar.</td></tr></tbody></table></div>
+          </section>
+        </section>
+
+        <section id="view-designer" class="app-view hidden">
+          <div class="page-head">
+            <div>
+              <p class="kicker">Sin código · Diseñar → Validar → Aplicar</p>
+              <h1>Diseñador visual de estructura</h1>
+              <p>Describe la tabla y sus reglas con controles visuales. Turimiquire valida nombres, tipos, claves, relaciones y riesgos antes de ejecutar cualquier cambio.</p>
+            </div>
+            <span class="role-pill" id="designer-mode">Modo diseño</span>
+          </div>
+          <div class="module-guide"><div class="module-guide-icon">5</div><div><strong>No necesitas escribir SQL</strong><p>Turimiquire convierte los controles visuales en un plan estructurado. Primero diseñas, después validas y solo entonces se habilita la aplicación del cambio.</p><div class="module-guide-steps"><span>Destino</span><span>Columnas</span><span>Relaciones e índices</span><span>Validar</span><span>Aplicar</span></div></div></div>
+
+          <article class="card card-pad">
+            <div class="section-title"><div><h2>1. Destino y tabla</h2><p>Elige una conexión administrada y define el objeto que quieres crear.</p></div></div>
+            <div class="form-grid">
+              <div class="field"><label>Conexión destino</label><select class="select" id="designer-connection"><option value="">Seleccionar conexión…</option></select></div>
+              <div class="field"><label>Esquema / base</label><input class="input" id="designer-schema" placeholder="public"></div>
+              <div class="field"><label>Nombre de tabla</label><input class="input" id="designer-table" placeholder="personas" required></div>
+              <div class="field"><label>Descripción</label><input class="input" id="designer-description" placeholder="Registro institucional"></div>
+            </div>
+          </article>
+
+          <section class="section card card-pad">
+            <div class="section-title">
+              <div><h2>2. Columnas</h2><p>Agrega campos sin escribir SQL. Puedes marcar clave primaria, único, obligatorio y autonumérico.</p></div>
+              <button class="btn btn-secondary btn-sm" id="designer-add-column">Añadir columna</button>
+            </div>
+            <div class="table-shell">
+              <table>
+                <thead><tr><th>Nombre</th><th>Tipo</th><th>Long./precisión</th><th>Automático</th><th>Obligatorio</th><th>PK</th><th>Único</th><th>Autonum.</th><th></th></tr></thead>
+                <tbody id="designer-columns"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="section grid grid-2">
+            <article class="card card-pad">
+              <div class="section-title"><div><h2>3. Relaciones</h2><p>Define claves foráneas visualmente.</p></div><button class="btn btn-secondary btn-sm" id="designer-add-fk">Añadir relación</button></div>
+              <div id="designer-fks"><div class="panel-empty">Sin relaciones.</div></div>
+            </article>
+            <article class="card card-pad">
+              <div class="section-title"><div><h2>4. Índices</h2><p>Optimiza búsquedas sobre una o varias columnas.</p></div><button class="btn btn-secondary btn-sm" id="designer-add-index">Añadir índice</button></div>
+              <div id="designer-indexes"><div class="panel-empty">Sin índices adicionales.</div></div>
+            </article>
+          </section>
+
+          <section class="section card card-pad">
+            <div class="section-title"><div><h2>5. Rectificación lógica</h2><p>Primero se valida el plan. Solo un perfil con permiso de aplicación puede ejecutarlo.</p></div></div>
+            <div class="toolbar">
+              <button class="btn btn-primary" id="designer-validate">Validar y rectificar plan</button>
+              <button class="btn btn-danger hidden" id="designer-apply">Aplicar plan validado</button>
+              <button class="btn btn-ghost" id="designer-reset">Limpiar</button>
+              <span class="muted small" id="designer-message">Aún no se ha validado.</span>
+            </div>
+            <div id="designer-validation" class="section hidden"></div>
+          </section>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="/assets/auth.js"></script>
+  <script src="/assets/ui.js"></script>
+  
+  <!-- SCRIPT AÑADIDO PARA CERRAR EL MENÚ DE USUARIO AL HACER CLIC AFUERA -->
+  <script>
+    document.addEventListener('click', function(event) {
+      const dropdown = document.getElementById('user-dropdown');
+      const btn = document.getElementById('user-menu-btn');
+      if (dropdown && !dropdown.classList.contains('hidden')) {
+        if (!dropdown.contains(event.target) && !btn.contains(event.target)) {
+          dropdown.classList.add('hidden');
+        }
+      }
+    });
+  </script>
+
+  <script>
+    let profile = null;
+    let currentRows = [];
+    let currentColumns = [];
+    let designerCapabilities = null;
+    let validatedPlan = null;
+    let validatedHash = '';
+
+    const ROLE_CONFIG = {
+      ADMIN_PLATFORM: {
+        title: 'Administrador de plataforma',
+        description: 'Configura la operación general, cuentas técnicas y monitoreo sin acceso irrestricto a los datos operativos.',
+        limit: 'No debe utilizar su perfil para consultar o modificar libremente los datos de las aplicaciones. Su alcance se concentra en plataforma, configuración, cuentas y disponibilidad.',
+        result: 'Resultado esperado: entorno técnico disponible, seguro y con las cuentas del equipo correctamente habilitadas.',
+        process: ['Validar infraestructura y prerrequisitos del servidor.', 'Configurar variables de entorno y parámetros de seguridad.', 'Levantar la base principal y los servicios de la plataforma.', 'Gestionar cuentas técnicas y tipos de usuario autorizados.', 'Comprobar disponibilidad; si falla, registrar la incidencia y corregir la configuración.'],
+        actions: [
+          ['Usuarios registrados', 'Abrir el directorio específico con todos los usuarios, su tipo de rol y estado.', 'users'],
+          ['Salud de plataforma', 'Comprobar API, base principal y disponibilidad del servicio.', 'health'],
+          ['Conexiones técnicas', 'Registrar conexiones que la plataforma administrará sin abrir datos operativos por defecto.', 'connections']
+        ]
+      },
+      DBA: {
+        title: 'Administrador de base de datos (DBA)',
+        description: 'Gestiona esquemas, rendimiento, conexiones, respaldos, recuperación y cambios estructurales aprobados.',
+        limit: 'No actúa como desarrollador ni debe crear o modificar datos operativos sin autorización. Su función se limita al mantenimiento, estructura y recuperabilidad.',
+        result: 'Resultado esperado: estructura actualizada de forma controlada, respaldada y recuperable.',
+        process: ['Recibir el paquete de migración o cambio estructural.', 'Validar convenciones, claves, índices y diseño.', 'Ejecutar la migración aprobada en el entorno correspondiente.', 'Generar respaldo y ejecutar prueba de restauración aislada.', 'Registrar evidencia cuando la integridad quede verificada.'],
+        actions: [
+          ['Diseñador visual', 'Validar y aplicar cambios estructurales sin escribir SQL.', 'designer'],
+          ['Conexiones y bases', 'Conectar motores externos y crear nuevas bases cuando la credencial remota lo permita.', 'connections'],
+          ['Publicar API', 'Exponer una tabla autorizada como servicio de solo lectura con credencial propia.', 'services'],
+          ['Recuperabilidad', 'Seguir el flujo de respaldo y restauración antes de cerrar un cambio.', 'workflow']
+        ]
+      },
+      DEVELOPER: {
+        title: 'Desarrollador institucional',
+        description: 'Diseña modelos, scripts y contratos de API en ambientes de desarrollo y prueba.',
+        limit: 'No posee administración de producción ni puede alterar seguridad, usuarios o parámetros del servidor productivo.',
+        result: 'Resultado esperado: entregable versionado, probado y listo para revisión del DBA antes de producción.',
+        process: ['Diseñar el modelo de datos según normas y diccionario institucional.', 'Escribir migración versionada y datos sintéticos de prueba.', 'Desarrollar endpoint o contrato con consultas parametrizadas.', 'Ejecutar pruebas locales de integridad y respuesta.', 'Entregar cambios para revisión e integración por el DBA.'],
+        actions: [
+          ['Diseñador visual', 'Preparar y validar modelos sin acceso de aplicación a producción.', 'designer'],
+          ['Datos de referencia', 'Consultar catálogos y datasets permitidos para construir y probar funciones.', 'data'],
+          ['Servicios de datos', 'Consultar servicios publicados y preparar contratos para integración futura.', 'services'],
+          ['Flujo de entrega', 'Revisar la cadena Desarrollador → DBA → Auditor antes de producción.', 'workflow']
+        ]
+      },
+      AUDITOR: {
+        title: 'Responsable de seguridad / auditor',
+        description: 'Supervisa accesos, permisos, eventos y cumplimiento con un perfil pasivo sobre los datos operativos.',
+        limit: 'No puede crear, modificar o borrar información operativa ni cambiar configuraciones. Su trabajo es inspeccionar, probar denegaciones y dejar evidencia.',
+        result: 'Resultado esperado: bitácoras y matriz de acceso revisadas, con hallazgos o constancia de conformidad.',
+        process: ['Autenticarse con perfil restringido a revisión.', 'Consultar la bitácora de auditoría.', 'Validar accesos permitidos y pruebas negativas de denegación.', 'Comprobar que no existan secretos expuestos.', 'Notificar irregularidades o emitir conformidad.'],
+        actions: [
+          ['Bitácora de auditoría', 'Revisar eventos sensibles sin capacidad de alterar datos.', 'audit'],
+          ['Matriz de permisos', 'Inspeccionar roles y permisos visibles por el perfil de auditoría.', 'data'],
+          ['APIs publicadas', 'Revisar qué servicios de datos están activos y desde qué origen.', 'services'],
+          ['Flujo de seguridad', 'Ubicar la validación de seguridad dentro del paso a producción.', 'workflow']
+        ]
+      },
+      ANALYST: {
+        title: 'Analista autorizado',
+        description: 'Consulta y extrae únicamente conjuntos de datos previamente autorizados en modo de solo lectura.',
+        limit: 'No puede insertar, modificar o eliminar información. Su acceso se limita a fuentes, catálogos y datasets expresamente habilitados.',
+        result: 'Resultado esperado: información filtrada y obtenida en modo de solo lectura para análisis o reportes.',
+        process: ['Autenticarse con credenciales de lectura.', 'Consultar catálogos o datasets disponibles.', 'Aplicar filtros y límites de paginación.', 'Validar que la respuesta corresponda al dato autorizado.', 'Exportar o utilizar el resultado sin alterar la fuente.'],
+        actions: [
+          ['Consultar datos', 'Explorar tablas autorizadas y obtener información de lectura.', 'data'],
+          ['Exportar reporte', 'Descargar la vista actual a CSV cuando el permiso lo permita.', 'data'],
+          ['Reportar inconsistencias', 'Escalar hallazgos a los administradores sin modificar la fuente.', 'workflow']
+        ]
+      }
+    };
+
+    const WORKFLOW = [
+      ['ADMIN_PLATFORM', 'Administrador de plataforma', 'Prepara infraestructura y servicios base.'],
+      ['DEVELOPER', 'Desarrollador', 'Diseña, programa y prueba el nuevo módulo.'],
+      ['DBA', 'DBA / mantenimiento', 'Revisa y aplica migraciones controladas.'],
+      ['AUDITOR', 'Auditor', 'Valida seguridad, permisos y trazabilidad.'],
+      ['PRODUCTION', 'API / producción', 'Publica el servicio en el entorno autorizado.'],
+      ['ANALYST', 'Analista / cuenta de servicio', 'Consume datos o servicios bajo permisos mínimos.']
+    ];
+
+    function openView(name) {
+      document.querySelectorAll('.app-view').forEach(view => view.classList.add('hidden'));
+      const nextView = document.getElementById(`view-${name}`);
+      nextView?.classList.remove('hidden');
+      document.querySelectorAll('[data-view]').forEach(button => button.classList.toggle('active', button.dataset.view === name));
+      window.activateModuleTab?.(name);
+      window.scrollTo({top: 0, behavior: 'smooth'});
+      if (name === 'data') loadTables();
+      if (name === 'audit') loadAudit();
+      if (name === 'connections') loadConnections();
+      if (name === 'designer') loadDesignerConnections();
+      if (name === 'services') loadServices();
+    }
+    window.openView = openView;
+
+    function actionButton(action) {
+      const [title, text, target] = action;
+      const article = document.createElement('article');
+      article.className = 'card action-card';
+      const icon = ({users:'♙',health:'●',connections:'⇄',designer:'◇',services:'↗',data:'▦',audit:'◎',workflow:'→'})[target] || '•';
+      article.innerHTML = `<div><div class="action-icon">${icon}</div><h3>${escapeText(title)}</h3><p>${escapeText(text)}</p></div><footer><button class="btn btn-secondary btn-sm">Abrir <span aria-hidden="true">→</span></button></footer>`;
+      article.querySelector('button').addEventListener('click', () => {
+        if (target === 'users') return window.open('/usuarios.html', 'turimiquire_usuarios');
+        if (target === 'health') return refreshHealth();
+        if (['data','audit','connections','designer','services'].includes(target)) return openView(target);
+        document.getElementById('workflow-track')?.scrollIntoView({behavior:'smooth', block:'center'});
+      });
+      return article;
+    }
+
+    function renderProfile() {
+      const config = ROLE_CONFIG[profile.role] || {
+        title: roleLabel(profile.role), description: profile.role_description || 'Perfil institucional', limit: 'Este perfil no tiene panel definido.', result: 'Contacta al administrador de plataforma.', process: [], actions: []
+      };
+      document.getElementById('sidebar-user').textContent = profile.username;
+      document.getElementById('sidebar-role').textContent = config.title;
+      document.getElementById('role-pill').textContent = config.title;
+      document.getElementById('welcome-title').textContent = `Hola, ${profile.username}`;
+      document.getElementById('role-description').textContent = config.description;
+      document.getElementById('role-stat').textContent = config.title.replace('Administrador de ', 'Admin. ');
+      document.getElementById('permission-count').textContent = String(profile.permissions?.length || 0);
+      document.getElementById('role-limit').textContent = config.limit;
+      document.getElementById('role-result').textContent = config.result;
+      document.getElementById('process-title').textContent = `Proceso: ${config.title}`;
+
+      const actions = document.getElementById('role-actions');
+      actions.replaceChildren(...config.actions.map(actionButton));
+      const process = document.getElementById('role-process');
+      process.innerHTML = config.process.map(step => `<li>${escapeText(step)}</li>`).join('');
+
+      const workflow = document.getElementById('workflow-track');
+      workflow.replaceChildren();
+      WORKFLOW.forEach((item, index) => {
+        const [key, title, description] = item;
+        const node = document.createElement('div');
+        node.className = `flow-node ${key === profile.role || (profile.role === 'SERVICE_ACCOUNT' && key === 'ANALYST') ? 'current' : ''}`;
+        node.innerHTML = `<strong>${escapeText(title)}</strong><span>${escapeText(description)}</span>`;
+        workflow.appendChild(node);
+        if (index < WORKFLOW.length - 1) {
+          const arrow = document.createElement('span');
+          arrow.className = 'flow-arrow'; arrow.textContent = '→'; workflow.appendChild(arrow);
+        }
+      });
+
+      document.getElementById('nav-data').classList.toggle('hidden', !['catalogos:leer','datasets:leer','esquema:leer','permisos:auditar'].some(p => hasPermission(profile,p)));
+      document.getElementById('nav-audit').classList.toggle('hidden', !hasPermission(profile, 'auditoria:leer'));
+      document.getElementById('nav-connections').classList.toggle('hidden', !hasPermission(profile, 'conexiones:leer'));
+      document.getElementById('nav-designer').classList.toggle('hidden', !hasPermission(profile, 'designer:validar'));
+      document.getElementById('nav-services').classList.toggle('hidden', !hasPermission(profile, 'apis:consultar'));
+      document.getElementById('nav-users').classList.toggle('hidden', !hasPermission(profile, 'usuarios:directorio'));
+      window.syncModuleTabs?.();
+    }
+
+    async function refreshHealth() {
+      const el = document.getElementById('health-status');
+      try {
+        const response = await fetch('http://localhost:8080/v1/health');
+        const data = await response.json();
+        if (!response.ok) throw new Error();
+        el.textContent = 'Operativa';
+        el.className = 'status-ok';
+        document.getElementById('health-detail').textContent = data.database === 'connected' ? 'API y PostgreSQL conectados' : 'API disponible';
+      } catch {
+        el.textContent = 'Revisar';
+        el.style.color = 'var(--danger)';
+        document.getElementById('health-detail').textContent = 'No fue posible validar todos los servicios';
+      }
+    }
+
+    async function loadTables() {
+      const select = document.getElementById('table-select');
+      try {
+        const data = await apiFetch('/schema/tables');
+        const current = select.value;
+        select.innerHTML = '<option value="">Seleccionar tabla…</option>' + (data.tables || []).map(t => `<option value="${escapeText(t)}">${escapeText(t)}</option>`).join('');
+        if ((data.tables || []).includes(current)) select.value = current;
+      } catch (error) {
+        document.getElementById('data-body').innerHTML = `<tr><td class="panel-empty">${escapeText(error.message)}</td></tr>`;
+      }
+    }
+
+    async function loadTableRows() {
+      const table = document.getElementById('table-select').value;
+      if (!table) return;
+      const head = document.getElementById('data-head');
+      const body = document.getElementById('data-body');
+      body.innerHTML = '<tr><td class="panel-empty">Consultando…</td></tr>';
+      try {
+        const data = await apiFetch(`/schema/tables/${encodeURIComponent(table)}/rows?limit=200`);
+        currentColumns = data.columns || [];
+        currentRows = data.rows || [];
+        head.innerHTML = `<tr>${currentColumns.map(c => `<th>${escapeText(c)}</th>`).join('')}</tr>`;
+        body.innerHTML = currentRows.length ? currentRows.map(row => `<tr>${currentColumns.map(c => `<td>${escapeText(row[c] === null ? 'NULL' : row[c])}</td>`).join('')}</tr>`).join('') : `<tr><td class="panel-empty" colspan="${Math.max(1,currentColumns.length)}">Sin registros.</td></tr>`;
+        document.getElementById('table-count').textContent = `${currentRows.length} filas mostradas`;
+      } catch (error) {
+        head.innerHTML = '';
+        body.innerHTML = `<tr><td class="panel-empty">${escapeText(error.message)}</td></tr>`;
+      }
+    }
+
+    async function exportCSV() {
+      if (!currentColumns.length || !currentRows.length) return;
+      if (!hasPermission(profile, 'reportes:exportar') && profile.role !== 'DBA') {
+        await panelAlert('Tu perfil no posee el permiso de exportación de reportes.', 'Exportación no autorizada', 'warning');
+        return;
+      }
+      const q = value => `"${String(value ?? '').replaceAll('"','""')}"`;
+      const content = [currentColumns.map(q).join(','), ...currentRows.map(row => currentColumns.map(c => q(row[c])).join(','))].join('\n');
+      const blob = new Blob(['\uFEFF' + content], {type:'text/csv;charset=utf-8'});
+      const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `${document.getElementById('table-select').value || 'datos'}.csv`; link.click(); URL.revokeObjectURL(link.href);
+    }
+
+    async function loadAudit() {
+      const body = document.getElementById('audit-body');
+      body.innerHTML = '<tr><td class="panel-empty">Consultando eventos…</td></tr>';
+      try {
+        const data = await apiFetch('/auditoria?limit=200');
+        const rows = data.eventos || data.events || data || [];
+        const list = Array.isArray(rows) ? rows : [];
+        const columns = list.length ? Object.keys(list[0]) : [];
+        document.getElementById('audit-head').innerHTML = `<tr>${columns.map(c => `<th>${escapeText(c)}</th>`).join('')}</tr>`;
+        body.innerHTML = list.length ? list.map(row => `<tr>${columns.map(c => `<td>${escapeText(row[c] ?? '')}</td>`).join('')}</tr>`).join('') : '<tr><td class="panel-empty">No hay eventos para mostrar.</td></tr>';
+        document.getElementById('audit-count').textContent = `${list.length} eventos`;
+      } catch (error) {
+        body.innerHTML = `<tr><td class="panel-empty">${escapeText(error.message)}</td></tr>`;
+      }
+    }
+
+    function connectionProfile() {
+      return {
+        name: document.getElementById('conn-name').value.trim(),
+        engine: document.getElementById('conn-engine').value,
+        host: document.getElementById('conn-host').value.trim(),
+        port: Number(document.getElementById('conn-port').value),
+        user: document.getElementById('conn-user').value.trim(),
+        password: document.getElementById('conn-password').value,
+        database: document.getElementById('conn-database').value.trim(),
+        ssl_mode: document.getElementById('conn-ssl').value,
+        read_only: document.getElementById('conn-readonly').checked
+      };
+    }
+
+    async function loadConnections() {
+      const list = document.getElementById('connection-list');
+      try {
+        const data = await apiFetch('/connections');
+        const connections = data.connections || [];
+        if (!connections.length) { syncExternalConnectionOptions([]); list.innerHTML = '<div class="panel-empty">No hay conexiones adicionales activas.</div>'; return; }
+        syncExternalConnectionOptions(connections);
+        list.replaceChildren(...connections.map(conn => {
+          const item = document.createElement('div'); item.className = 'connection-item';
+          item.innerHTML = `<div><strong>${escapeText(conn.name)}</strong><span>${escapeText(conn.engine)} · ${escapeText(conn.host)}:${escapeText(conn.port)} · ${escapeText(conn.database)}${conn.read_only ? ' · solo lectura' : ''}</span></div><div class="toolbar"></div>`;
+          const actions = item.querySelector('.toolbar');
+          const openData = document.createElement('button'); openData.className='btn btn-primary btn-sm'; openData.textContent='Abrir datos';
+          openData.onclick = async () => { document.getElementById('external-connection').value=conn.id; externalOffset=0; await loadExternalSchemas(); document.getElementById('external-data-explorer').scrollIntoView({behavior:'smooth',block:'start'}); };
+          actions.appendChild(openData);
+          if (hasPermission(profile, 'bases:crear') && !conn.read_only) {
+            const create = document.createElement('button'); create.className='btn btn-secondary btn-sm'; create.textContent='Crear base';
+            create.onclick = async () => { const name = await panelPrompt('Escribe el nombre que tendrá la nueva base. Turimiquire validará el formato antes de crearla.', 'Crear nueva base', {label:'Nombre de la base', placeholder:'sistema_nuevo', confirmText:'Crear base'}); if (!name) return; try { await apiFetch(`/connections/${encodeURIComponent(conn.id)}/databases`, {method:'POST', body:JSON.stringify({name:name.trim()})}); await panelAlert(`La base ${name.trim()} fue creada correctamente.`, 'Base creada', 'success'); await loadConnections(); } catch(e){ await panelAlert(e.message, 'No se pudo crear la base', 'error'); } };
+            actions.appendChild(create);
+          }
+          if (hasPermission(profile, 'conexiones:administrar') && !conn.system) {
+            const remove = document.createElement('button'); remove.className='btn btn-danger btn-sm'; remove.textContent='Eliminar perfil';
+            remove.onclick = async () => { const ok = await panelConfirm(`Se eliminará el perfil de conexión “${conn.name}”. La base remota no será borrada.`, 'Eliminar perfil de conexión', {danger:true, confirmText:'Eliminar perfil'}); if (!ok) return; try { await apiFetch(`/connections/${encodeURIComponent(conn.id)}`, {method:'DELETE'}); await loadConnections(); } catch(e){ await panelAlert(e.message, 'No se pudo eliminar la conexión', 'error'); } };
+            actions.appendChild(remove);
+          }
+          return item;
+        }));
+      } catch (error) { list.innerHTML = `<div class="panel-empty">${escapeText(error.message)}</div>`; }
+    }
+
+
+    let externalOffset = 0;
+    let externalColumns = [];
+    let externalRows = [];
+
+    function syncExternalConnectionOptions(connections) {
+      const select = document.getElementById('external-connection');
+      if (!select) return;
+      const current = select.value;
+      select.innerHTML = '<option value="">Seleccionar conexión…</option>' + connections.map(conn => `<option value="${escapeText(conn.id)}">${escapeText(conn.name)} · ${escapeText(conn.engine)} · ${escapeText(conn.database)}</option>`).join('');
+      if (connections.some(conn => conn.id === current)) select.value = current;
+    }
+
+    async function loadExternalSchemas() {
+      const connection = document.getElementById('external-connection').value;
+      const schema = document.getElementById('external-schema');
+      const table = document.getElementById('external-table');
+      schema.innerHTML='<option value="">Seleccionar…</option>';
+      table.innerHTML='<option value="">Seleccionar…</option>';
+      externalOffset=0; externalColumns=[]; externalRows=[];
+      document.getElementById('external-data-head').innerHTML='';
+      document.getElementById('external-data-body').innerHTML='<tr><td class="panel-empty">Selecciona una tabla.</td></tr>';
+      if (!connection) return;
+      const status=document.getElementById('external-db-status'); status.textContent='Consultando…';
+      try {
+        const data=await apiFetch(`/connections/${encodeURIComponent(connection)}/schemas`);
+        const schemas=data.schemas||[];
+        schema.innerHTML='<option value="">Seleccionar…</option>'+schemas.map(v=>`<option value="${escapeText(v)}">${escapeText(v)}</option>`).join('');
+        if (schemas.length===1) { schema.value=schemas[0]; await loadExternalTables(); }
+        status.textContent=`${schemas.length} esquemas`;
+        document.getElementById('external-count').textContent=schemas.length?'Selecciona esquema y tabla.':'La conexión respondió, pero no devolvió esquemas visibles.';
+      } catch(error) { status.textContent='Error'; document.getElementById('external-count').textContent=error.message; }
+    }
+
+    async function loadExternalTables() {
+      const connection=document.getElementById('external-connection').value;
+      const schema=document.getElementById('external-schema').value;
+      const table=document.getElementById('external-table');
+      table.innerHTML='<option value="">Seleccionar…</option>'; externalOffset=0;
+      if (!connection || !schema) return;
+      const status=document.getElementById('external-db-status'); status.textContent='Cargando tablas…';
+      try {
+        const data=await apiFetch(`/connections/${encodeURIComponent(connection)}/tables?schema=${encodeURIComponent(schema)}`);
+        const tables=data.tables||[];
+        table.innerHTML='<option value="">Seleccionar…</option>'+tables.map(v=>`<option value="${escapeText(v)}">${escapeText(v)}</option>`).join('');
+        status.textContent=`${tables.length} tablas`;
+        document.getElementById('external-count').textContent=tables.length?'Selecciona una tabla y pulsa Cargar datos.':'No hay tablas visibles en este esquema.';
+      } catch(error) { status.textContent='Error'; document.getElementById('external-count').textContent=error.message; }
+    }
+
+    async function loadExternalRows(reset=false) {
+      const connection=document.getElementById('external-connection').value;
+      const schema=document.getElementById('external-schema').value;
+      const table=document.getElementById('external-table').value;
+      const limit=Number(document.getElementById('external-limit').value||100);
+      if (!connection || !schema || !table) { document.getElementById('external-count').textContent='Selecciona conexión, esquema y tabla.'; return; }
+      if (reset) externalOffset=0;
+      const head=document.getElementById('external-data-head'); const body=document.getElementById('external-data-body'); const status=document.getElementById('external-db-status');
+      status.textContent='Leyendo…'; body.innerHTML='<tr><td class="panel-empty">Consultando la base real…</td></tr>';
+      try {
+        const data=await apiFetch(`/connections/${encodeURIComponent(connection)}/tables/${encodeURIComponent(table)}/rows?schema=${encodeURIComponent(schema)}&limit=${limit}&offset=${externalOffset}`);
+        externalColumns=data.columns||[]; externalRows=data.rows||[];
+        head.innerHTML=`<tr>${externalColumns.map(c=>`<th>${escapeText(c)}</th>`).join('')}</tr>`;
+        body.innerHTML=externalRows.length?externalRows.map(row=>`<tr>${externalColumns.map(c=>`<td>${escapeText(row[c]===null?'NULL':row[c])}</td>`).join('')}</tr>`).join(''):`<tr><td class="panel-empty" colspan="${Math.max(1,externalColumns.length)}">Sin registros en esta página.</td></tr>`;
+        document.getElementById('external-count').textContent=`${externalRows.length} filas · desde ${externalOffset}`;
+        document.getElementById('external-prev').disabled=externalOffset===0;
+        document.getElementById('external-next').disabled=externalRows.length<limit;
+        status.textContent='Conectada';
+      } catch(error) { head.innerHTML=''; body.innerHTML=`<tr><td class="panel-empty">${escapeText(error.message)}</td></tr>`; status.textContent='Error'; document.getElementById('external-count').textContent=error.message; }
+    }
+
+    async function exportExternalCSV() {
+      if (!externalColumns.length || !externalRows.length) return;
+      if (!hasPermission(profile,'reportes:exportar') && profile.role!=='DBA') { await panelAlert('Tu perfil no posee permiso de exportación.', 'Exportación no autorizada', 'warning'); return; }
+      const q=value=>`"${String(value??'').replaceAll('"','""')}"`;
+      const content=[externalColumns.map(q).join(','),...externalRows.map(row=>externalColumns.map(c=>q(row[c])).join(','))].join('\n');
+      const blob=new Blob(['\uFEFF'+content],{type:'text/csv;charset=utf-8'});
+      const link=document.createElement('a'); link.href=URL.createObjectURL(blob); link.download=`${document.getElementById('external-table').value||'datos-externos'}.csv`; link.click(); URL.revokeObjectURL(link.href);
+    }
+
+    function slugifyService(value) {
+      return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,80);
+    }
+
+    async function loadServiceConnections() {
+      if (!hasPermission(profile,'apis:publicar')) return;
+      const data = await apiFetch('/connections');
+      const select = document.getElementById('service-connection');
+      select.innerHTML = '<option value="">Seleccionar…</option>' + (data.connections||[]).map(c=>`<option value="${escapeText(c.id)}">${escapeText(c.name)} · ${escapeText(c.engine)}</option>`).join('');
+    }
+
+    async function loadServiceSchemas() {
+      const connection = document.getElementById('service-connection').value;
+      const schema = document.getElementById('service-schema');
+      const table = document.getElementById('service-table');
+      schema.innerHTML='<option value="">Seleccionar…</option>'; table.innerHTML='<option value="">Seleccionar…</option>';
+      if (!connection) return;
+      try {
+        const data=await apiFetch(`/connections/${encodeURIComponent(connection)}/schemas`);
+        schema.innerHTML='<option value="">Seleccionar…</option>'+(data.schemas||[]).map(v=>`<option value="${escapeText(v)}">${escapeText(v)}</option>`).join('');
+      } catch(error){ document.getElementById('service-message').textContent=error.message; }
+    }
+
+    async function loadServiceTables() {
+      const connection=document.getElementById('service-connection').value;
+      const schema=document.getElementById('service-schema').value;
+      const table=document.getElementById('service-table'); table.innerHTML='<option value="">Seleccionar…</option>';
+      if (!connection || !schema) return;
+      try {
+        const data=await apiFetch(`/connections/${encodeURIComponent(connection)}/tables?schema=${encodeURIComponent(schema)}`);
+        table.innerHTML='<option value="">Seleccionar…</option>'+(data.tables||[]).map(v=>`<option value="${escapeText(v)}">${escapeText(v)}</option>`).join('');
+      } catch(error){ document.getElementById('service-message').textContent=error.message; }
+    }
+
+    function showServiceCredential(data) {
+      const card=document.getElementById('service-credential'); card.classList.remove('hidden');
+      document.getElementById('service-key').textContent=data.api_key || '';
+      document.getElementById('service-endpoint').textContent=`Endpoint: ${location.origin}${data.endpoint} · Header: X-API-Key`;
+      card.scrollIntoView({behavior:'smooth',block:'center'});
+    }
+
+    async function loadServices() {
+      const body=document.getElementById('services-body'); body.innerHTML='<tr><td colspan="6" class="panel-empty">Consultando APIs…</td></tr>';
+      try {
+        const data=await apiFetch('/services'); const services=data.services||[];
+        body.innerHTML=services.length?services.map(service=>{
+          const canPublish=hasPermission(profile,'apis:publicar');
+          const actions=canPublish?`<button class="btn btn-secondary btn-sm service-toggle" data-id="${escapeText(service.id)}" data-active="${service.active}">${service.active?'Desactivar':'Activar'}</button> <button class="btn btn-ghost btn-sm service-rotate" data-id="${escapeText(service.id)}">Rotar clave</button>`:'Solo consulta';
+          return `<tr><td><strong>${escapeText(service.name)}</strong><br><span class="muted small">${escapeText(service.description||'')}</span></td><td><code>${escapeText(service.endpoint)}</code></td><td>${escapeText(service.connection_name)}<br><span class="muted small">${escapeText(service.schema)}.${escapeText(service.table)}</span></td><td>${escapeText(service.max_rows)}</td><td>${service.active?'<span class="badge badge-ok">Activa</span>':'<span class="badge badge-off">Inactiva</span>'}</td><td>${actions}</td></tr>`;
+        }).join(''):'<tr><td colspan="6" class="panel-empty">Aún no hay APIs publicadas.</td></tr>';
+        body.querySelectorAll('.service-toggle').forEach(btn=>btn.addEventListener('click',async()=>{
+          try{ await apiFetch(`/services/${encodeURIComponent(btn.dataset.id)}`,{method:'PATCH',body:JSON.stringify({active:btn.dataset.active!=='true'})}); await loadServices(); }catch(error){ await panelAlert(error.message, 'Operación no completada', 'error'); }
+        }));
+        body.querySelectorAll('.service-rotate').forEach(btn=>btn.addEventListener('click',async()=>{
+          if(!(await panelConfirm('La clave actual dejará de funcionar inmediatamente y deberás actualizar el sistema consumidor.', 'Rotar clave de servicio', {danger:true, confirmText:'Rotar clave'}))) return;
+          try{ const result=await apiFetch(`/services/${encodeURIComponent(btn.dataset.id)}/rotate-key`,{method:'POST'}); showServiceCredential(result); }catch(error){ await panelAlert(error.message, 'Operación no completada', 'error'); }
+        }));
+        if(hasPermission(profile,'apis:publicar')) {
+          document.getElementById('service-publish-card').classList.remove('hidden');
+          await loadServiceConnections();
+        }
+      } catch(error){ body.innerHTML=`<tr><td colspan="6" class="panel-empty">${escapeText(error.message)}</td></tr>`; }
+    }
+
+    function typeOptions(selected = 'string') {
+      const types = designerCapabilities?.types || [
+        {id:'uuid',label:'UUID / Identificador'}, {id:'string',label:'Texto corto'}, {id:'text',label:'Texto largo'},
+        {id:'integer',label:'Número entero'}, {id:'bigint',label:'Número entero grande'}, {id:'decimal',label:'Número decimal'},
+        {id:'boolean',label:'Sí / No'}, {id:'date',label:'Fecha'}, {id:'timestamp',label:'Fecha y hora'}, {id:'json',label:'Objeto JSON'}
+      ];
+      return types.map(t => `<option value="${escapeText(t.id)}" ${t.id===selected?'selected':''}>${escapeText(t.label)}</option>`).join('');
+    }
+
+    function defaultOptions(selected = '') {
+      const defaults = designerCapabilities?.defaults || [
+        {id:'',label:'Sin valor automático'}, {id:'uuid',label:'UUID aleatorio'}, {id:'now',label:'Fecha/hora actual'}, {id:'true',label:'Verdadero'}, {id:'false',label:'Falso'}, {id:'zero',label:'Cero'}
+      ];
+      return defaults.map(d => `<option value="${escapeText(d.id)}" ${d.id===selected?'selected':''}>${escapeText(d.label)}</option>`).join('');
+    }
+
+    function addDesignerColumn(column = {}) {
+      const body = document.getElementById('designer-columns');
+      const row = document.createElement('tr');
+      row.className = 'designer-column';
+      row.innerHTML = `
+        <td><input class="input col-name" value="${escapeText(column.name || '')}" placeholder="id"></td>
+        <td><select class="select col-type">${typeOptions(column.type || 'string')}</select></td>
+        <td><input class="input col-length" type="number" min="0" value="${escapeText(column.length || '')}" placeholder="255"></td>
+        <td><select class="select col-default">${defaultOptions(column.default || '')}</select></td>
+        <td style="text-align:center"><input class="col-required" type="checkbox" ${column.nullable === false ? 'checked' : ''}></td>
+        <td style="text-align:center"><input class="col-pk" type="checkbox" ${column.primary_key ? 'checked' : ''}></td>
+        <td style="text-align:center"><input class="col-unique" type="checkbox" ${column.unique ? 'checked' : ''}></td>
+        <td style="text-align:center"><input class="col-auto" type="checkbox" ${column.auto_increment ? 'checked' : ''}></td>
+        <td><button type="button" class="btn btn-danger btn-sm col-remove">Quitar</button></td>`;
+      row.querySelector('.col-remove').onclick = () => { row.remove(); invalidateDesigner(); };
+      row.querySelectorAll('input,select').forEach(el => el.addEventListener('change', invalidateDesigner));
+      row.querySelectorAll('input').forEach(el => el.addEventListener('input', invalidateDesigner));
+      body.appendChild(row);
+      invalidateDesigner();
+    }
+
+    function addDesignerFK(fk = {}) {
+      const container = document.getElementById('designer-fks');
+      if (container.querySelector('.panel-empty')) container.innerHTML = '';
+      const card = document.createElement('div');
+      card.className = 'subform designer-fk';
+      const actions = designerCapabilities?.on_delete || ['NO ACTION','RESTRICT','CASCADE','SET NULL'];
+      card.innerHTML = `<div class="form-grid compact-grid">
+        <div class="field"><label>Columna local</label><input class="input fk-column" value="${escapeText(fk.column || '')}" placeholder="municipio_id"></div>
+        <div class="field"><label>Esquema destino</label><input class="input fk-schema" value="${escapeText(fk.ref_schema || '')}" placeholder="public"></div>
+        <div class="field"><label>Tabla destino</label><input class="input fk-table" value="${escapeText(fk.ref_table || '')}" placeholder="municipios"></div>
+        <div class="field"><label>Columna destino</label><input class="input fk-ref-column" value="${escapeText(fk.ref_column || '')}" placeholder="id"></div>
+        <div class="field"><label>Al eliminar</label><select class="select fk-delete">${actions.map(a=>`<option ${a===(fk.on_delete||'NO ACTION')?'selected':''}>${escapeText(a)}</option>`).join('')}</select></div>
+        <div class="field"><label>&nbsp;</label><button type="button" class="btn btn-danger btn-sm fk-remove">Quitar relación</button></div>
+      </div>`;
+      card.querySelector('.fk-remove').onclick = () => { card.remove(); if (!container.children.length) container.innerHTML='<div class="panel-empty">Sin relaciones.</div>'; invalidateDesigner(); };
+      card.querySelectorAll('input,select').forEach(el => { el.addEventListener('input', invalidateDesigner); el.addEventListener('change', invalidateDesigner); });
+      container.appendChild(card);
+      invalidateDesigner();
+    }
+
+    function addDesignerIndex(index = {}) {
+      const container = document.getElementById('designer-indexes');
+      if (container.querySelector('.panel-empty')) container.innerHTML = '';
+      const card = document.createElement('div');
+      card.className = 'subform designer-index';
+      card.innerHTML = `<div class="form-grid compact-grid">
+        <div class="field"><label>Nombre (opcional)</label><input class="input idx-name" value="${escapeText(index.name || '')}" placeholder="idx_personas_cedula"></div>
+        <div class="field"><label>Columnas</label><input class="input idx-columns" value="${escapeText((index.columns || []).join(', '))}" placeholder="cedula, estado"></div>
+        <div class="field"><label>Tipo</label><label class="checkbox-line"><input class="idx-unique" type="checkbox" ${index.unique ? 'checked' : ''}> Índice único</label></div>
+        <div class="field"><label>&nbsp;</label><button type="button" class="btn btn-danger btn-sm idx-remove">Quitar índice</button></div>
+      </div>`;
+      card.querySelector('.idx-remove').onclick = () => { card.remove(); if (!container.children.length) container.innerHTML='<div class="panel-empty">Sin índices adicionales.</div>'; invalidateDesigner(); };
+      card.querySelectorAll('input').forEach(el => { el.addEventListener('input', invalidateDesigner); el.addEventListener('change', invalidateDesigner); });
+      container.appendChild(card);
+      invalidateDesigner();
+    }
+
+    function invalidateDesigner() {
+      validatedPlan = null;
+      validatedHash = '';
+      const apply = document.getElementById('designer-apply');
+      if (apply) apply.disabled = true;
+      const msg = document.getElementById('designer-message');
+      if (msg) msg.textContent = 'El plan cambió; vuelve a validarlo antes de aplicar.';
+    }
+
+    function designerPlan() {
+      const columns = [...document.querySelectorAll('.designer-column')].map(row => {
+        const type = row.querySelector('.col-type').value;
+        const size = Number(row.querySelector('.col-length').value || 0);
+        const item = {
+          name: row.querySelector('.col-name').value.trim(), type,
+          nullable: !row.querySelector('.col-required').checked,
+          unique: row.querySelector('.col-unique').checked,
+          primary_key: row.querySelector('.col-pk').checked,
+          auto_increment: row.querySelector('.col-auto').checked,
+          default: row.querySelector('.col-default').value
+        };
+        if (type === 'string' && size) item.length = size;
+        if (type === 'decimal' && size) { item.precision = size; item.scale = 2; }
+        return item;
+      });
+      const foreign_keys = [...document.querySelectorAll('.designer-fk')].map(card => ({
+        column: card.querySelector('.fk-column').value.trim(), ref_schema: card.querySelector('.fk-schema').value.trim(),
+        ref_table: card.querySelector('.fk-table').value.trim(), ref_column: card.querySelector('.fk-ref-column').value.trim(),
+        on_delete: card.querySelector('.fk-delete').value
+      }));
+      const indexes = [...document.querySelectorAll('.designer-index')].map(card => ({
+        name: card.querySelector('.idx-name').value.trim(),
+        columns: card.querySelector('.idx-columns').value.split(',').map(v=>v.trim()).filter(Boolean),
+        unique: card.querySelector('.idx-unique').checked
+      }));
+      return {
+        connection_id: document.getElementById('designer-connection').value,
+        operation: 'create_table',
+        table: {
+          schema: document.getElementById('designer-schema').value.trim(),
+          name: document.getElementById('designer-table').value.trim(),
+          description: document.getElementById('designer-description').value.trim(),
+          columns, foreign_keys, indexes
+        }
+      };
+    }
+
+    function renderDesignerValidation(data) {
+      const box = document.getElementById('designer-validation');
+      box.classList.remove('hidden');
+      const errors = data.errors || [], warnings = data.warnings || [], actions = data.actions || [];
+      const issueList = (items, cls) => items.length ? `<div class="validation-group ${cls}">${items.map(i=>`<div><strong>${escapeText(i.code)}</strong> · ${escapeText(i.message)}${i.field?` <span>${escapeText(i.field)}</span>`:''}</div>`).join('')}</div>` : '';
+      box.innerHTML = `
+        <div class="validation-status ${data.valid?'valid':'invalid'}"><strong>${data.valid?'Plan válido':'Plan con observaciones obligatorias'}</strong><span>Motor: ${escapeText(data.engine)} · ${data.atomic?'Aplicación atómica':'Aplicación no atómica'}</span></div>
+        ${issueList(errors,'errors')}${issueList(warnings,'warnings')}
+        <div class="validation-group"><strong>Acciones previstas</strong>${actions.length?`<ol>${actions.map(a=>`<li>${escapeText(a)}</li>`).join('')}</ol>`:'<p>Sin acciones ejecutables.</p>'}</div>
+        <details><summary>Vista técnica para programadores</summary><pre>${escapeText((data.sql_preview || []).join('\n\n'))}</pre><p class="muted small">Hash del plan: ${escapeText(data.plan_hash || '')}</p></details>`;
+    }
+
+    async function loadDesignerConnections() {
+      try {
+        if (!designerCapabilities) designerCapabilities = await apiFetch('/designer/capabilities');
+        const data = await apiFetch('/connections');
+        const select = document.getElementById('designer-connection');
+        const current = select.value;
+        const list = data.connections || [];
+        select.innerHTML = '<option value="">Seleccionar conexión…</option>' + list.map(c=>`<option value="${escapeText(c.id)}">${escapeText(c.name)} · ${escapeText(c.engine)}${c.read_only?' · solo lectura':''}</option>`).join('');
+        if (list.some(c=>c.id===current)) select.value=current;
+        if (!document.querySelector('.designer-column')) addDesignerColumn({name:'id',type:'uuid',nullable:false,primary_key:true,default:'uuid'});
+        document.getElementById('designer-mode').textContent = hasPermission(profile,'designer:aplicar') ? 'Puede validar y aplicar' : 'Puede diseñar y validar';
+        document.getElementById('designer-apply').classList.toggle('hidden', !hasPermission(profile,'designer:aplicar'));
+      } catch (error) {
+        document.getElementById('designer-message').textContent = error.message;
+      }
+    }
+
+    function resetDesigner() {
+      document.getElementById('designer-table').value='';
+      document.getElementById('designer-description').value='';
+      document.getElementById('designer-columns').innerHTML='';
+      document.getElementById('designer-fks').innerHTML='<div class="panel-empty">Sin relaciones.</div>';
+      document.getElementById('designer-indexes').innerHTML='<div class="panel-empty">Sin índices adicionales.</div>';
+      document.getElementById('designer-validation').classList.add('hidden');
+      addDesignerColumn({name:'id',type:'uuid',nullable:false,primary_key:true,default:'uuid'});
+      document.getElementById('designer-message').textContent='Aún no se ha validado.';
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      setupMobileMenu();
+      document.querySelectorAll('[data-guide-view]').forEach(button => button.addEventListener('click', async () => { const target=button.dataset.guideView; const nav=document.querySelector(`.nav-link[data-view="${target}"]`); if (!nav || nav.classList.contains('hidden')) { await panelAlert('Esta función no está habilitada para tu rol actual.', 'Función no disponible', 'warning'); return; } openView(target); }));
+      document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => openView(button.dataset.view)));
+      document.getElementById('nav-users').addEventListener('click', () => window.open('/usuarios.html', 'turimiquire_usuarios'));
+      document.getElementById('table-select').addEventListener('change', loadTableRows);
+      document.getElementById('refresh-table').addEventListener('click', loadTableRows);
+      document.getElementById('export-table').addEventListener('click', exportCSV);
+      document.getElementById('refresh-audit').addEventListener('click', loadAudit);
+      document.getElementById('refresh-connections').addEventListener('click', loadConnections);
+      document.getElementById('external-connection').addEventListener('change', loadExternalSchemas);
+      document.getElementById('external-schema').addEventListener('change', loadExternalTables);
+      document.getElementById('external-table').addEventListener('change', () => { externalOffset=0; });
+      document.getElementById('external-load').addEventListener('click', () => loadExternalRows(true));
+      document.getElementById('external-prev').addEventListener('click', () => { const limit=Number(document.getElementById('external-limit').value||100); externalOffset=Math.max(0,externalOffset-limit); loadExternalRows(false); });
+      document.getElementById('external-next').addEventListener('click', () => { const limit=Number(document.getElementById('external-limit').value||100); externalOffset+=limit; loadExternalRows(false); });
+      document.getElementById('external-export').addEventListener('click', exportExternalCSV);
+      document.getElementById('refresh-services').addEventListener('click', loadServices);
+      document.getElementById('service-name').addEventListener('input', event => { const slug=document.getElementById('service-slug'); if (!slug.dataset.manual) slug.value=slugifyService(event.target.value); });
+      document.getElementById('service-slug').addEventListener('input', event => { event.target.dataset.manual='true'; event.target.value=slugifyService(event.target.value); });
+      document.getElementById('service-connection').addEventListener('change', loadServiceSchemas);
+      document.getElementById('service-schema').addEventListener('change', loadServiceTables);
+      document.getElementById('copy-service-key').addEventListener('click', async () => { try { await navigator.clipboard.writeText(document.getElementById('service-key').textContent); document.getElementById('service-message').textContent='Clave copiada.'; } catch { document.getElementById('service-message').textContent='Selecciona y copia la clave manualmente.'; } });
+      document.getElementById('service-form').addEventListener('submit', async event => {
+        event.preventDefault(); if(!hasPermission(profile,'apis:publicar')) return;
+        const message=document.getElementById('service-message'); message.textContent='Validando origen y publicando…';
+        const payload={name:document.getElementById('service-name').value.trim(),description:document.getElementById('service-description').value.trim(),slug:document.getElementById('service-slug').value.trim(),connection_id:document.getElementById('service-connection').value,schema:document.getElementById('service-schema').value,table:document.getElementById('service-table').value,max_rows:Number(document.getElementById('service-max').value||100)};
+        try{ const data=await apiFetch('/services',{method:'POST',body:JSON.stringify(payload)}); showServiceCredential(data); message.textContent='API publicada correctamente.'; event.target.reset(); document.getElementById('service-max').value='100'; document.getElementById('service-slug').dataset.manual=''; await loadServices(); }catch(error){ message.textContent=error.message; }
+      });
+      document.getElementById('designer-add-column').addEventListener('click', () => addDesignerColumn());
+      document.getElementById('designer-add-fk').addEventListener('click', () => addDesignerFK());
+      document.getElementById('designer-add-index').addEventListener('click', () => addDesignerIndex());
+      document.getElementById('designer-reset').addEventListener('click', resetDesigner);
+      ['designer-connection','designer-schema','designer-table','designer-description'].forEach(id => {
+        const el=document.getElementById(id); el.addEventListener('input', invalidateDesigner); el.addEventListener('change', invalidateDesigner);
+      });
+      document.getElementById('designer-validate').addEventListener('click', async () => {
+        const message=document.getElementById('designer-message'); message.textContent='Rectificando lógica…';
+        try {
+          const data=await apiFetch('/designer/validate',{method:'POST',body:JSON.stringify(designerPlan())});
+          renderDesignerValidation(data);
+          validatedPlan=data.normalized_plan; validatedHash=data.plan_hash || '';
+          document.getElementById('designer-apply').disabled=!data.valid;
+          message.textContent=data.valid?'Plan válido. Puedes aplicarlo si tu rol lo permite.':'Corrige los errores indicados y vuelve a validar.';
+        } catch(error){ message.textContent=error.message; }
+      });
+      document.getElementById('designer-apply').addEventListener('click', async () => {
+        if (!validatedPlan || !validatedHash || !hasPermission(profile,'designer:aplicar')) return;
+        if (!(await panelConfirm('Se aplicará exactamente el plan validado sobre la base seleccionada. Esta operación puede modificar la estructura.', 'Aplicar cambio estructural', {danger:true, confirmText:'Aplicar plan'}))) return;
+        const message=document.getElementById('designer-message'); message.textContent='Aplicando cambio validado…';
+        try {
+          await apiFetch('/designer/apply',{method:'POST',body:JSON.stringify({plan:validatedPlan,expected_hash:validatedHash})});
+          message.textContent='Cambio aplicado y registrado en auditoría.';
+          document.getElementById('designer-apply').disabled=true;
+          validatedPlan=null; validatedHash='';
+          loadConnections();
+        } catch(error){ message.textContent=error.message; }
+      });
+      document.getElementById('conn-engine').addEventListener('change', e => document.getElementById('conn-port').value = e.target.value === 'mysql' ? '3306' : '5432');
+      document.getElementById('test-connection').addEventListener('click', async () => {
+        const message = document.getElementById('connection-message'); message.textContent='Probando…';
+        try { await apiFetch('/connections/test', {method:'POST', body:JSON.stringify(connectionProfile())}); message.textContent='Conexión correcta.'; } catch(e) { message.textContent=e.message; }
+      });
+      document.getElementById('connection-form').addEventListener('submit', async e => {
+        e.preventDefault(); const message=document.getElementById('connection-message'); message.textContent='Guardando…';
+        try { await apiFetch('/connections', {method:'POST', body:JSON.stringify(connectionProfile())}); document.getElementById('conn-password').value=''; message.textContent='Conexión registrada.'; loadConnections(); } catch(err){ message.textContent=err.message; }
+      });
+
+      try {
+        profile = await requireSession();
+        if (profile.role === 'SERVICE_ACCOUNT') {
+          clearSession();
+          await panelAlert('Las cuentas de servicio no tienen acceso a la interfaz administrativa. Usa la credencial técnica en los endpoints autorizados.', 'Acceso de cuenta de servicio', 'warning');
+          return window.location.replace('/');
+        }
+        renderProfile();
+        document.getElementById('connection-admin-card').classList.toggle('hidden', !hasPermission(profile,'conexiones:administrar'));
+        document.getElementById('network-url').textContent = `${location.hostname}:${location.port || '80'}`;
+        refreshHealth();
+      } catch (error) {
+        console.error(error);
+      }
+    });
+  </script>
+</body>
+</html>
