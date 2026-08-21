@@ -7,10 +7,309 @@
   <link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png">
   <link rel="apple-touch-icon" href="/assets/favicon.png">
   <link rel="stylesheet" href="/assets/app.css">
+  
+  <style>
+
+    .nav-link-text {
+      white-space: nowrap;
+    }
+    /* ========================================================
+       1. ANIMACIÓN DEL CONTENEDOR PRINCIPAL
+       ======================================================== */
+    .app-shell {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      transition: grid-template-columns 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+      min-height: 100vh;
+    }
+    .app-shell.sidebar-collapsed {
+      grid-template-columns: 76px 1fr !important;
+    }
+
+    /* ========================================================
+       2. BARRA LATERAL (ESTÁTICA Y COLAPSABLE)
+       ======================================================== */
+    .sidebar {
+      width: 100%;
+      position: sticky; 
+      top: 0;           
+      height: 100vh;    
+      overflow: visible; /* Vital para que el botón y la tarjeta salgan de la barra */
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+      background-color: #0b2748; 
+      box-shadow: 2px 0 15px rgba(0,0,0,0.1);
+    }
+    
+    .sidebar.collapsed .brand-title,
+    .sidebar.collapsed .brand-subtitle,
+    .sidebar.collapsed .nav-section,
+    .sidebar.collapsed .nav-link-text,
+    .sidebar.collapsed .user-menu-name {
+      display: none;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      margin: 4px 12px;
+      transition: all 0.2s ease;
+      color: #cbd5e1;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      width: calc(100% - 24px); /* Ajuste para mantener el botón dentro de los márgenes */
+      text-align: left;
+    }
+    .nav-link:hover, .nav-link.active {
+      background: rgba(255,255,255,0.1);
+      color: #ffffff;
+    }
+    
+    .nav-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .sidebar.collapsed .nav-link {
+      padding: 12px 0;
+      width: 48px;
+      height: 48px;
+      margin: 6px auto;
+      justify-content: center;
+    }
+
+    .sidebar.collapsed .brand-lockup {
+      padding-left: 0;
+      justify-content: center;
+    }
+
+    /* ========================================================
+       3. BOTÓN FLOTANTE DE DESLIZAR (PESTAÑA MÁGICA)
+       ======================================================== */
+    .toggle-sidebar-btn {
+      position: absolute;
+      bottom: 85px; /* Altura cómoda sobre el usuario */
+      right: 16px;
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+      z-index: 200;
+    }
+    .toggle-sidebar-btn:hover {
+      background: rgba(255,255,255,0.1);
+      color: white;
+    }
+    
+    /* Magia cuando se esconde la barra */
+    .sidebar.collapsed .toggle-sidebar-btn {
+      transform: rotate(180deg);
+      right: -16px; /* SOBRESALE DE LA BARRA */
+      background-color: #0b2748; 
+      color: white;
+      box-shadow: 4px 0 8px rgba(0,0,0,0.15); 
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .sidebar.collapsed .toggle-sidebar-btn:hover {
+      background-color: #1e3a8a;
+    }
+
+    /* ========================================================
+       4. BOTÓN DE USUARIO INFERIOR Y ALINEACIÓN EXACTA
+       ======================================================== */
+    .sidebar-foot {
+      margin-top: auto; 
+      padding: 16px 12px; 
+      display: flex;
+      position: relative;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    .sidebar.collapsed .sidebar-foot {
+      padding: 16px 0;
+      justify-content: center;
+    }
+
+    .user-menu-btn {
+      background: transparent;
+      border: none;
+      color: #cbd5e1; 
+      cursor: pointer;
+      padding: 8px 10px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      width: 100%;
+      gap: 14px;
+      text-align: left;
+    }
+    .user-menu-name {
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex-grow: 1;
+    }
+    .user-menu-btn:hover {
+      color: #ffffff;
+      background: rgba(255,255,255,0.1);
+    }
+    
+    .sidebar.collapsed .user-menu-btn {
+      width: 48px;
+      height: 48px;
+      padding: 0;
+      justify-content: center;
+    }
+
+    /* ========================================================
+       5. TARJETA DE USUARIO FLOTANTE
+       ======================================================== */
+    .user-dropdown-card {
+      position: absolute;
+      bottom: 70px; 
+      left: 16px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      width: 280px;
+      padding: 24px;
+      z-index: 9999;
+      
+      opacity: 0;
+      transform: translateY(15px) scale(0.95);
+      transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+    }
+    .sidebar.collapsed .user-dropdown-card {
+      left: 70px;
+      bottom: 16px;
+    }
+    .user-dropdown-card.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .user-card-content {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .user-card-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #f1f5f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+      color: #94a3b8;
+    }
+    .user-card-info {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      text-align: left;
+    }
+    .user-card-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1e293b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 2px;
+    }
+    .user-card-email {
+      font-size: 13px;
+      color: #64748b;
+    }
+    .user-card-role {
+      font-size: 10px;
+      font-weight: 800;
+      color: #0b2748;
+      background: #e0f2fe;
+      padding: 4px 8px;
+      border-radius: 12px;
+      align-self: flex-start;
+      margin-top: 8px;
+      text-transform: uppercase;
+    }
+    .user-card-footer {
+      display: flex;
+      justify-content: center;
+      border-top: 1px solid #f1f5f9;
+      padding-top: 16px;
+    }
+    .logout-link {
+      background: transparent;
+      border: none;
+      color: #ef4444; 
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      justify-content: center;
+    }
+    .logout-link:hover {
+      background: #fef2f2;
+    }
+
+    /* DISEÑO EXPLORADOR DE BASE DE DATOS (TIPO DBEAVER) */
+    .explorer-grid { display: grid; grid-template-columns: 300px 1fr; gap: 24px; align-items: start; }
+    .db-tree-panel { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px 12px; height: 600px; overflow-y: auto; }
+    .db-data-panel { min-width: 0; }
+    .db-tree details { margin-left: 16px; }
+    .db-tree > details { margin-left: 0; }
+    .db-tree summary { cursor: pointer; padding: 6px 8px; display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: #334155; user-select: none; border-radius: 6px; list-style: none; transition: background 0.2s; }
+    .db-tree summary::-webkit-details-marker { display: none; }
+    .db-tree summary:hover { background: #e2e8f0; }
+    .db-tree summary.active-table { background: #e0f2fe; color: #0369a1; font-weight: 700; }
+    .db-tree .chevron { transition: transform 0.2s ease; width: 14px; height: 14px; color: #94a3b8; flex-shrink: 0; }
+    .db-tree details[open] > summary > .chevron { transform: rotate(90deg); }
+    .tree-icon { width: 16px; height: 16px; flex-shrink: 0; }
+    .icon-conn { color: #0284c7; } .icon-schema { color: #f59e0b; } .icon-table { color: #10b981; }
+    .icon-column { color: #94a3b8; width: 14px; height: 14px; } .icon-pk { color: #eab308; width: 14px; height: 14px; }
+    .tree-leaf { padding: 6px 8px 6px 38px; font-size: 13px; color: #64748b; display: flex; align-items: center; gap: 8px; }
+  </style>
 </head>
-<body>
+<body class="bg-white">
   <div class="app-shell">
-    <aside class="sidebar">
+    
+    <!-- BARRA LATERAL -->
+    <aside class="sidebar" id="sidebar">
       <div class="brand-lockup">
         <img class="brand-logo-icon brand-logo-sidebar" src="/assets/favicon.png" alt="Logo Turimiquire DataGov">
         <div>
@@ -18,51 +317,98 @@
           <div class="brand-subtitle">Gobierno de datos</div>
         </div>
       </div>
-      <div class="env-chip"><span style="display:flex;align-items:center;gap:8px"><span class="env-dot"></span> Entorno local</span><strong>LAN</strong></div>
 
-      <nav class="nav" id="main-nav">
+      <nav class="nav" id="main-nav" style="flex-grow: 1;">
         <div class="nav-section">Panel</div>
-        <button class="nav-link active" data-view="home"><span class="nav-icon">⌂</span> Inicio</button>
-        <button class="nav-link hidden" id="nav-data" data-view="data"><span class="nav-icon">▦</span> Explorador de datos</button>
-        <button class="nav-link hidden" id="nav-audit" data-view="audit"><span class="nav-icon">◎</span> Auditoría</button>
-        <button class="nav-link hidden" id="nav-connections" data-view="connections"><span class="nav-icon">⇄</span> Conexiones y bases</button>
-        <button class="nav-link hidden" id="nav-designer" data-view="designer"><span class="nav-icon">◇</span> Diseñador visual</button>
-        <button class="nav-link hidden" id="nav-services" data-view="services"><span class="nav-icon">↗</span> APIs de servicio</button>
+        <button class="nav-link" data-view="home">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          </span>
+          <span class="nav-link-text">Inicio</span>
+        </button>
+        <button class="nav-link hidden" id="nav-data" data-view="data">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+          </span>
+          <span class="nav-link-text">Explorador de datos</span>
+        </button>
+        <button class="nav-link hidden" id="nav-audit" data-view="audit">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M9 12l2 2 4-4"></path></svg>
+          </span>
+          <span class="nav-link-text">Auditoría</span>
+        </button>
+        <button class="nav-link hidden" id="nav-connections" data-view="connections">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+          </span>
+          <span class="nav-link-text">Conexiones y bases</span>
+        </button>
+        <button class="nav-link hidden" id="nav-designer" data-view="designer">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+          </span>
+          <span class="nav-link-text">Diseñador visual</span>
+        </button>
+        <button class="nav-link hidden" id="nav-services" data-view="services">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+          </span>
+          <span class="nav-link-text">APIs de servicio</span>
+        </button>
         <div class="nav-section">Administración</div>
-        <button class="nav-link hidden" id="nav-users"><span class="nav-icon">♙</span> Usuarios registrados</button>
+        <!-- BOTÓN DE USUARIOS CORREGIDO -->
+        <button class="nav-link hidden" id="nav-users" onclick="window.location.href='/usuarios.html'">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          </span>
+          <span class="nav-link-text">Usuarios registrados</span>
+        </button>
       </nav>
-      <!-- Se eliminó el sidebar-foot de aquí (Nombre y Cerrar sesión) -->
-    </aside>
+      
+      <!-- SCRIPT ANTI-PARPADEO PARA LOS BOTONES -->
+      <script>
+        (function() {
+          const params = new URLSearchParams(window.location.search);
+          const view = params.get('view') || 'home';
+          const btn = document.querySelector('.nav-link[data-view="' + view + '"]');
+          if (btn) btn.classList.add('active');
+        })();
+      </script>
+      <!-- ===================================== -->
 
-    <main class="main">
-      <header class="topbar">
-        <div class="topbar-left">
-          <button class="btn btn-ghost btn-sm mobile-menu" data-mobile-menu>☰</button>
-        </div>
-        
-        <!-- NUEVO TOPBAR ACTIONS (Círculo de Usuario y Tarjeta) -->
-        <div class="topbar-actions" style="position: relative;">
-          
-          <!-- Botón Circular -->
-          <button id="user-menu-btn" onclick="document.getElementById('user-dropdown').classList.toggle('hidden')" style="width: 42px; height: 42px; border-radius: 50%; background-color: #0b2748; color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: transform 0.2s;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
-              <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
-            </svg>
-          </button>
+      <!-- BOTÓN FLOTANTE PARA COLAPSAR -->
+      <button id="toggle-sidebar-btn" class="toggle-sidebar-btn" title="Contraer/Expandir menú">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+      </button>
 
-          <!-- Tarjeta Desplegable (Oculta por defecto con la clase 'hidden') -->
-          <div id="user-dropdown" class="hidden" style="position: absolute; top: 55px; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); width: 240px; z-index: 1000; padding: 20px 16px; text-align: center;">
-            <div style="margin-bottom: 16px;">
-              <!-- IDs mantenidos aquí para que el script JS los siga rellenando mágicamente -->
-              <strong id="sidebar-user" style="display: block; font-size: 17px; color: #1e293b; margin-bottom: 6px;">Cargando…</strong>
-              <span id="role-pill" style="display: inline-block; font-size: 11px; font-weight: bold; color: #0b2748; background: #e0f2fe; padding: 4px 10px; border-radius: 20px; text-transform: uppercase;">Perfil</span>
-              <span id="sidebar-role" style="display: none;"></span>
+      <!-- BASE DE LA BARRA: PERFIL DE USUARIO -->
+      <div class="sidebar-foot">
+        <button id="user-menu-btn" class="user-menu-btn" title="Ver mi perfil">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="26" height="26">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+          </svg>
+          <span id="user-menu-name" class="user-menu-name">Cargando...</span>
+        </button>
+
+        <!-- Tarjeta Flotante Estilo Microsoft -->
+        <div id="user-dropdown" class="user-dropdown-card">
+          <div class="user-card-content">
+            <div class="user-card-avatar">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+              </svg>
             </div>
-            
-            <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 0 0 16px 0;">
-            
-            <button onclick="logout()" style="background: #ef4444; color: white; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s;">
+            <div class="user-card-info">
+              <strong id="user-card-name" class="user-card-name">Cargando...</strong>
+              <span id="sidebar-user" class="user-card-email">usuario@datagov</span>
+              <span id="sidebar-role" class="user-card-role">Perfil</span>
+            </div>
+          </div>
+          <div class="user-card-footer">
+            <button class="logout-link" onclick="logout()">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                 <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/>
                 <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
@@ -70,24 +416,22 @@
               Cerrar sesión
             </button>
           </div>
+        </div>
+      </div>
+    </aside>
 
+    <main class="main" style="min-height:100vh">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="btn btn-ghost btn-sm mobile-menu" data-mobile-menu>☰</button>
         </div>
       </header>
 
-      <!-- Se eliminó el module-tabs-shell (Menú del centro) de aquí -->
-
       <div class="content">
+        <!-- VISTA DE INICIO -->
         <section id="view-home" class="app-view">
-          <div class="page-head hero-head">
-            <div>
-              <p class="kicker">Espacio de trabajo por rol</p>
-              <h1 id="welcome-title">Bienvenido</h1>
-              <p id="role-description">Cargando responsabilidades y límites del perfil…</p>
-            </div>
-            <span class="role-pill" id="profile-state">Sesión protegida por JWT</span>
-          </div>
-
-          <div class="grid grid-4">
+          
+          <div class="grid grid-4" style="margin-top: 10px;">
             <article class="card card-pad stat"><span>Plataforma</span><strong id="health-status">Verificando…</strong><span id="health-detail">API y base principal</span></article>
             <article class="card card-pad stat"><span>Rol activo</span><strong id="role-stat">—</strong><span>Funciones filtradas por RBAC</span></article>
             <article class="card card-pad stat"><span>Permisos efectivos</span><strong id="permission-count">0</strong><span>Aplicados también en backend</span></article>
@@ -127,24 +471,156 @@
           </section>
         </section>
 
-        <section id="view-data" class="app-view hidden">
-          <div class="page-head">
-            <div><p class="kicker">Consulta autorizada</p><h1>Explorador de datos</h1><p>Solo aparecen tablas para las que el backend confirma permiso de lectura.</p></div>
+        <!-- EXPLORADOR DE DATOS -->
+        <section id="view-data" class="app-view hidden" style="display: flex; flex-direction: column; height: calc(100vh - 64px); margin: -24px; background: white;">
+          
+          <!-- ESTILOS INTERNOS PARA EL ÁRBOL Y PESTAÑAS -->
+          <style>
+            .active-tree-item { background: #e0f2fe !important; color: #1e3a8a !important; font-weight: bold !important; }
+            .db-tab { padding: 8px 16px; font-size: 13px; font-weight: 700; color: #64748b; border: none; background: transparent; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
+            .db-tab:hover { color: #1e293b; }
+            .db-tab.active-tab { color: #1d4ed8; background: white; border-top: 1px solid #e2e8f0; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 2px solid #2563eb; border-radius: 6px 6px 0 0; }
+          </style>
+
+          <!-- Header Superior / Migas de pan (Breadcrumbs) -->
+          <header style="height: 60px; background: white; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0;">
+              <div style="display: flex; gap: 8px; font-size: 14px; font-weight: 500; color: #64748b; align-items: center;">
+                  <span>dbgs_soberano</span>
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
+                  <span>dbgs_schema</span>
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
+                  <span id="breadcrumb-table" style="color: #1d4ed8; font-weight: 700;">catalogos</span>
+              </div>
+          </header>
+
+          <!-- CONTENEDOR DIVIDIDO -->
+          <div style="flex: 1; display: flex; overflow: hidden;">
+              
+              <!-- PANEL IZQUIERDO: Árbol DBeaver -->
+              <aside style="width: 260px; background: #f8fafc; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; overflow-y: auto;">
+                  <div style="padding: 16px; border-bottom: 1px solid #e2e8f0; background: white; position: sticky; top: 0; z-index: 10;">
+                      <input type="text" class="input" placeholder="Buscar tabla..." style="width: 100%; font-size: 13px;">
+                  </div>
+                  
+                  <div style="padding: 8px;">
+                      <details open>
+                          <summary style="padding: 8px; font-weight: 600; color: #334155; cursor: pointer; display: flex; align-items: center; gap: 8px; border-radius: 6px;">
+                              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                              dbgs_schema
+                          </summary>
+                          
+                          <div id="db-tree-list" style="margin-top: 4px;">
+                              <div class="tree-item active-tree-item" data-table="catalogos" style="padding: 8px 8px 8px 32px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13px; border-radius: 6px; margin-bottom: 2px; color: #475569; transition: all 0.2s;">
+                                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                                  catalogos
+                              </div>
+                              <div class="tree-item" data-table="usuarios" style="padding: 8px 8px 8px 32px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13px; border-radius: 6px; margin-bottom: 2px; color: #475569; transition: all 0.2s;">
+                                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                                  usuarios
+                              </div>
+                              <div class="tree-item" data-table="roles" style="padding: 8px 8px 8px 32px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13px; border-radius: 6px; margin-bottom: 2px; color: #475569; transition: all 0.2s;">
+                                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                                  roles
+                              </div>
+                          </div>
+                      </details>
+                  </div>
+              </aside>
+
+              <!-- PANEL DERECHO: Datos y Pestañas -->
+              <section style="flex: 1; display: flex; flex-direction: column; background: white; overflow: hidden;">
+                  
+                  <!-- Pestañas (Tabs) -->
+                  <div style="background: #f1f5f9; border-bottom: 1px solid #e2e8f0; padding: 8px 16px 0; display: flex; gap: 4px;" id="data-tabs">
+                      <button class="db-tab" data-target="vista-ddl">Estructura (DDL)</button>
+                      <button class="db-tab active-tab" data-target="vista-datos">Datos</button>
+                      <button class="db-tab" data-target="vista-erd">Diagrama (ERD)</button>
+                  </div>
+
+                  <!-- Toolbar -->
+                  <div style="height: 48px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; padding: 0 16px;">
+                      <div style="display: flex; gap: 8px; align-items: center;">
+                          <button class="btn btn-ghost btn-sm" title="Refrescar">↻</button>
+                          <div style="width: 1px; height: 16px; background: #e2e8f0; margin: 0 4px;"></div>
+                          <button class="btn btn-ghost btn-sm">Filtros</button>
+                      </div>
+                      <div style="display: flex; gap: 12px; align-items: center;">
+                          <span class="muted small" id="table-row-count">4 filas encontradas</span>
+                          <button class="btn btn-secondary btn-sm">Exportar CSV</button>
+                          <button class="btn btn-primary btn-sm">+ Añadir Registro</button>
+                      </div>
+                  </div>
+
+                  <!-- Área de Contenido de las Pestañas -->
+                  <div style="flex: 1; overflow: auto; background: #f8fafc; padding: 16px;">
+                      
+                      <!-- Vista DATOS -->
+                      <div id="vista-datos" class="tab-content" style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+                          <table style="width: 100%; text-align: left; border-collapse: collapse;">
+                              <thead style="background: #f1f5f9; border-bottom: 1px solid #e2e8f0;">
+                                  <tr>
+                                      <th style="padding: 10px; font-size: 12px; color: #475569; width: 40px; text-align: center;">#</th>
+                                      <th style="padding: 10px; font-size: 12px; color: #475569;">codigo <span style="color:#94a3b8;font-size:10px;font-weight:normal;">varchar</span></th>
+                                      <th style="padding: 10px; font-size: 12px; color: #475569;">nombre <span style="color:#94a3b8;font-size:10px;font-weight:normal;">varchar</span></th>
+                                      <th style="padding: 10px; font-size: 12px; color: #475569;">descripcion <span style="color:#94a3b8;font-size:10px;font-weight:normal;">text</span></th>
+                                      <th style="padding: 10px; font-size: 12px; color: #475569;">estado <span style="color:#94a3b8;font-size:10px;font-weight:normal;">boolean</span></th>
+                                  </tr>
+                              </thead>
+                              <tbody style="font-family: monospace; font-size: 13px;">
+                                  <tr style="border-bottom: 1px solid #f1f5f9;">
+                                      <td style="padding: 10px; color: #94a3b8; text-align: center;">1</td>
+                                      <td style="padding: 10px; font-weight: bold; color: #1d4ed8;">TIPO_DOC_V</td>
+                                      <td style="padding: 10px;">Venezolano(a)</td>
+                                      <td style="padding: 10px; color: #94a3b8; font-style: italic;">Formato oficial de identidad</td>
+                                      <td style="padding: 10px;"><span class="badge badge-ok" style="font-size: 10px;">TRUE</span></td>
+                                  </tr>
+                                  <tr style="border-bottom: 1px solid #f1f5f9;">
+                                      <td style="padding: 10px; color: #94a3b8; text-align: center;">2</td>
+                                      <td style="padding: 10px; font-weight: bold; color: #1d4ed8;">TIPO_DOC_E</td>
+                                      <td style="padding: 10px;">Extranjero(a)</td>
+                                      <td style="padding: 10px; color: #94a3b8; font-style: italic;">Formato oficial de identidad</td>
+                                      <td style="padding: 10px;"><span class="badge badge-ok" style="font-size: 10px;">TRUE</span></td>
+                                  </tr>
+                                  <tr style="border-bottom: 1px solid #f1f5f9;">
+                                      <td style="padding: 10px; color: #94a3b8; text-align: center;">3</td>
+                                      <td style="padding: 10px; font-weight: bold; color: #1d4ed8;">FUENTE_PG</td>
+                                      <td style="padding: 10px;">PostgreSQL</td>
+                                      <td style="padding: 10px; color: #94a3b8; font-style: italic;">Motor de bd relacional</td>
+                                      <td style="padding: 10px;"><span class="badge badge-ok" style="font-size: 10px;">TRUE</span></td>
+                                  </tr>
+                              </tbody>
+                          </table>
+                      </div>
+
+                      <!-- Vista DDL (Oculta por defecto) -->
+                      <div id="vista-ddl" class="tab-content hidden" style="background: #1e293b; border-radius: 8px; padding: 20px; color: #38bdf8; font-family: monospace; font-size: 14px; white-space: pre-wrap;">-- Estructura de la tabla (DDL)
+
+CREATE TABLE dbgs_schema.catalogos (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    codigo VARCHAR(50) NOT NULL UNIQUE,
+    nombre VARCHAR(150) NOT NULL,
+    descripcion TEXT,
+    estado BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT now()
+);
+
+CREATE INDEX idx_catalogos_codigo ON dbgs_schema.catalogos(codigo);</div>
+
+                      <!-- Vista ERD (Oculta por defecto) -->
+                      <div id="vista-erd" class="tab-content hidden" style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 40px; text-align: center; color: #64748b;">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="margin: 0 auto 16px; opacity: 0.5;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
+                          <h3 style="font-size: 16px; font-weight: bold; color: #334155;">Diagrama Entidad-Relación</h3>
+                          <p style="font-size: 13px;">La generación visual del diagrama ERD no está disponible en la vista de esquema actual.</p>
+                      </div>
+
+                  </div>
+              </section>
           </div>
-          <div class="module-guide"><div class="module-guide-icon">1</div><div><strong>¿Qué puedes hacer aquí?</strong><p>Consulta rápidamente las tablas internas que tu rol tiene autorizadas. No modifica información.</p><div class="module-guide-steps"><span>Elige una tabla</span><span>Revisa filas</span><span>Actualiza</span><span>Exporta si tienes permiso</span></div></div></div>
-          <article class="card card-pad">
-            <div class="toolbar" style="margin-bottom:12px">
-              <select class="select" id="table-select"><option value="">Seleccionar tabla…</option></select>
-              <button class="btn btn-secondary btn-sm" id="refresh-table">Refrescar</button>
-              <button class="btn btn-ghost btn-sm" id="export-table">Exportar CSV</button>
-              <span class="muted small" id="table-count"></span>
-            </div>
-            <div class="table-shell"><table><thead id="data-head"></thead><tbody id="data-body"><tr><td class="panel-empty">Selecciona una tabla autorizada.</td></tr></tbody></table></div>
-          </article>
         </section>
 
+        <!-- AUDITORÍA -->
         <section id="view-audit" class="app-view hidden">
-          <div class="page-head"><div><p class="kicker">Trazabilidad</p><h1>Bitácora de auditoría</h1><p>Consulta pasiva de eventos sensibles, accesos y resultados registrados.</p></div></div>
+          <div class="page-head"><div><h1>Bitácora de auditoría</h1></div></div>
           <div class="module-guide"><div class="module-guide-icon">2</div><div><strong>¿Qué puedes hacer aquí?</strong><p>Revisa quién accedió, qué operación se ejecutó y cuándo ocurrió. Esta vista es de supervisión y trazabilidad.</p><div class="module-guide-steps"><span>Actualiza eventos</span><span>Revisa accesos</span><span>Detecta incidencias</span></div></div></div>
           <article class="card card-pad">
             <div class="toolbar" style="margin-bottom:12px"><button class="btn btn-secondary btn-sm" id="refresh-audit">Actualizar eventos</button><span class="muted small" id="audit-count"></span></div>
@@ -152,8 +628,9 @@
           </article>
         </section>
 
+        <!-- CONEXIONES -->
         <section id="view-connections" class="app-view hidden">
-          <div class="page-head"><div><p class="kicker">Interoperabilidad</p><h1>Conexiones y bases de datos</h1><p>Registra conexiones PostgreSQL o MySQL/MariaDB. La contraseña no vuelve al navegador después del registro.</p></div></div>
+          <div class="page-head"><div><h1>Conexiones y bases de datos</h1><p>Registra conexiones PostgreSQL o MySQL/MariaDB. La contraseña no vuelve al navegador después del registro.</p></div></div>
           <div class="module-guide"><div class="module-guide-icon">3</div><div><strong>Empieza aquí para conectar una base real</strong><p>Completa host, puerto, usuario, contraseña y base inicial. Primero usa “Probar conexión”; después guarda y pulsa “Abrir datos”.</p><div class="module-guide-steps"><span>1 · Completa credenciales</span><span>2 · Probar conexión</span><span>3 · Guardar</span><span>4 · Abrir datos</span></div></div></div>
           <article class="card card-pad" id="connection-admin-card">
             <form id="connection-form">
@@ -198,15 +675,15 @@
           </section>
         </section>
 
+        <!-- APIs -->
         <section id="view-services" class="app-view hidden">
           <div class="page-head">
-            <div><p class="kicker">Integración entre sistemas</p><h1>APIs de servicio</h1><p>Publica lectura controlada de una tabla seleccionada sin exponer usuarios, contraseñas ni acceso directo al motor.</p></div>
-            <span class="role-pill">Servicio máquina a máquina</span>
+            <div><h1>APIs de servicio</h1><p>Publica lectura controlada de una tabla seleccionada sin exponer usuarios, contraseñas ni acceso directo al motor.</p></div>
           </div>
           <div class="module-guide"><div class="module-guide-icon">4</div><div><strong>Publicar datos sin entregar acceso directo a la base</strong><p>Selecciona una conexión ya registrada, el esquema y la tabla. Turimiquire crea el endpoint y una clave técnica para el sistema consumidor.</p><div class="module-guide-steps"><span>Selecciona origen</span><span>Define servicio</span><span>Publica</span><span>Guarda la API Key</span></div></div></div>
 
           <article class="card card-pad hidden" id="service-publish-card">
-            <div class="section-title"><div><h2>Publicar una API</h2><p>Selecciona el origen; Turimiquire genera el endpoint y una credencial técnica única.</p></div><span class="badge badge-admin">Publicación controlada</span></div>
+            <div class="section-title"><div><h2>Publicar una API</h2></div><span class="badge badge-admin">Publicación controlada</span></div>
             <form id="service-form">
               <div class="form-grid">
                 <div class="field"><label>Nombre del servicio</label><input class="input" id="service-name" placeholder="Municipios del estado" required></div>
@@ -233,19 +710,18 @@
           </section>
         </section>
 
+        <!-- DISEÑADOR VISUAL -->
         <section id="view-designer" class="app-view hidden">
           <div class="page-head">
             <div>
-              <p class="kicker">Sin código · Diseñar → Validar → Aplicar</p>
               <h1>Diseñador visual de estructura</h1>
               <p>Describe la tabla y sus reglas con controles visuales. Turimiquire valida nombres, tipos, claves, relaciones y riesgos antes de ejecutar cualquier cambio.</p>
             </div>
-            <span class="role-pill" id="designer-mode">Modo diseño</span>
           </div>
           <div class="module-guide"><div class="module-guide-icon">5</div><div><strong>No necesitas escribir SQL</strong><p>Turimiquire convierte los controles visuales en un plan estructurado. Primero diseñas, después validas y solo entonces se habilita la aplicación del cambio.</p><div class="module-guide-steps"><span>Destino</span><span>Columnas</span><span>Relaciones e índices</span><span>Validar</span><span>Aplicar</span></div></div></div>
 
           <article class="card card-pad">
-            <div class="section-title"><div><h2>1. Destino y tabla</h2><p>Elige una conexión administrada y define el objeto que quieres crear.</p></div></div>
+            <div class="section-title"><div><h2>Destino y tabla</h2></div></div>
             <div class="form-grid">
               <div class="field"><label>Conexión destino</label><select class="select" id="designer-connection"><option value="">Seleccionar conexión…</option></select></div>
               <div class="field"><label>Esquema / base</label><input class="input" id="designer-schema" placeholder="public"></div>
@@ -296,16 +772,29 @@
   <script src="/assets/auth.js"></script>
   <script src="/assets/ui.js"></script>
   
-  <!-- SCRIPT AÑADIDO PARA CERRAR EL MENÚ DE USUARIO AL HACER CLIC AFUERA -->
+  <!-- SCRIPT PARA INTERACCIÓN DEL MENÚ DE USUARIO Y BARRA LATERAL -->
   <script>
+    // Mostrar/Ocultar Tarjeta de usuario con animación
+    document.getElementById('user-menu-btn').addEventListener('click', function(e) {
+      e.stopPropagation();
+      document.getElementById('user-dropdown').classList.toggle('show');
+    });
+
+    // Cerrar la tarjeta al hacer clic afuera
     document.addEventListener('click', function(event) {
       const dropdown = document.getElementById('user-dropdown');
       const btn = document.getElementById('user-menu-btn');
-      if (dropdown && !dropdown.classList.contains('hidden')) {
+      if (dropdown && dropdown.classList.contains('show')) {
         if (!dropdown.contains(event.target) && !btn.contains(event.target)) {
-          dropdown.classList.add('hidden');
+          dropdown.classList.remove('show');
         }
       }
+    });
+
+    // Lógica fluida para colapsar/expandir la barra lateral
+    document.getElementById('toggle-sidebar-btn').addEventListener('click', function() {
+      document.getElementById('sidebar').classList.toggle('collapsed');
+      document.querySelector('.app-shell').classList.toggle('sidebar-collapsed');
     });
   </script>
 
@@ -334,7 +823,7 @@
         title: 'Administrador de base de datos (DBA)',
         description: 'Gestiona esquemas, rendimiento, conexiones, respaldos, recuperación y cambios estructurales aprobados.',
         limit: 'No actúa como desarrollador ni debe crear o modificar datos operativos sin autorización. Su función se limita al mantenimiento, estructura y recuperabilidad.',
-        result: 'Resultado esperado: estructura actualizada de forma controlada, respaldada y recuperable.',
+        result: 'Resultado esperado: structure actualizada de forma controlada, respaldada y recuperable.',
         process: ['Recibir el paquete de migración o cambio estructural.', 'Validar convenciones, claves, índices y diseño.', 'Ejecutar la migración aprobada en el entorno correspondiente.', 'Generar respaldo y ejecutar prueba de restauración aislada.', 'Registrar evidencia cuando la integridad quede verificada.'],
         actions: [
           ['Diseñador visual', 'Validar y aplicar cambios estructurales sin escribir SQL.', 'designer'],
@@ -399,7 +888,7 @@
       document.querySelectorAll('[data-view]').forEach(button => button.classList.toggle('active', button.dataset.view === name));
       window.activateModuleTab?.(name);
       window.scrollTo({top: 0, behavior: 'smooth'});
-      if (name === 'data') loadTables();
+      if (name === 'data') renderDbTree();
       if (name === 'audit') loadAudit();
       if (name === 'connections') loadConnections();
       if (name === 'designer') loadDesignerConnections();
@@ -414,7 +903,7 @@
       const icon = ({users:'♙',health:'●',connections:'⇄',designer:'◇',services:'↗',data:'▦',audit:'◎',workflow:'→'})[target] || '•';
       article.innerHTML = `<div><div class="action-icon">${icon}</div><h3>${escapeText(title)}</h3><p>${escapeText(text)}</p></div><footer><button class="btn btn-secondary btn-sm">Abrir <span aria-hidden="true">→</span></button></footer>`;
       article.querySelector('button').addEventListener('click', () => {
-        if (target === 'users') return window.open('/usuarios.html', 'turimiquire_usuarios');
+        if (target === 'users') return window.location.href = '/usuarios.html';
         if (target === 'health') return refreshHealth();
         if (['data','audit','connections','designer','services'].includes(target)) return openView(target);
         document.getElementById('workflow-track')?.scrollIntoView({behavior:'smooth', block:'center'});
@@ -426,11 +915,17 @@
       const config = ROLE_CONFIG[profile.role] || {
         title: roleLabel(profile.role), description: profile.role_description || 'Perfil institucional', limit: 'Este perfil no tiene panel definido.', result: 'Contacta al administrador de plataforma.', process: [], actions: []
       };
-      document.getElementById('sidebar-user').textContent = profile.username;
+      
+      let apodo = profile.username;
+      document.getElementById('user-menu-name').textContent = profile.username;
+      if (apodo === 'superadmin' || apodo === 'admin') apodo = 'Administrador Principal';
+      else if (apodo === 'dba') apodo = 'Especialista de Datos';
+      else apodo = apodo.charAt(0).toUpperCase() + apodo.slice(1);
+
+      document.getElementById('user-card-name').textContent = apodo;
+      document.getElementById('sidebar-user').textContent = profile.username + '@datagov.ve';
       document.getElementById('sidebar-role').textContent = config.title;
-      document.getElementById('role-pill').textContent = config.title;
-      document.getElementById('welcome-title').textContent = `Hola, ${profile.username}`;
-      document.getElementById('role-description').textContent = config.description;
+      
       document.getElementById('role-stat').textContent = config.title.replace('Administrador de ', 'Admin. ');
       document.getElementById('permission-count').textContent = String(profile.permissions?.length || 0);
       document.getElementById('role-limit').textContent = config.limit;
@@ -461,56 +956,25 @@
       document.getElementById('nav-connections').classList.toggle('hidden', !hasPermission(profile, 'conexiones:leer'));
       document.getElementById('nav-designer').classList.toggle('hidden', !hasPermission(profile, 'designer:validar'));
       document.getElementById('nav-services').classList.toggle('hidden', !hasPermission(profile, 'apis:consultar'));
-      document.getElementById('nav-users').classList.toggle('hidden', !hasPermission(profile, 'usuarios:directorio'));
+      
+      /* --- SOLUCIÓN: El botón de usuarios se muestra y se asigna el click --- */
+      document.getElementById('nav-users').classList.toggle('hidden', !hasPermission(profile, 'usuarios:directorio')); 
+      document.getElementById('nav-users').onclick = () => window.location.href = '/usuarios.html';
+      /* ------------------------------------------------------------------------ */
+
       window.syncModuleTabs?.();
     }
 
     async function refreshHealth() {
       const el = document.getElementById('health-status');
-      try {
-        const response = await fetch('http://localhost:8080/v1/health');
-        const data = await response.json();
-        if (!response.ok) throw new Error();
+      // MOCK DATA: Simulamos que el servidor responde correctamente
+      setTimeout(() => {
         el.textContent = 'Operativa';
         el.className = 'status-ok';
-        document.getElementById('health-detail').textContent = data.database === 'connected' ? 'API y PostgreSQL conectados' : 'API disponible';
-      } catch {
-        el.textContent = 'Revisar';
-        el.style.color = 'var(--danger)';
-        document.getElementById('health-detail').textContent = 'No fue posible validar todos los servicios';
-      }
+        document.getElementById('health-detail').textContent = 'API y base principal (Simulado)';
+      }, 300);
     }
-
-    async function loadTables() {
-      const select = document.getElementById('table-select');
-      try {
-        const data = await apiFetch('/schema/tables');
-        const current = select.value;
-        select.innerHTML = '<option value="">Seleccionar tabla…</option>' + (data.tables || []).map(t => `<option value="${escapeText(t)}">${escapeText(t)}</option>`).join('');
-        if ((data.tables || []).includes(current)) select.value = current;
-      } catch (error) {
-        document.getElementById('data-body').innerHTML = `<tr><td class="panel-empty">${escapeText(error.message)}</td></tr>`;
-      }
-    }
-
-    async function loadTableRows() {
-      const table = document.getElementById('table-select').value;
-      if (!table) return;
-      const head = document.getElementById('data-head');
-      const body = document.getElementById('data-body');
-      body.innerHTML = '<tr><td class="panel-empty">Consultando…</td></tr>';
-      try {
-        const data = await apiFetch(`/schema/tables/${encodeURIComponent(table)}/rows?limit=200`);
-        currentColumns = data.columns || [];
-        currentRows = data.rows || [];
-        head.innerHTML = `<tr>${currentColumns.map(c => `<th>${escapeText(c)}</th>`).join('')}</tr>`;
-        body.innerHTML = currentRows.length ? currentRows.map(row => `<tr>${currentColumns.map(c => `<td>${escapeText(row[c] === null ? 'NULL' : row[c])}</td>`).join('')}</tr>`).join('') : `<tr><td class="panel-empty" colspan="${Math.max(1,currentColumns.length)}">Sin registros.</td></tr>`;
-        document.getElementById('table-count').textContent = `${currentRows.length} filas mostradas`;
-      } catch (error) {
-        head.innerHTML = '';
-        body.innerHTML = `<tr><td class="panel-empty">${escapeText(error.message)}</td></tr>`;
-      }
-    }
+    
 
     async function exportCSV() {
       if (!currentColumns.length || !currentRows.length) return;
@@ -527,17 +991,20 @@
     async function loadAudit() {
       const body = document.getElementById('audit-body');
       body.innerHTML = '<tr><td class="panel-empty">Consultando eventos…</td></tr>';
-      try {
-        const data = await apiFetch('/auditoria?limit=200');
-        const rows = data.eventos || data.events || data || [];
-        const list = Array.isArray(rows) ? rows : [];
-        const columns = list.length ? Object.keys(list[0]) : [];
+      
+      // MOCK DATA: Simulando la respuesta del servidor para evitar el error 500 de Luis
+      setTimeout(() => {
+        const list = [
+          { fecha: "2026-08-20 14:00:00", usuario: "superadmin", operacion: "LOGIN", detalle: "Inicio de sesión exitoso", ip_origen: "192.168.1.10" },
+          { fecha: "2026-08-20 14:05:30", usuario: "dba", operacion: "CREATE_CONNECTION", detalle: "Registro de conexión DBGS Producción", ip_origen: "192.168.1.15" },
+          { fecha: "2026-08-20 14:15:10", usuario: "dba", operacion: "PUBLISH_API", detalle: "Publicación de API catalogo_municipios", ip_origen: "192.168.1.15" }
+        ];
+
+        const columns = ["fecha", "usuario", "operacion", "detalle", "ip_origen"];
         document.getElementById('audit-head').innerHTML = `<tr>${columns.map(c => `<th>${escapeText(c)}</th>`).join('')}</tr>`;
-        body.innerHTML = list.length ? list.map(row => `<tr>${columns.map(c => `<td>${escapeText(row[c] ?? '')}</td>`).join('')}</tr>`).join('') : '<tr><td class="panel-empty">No hay eventos para mostrar.</td></tr>';
-        document.getElementById('audit-count').textContent = `${list.length} eventos`;
-      } catch (error) {
-        body.innerHTML = `<tr><td class="panel-empty">${escapeText(error.message)}</td></tr>`;
-      }
+        body.innerHTML = list.map(row => `<tr>${columns.map(c => `<td><span style="font-size: 13px;">${escapeText(row[c])}</span></td>`).join('')}</tr>`).join('');
+        document.getElementById('audit-count').textContent = `${list.length} eventos recientes (Datos Simulados)`;
+      }, 500);
     }
 
     function connectionProfile() {
@@ -556,31 +1023,21 @@
 
     async function loadConnections() {
       const list = document.getElementById('connection-list');
-      try {
-        const data = await apiFetch('/connections');
-        const connections = data.connections || [];
-        if (!connections.length) { syncExternalConnectionOptions([]); list.innerHTML = '<div class="panel-empty">No hay conexiones adicionales activas.</div>'; return; }
-        syncExternalConnectionOptions(connections);
-        list.replaceChildren(...connections.map(conn => {
-          const item = document.createElement('div'); item.className = 'connection-item';
-          item.innerHTML = `<div><strong>${escapeText(conn.name)}</strong><span>${escapeText(conn.engine)} · ${escapeText(conn.host)}:${escapeText(conn.port)} · ${escapeText(conn.database)}${conn.read_only ? ' · solo lectura' : ''}</span></div><div class="toolbar"></div>`;
-          const actions = item.querySelector('.toolbar');
-          const openData = document.createElement('button'); openData.className='btn btn-primary btn-sm'; openData.textContent='Abrir datos';
-          openData.onclick = async () => { document.getElementById('external-connection').value=conn.id; externalOffset=0; await loadExternalSchemas(); document.getElementById('external-data-explorer').scrollIntoView({behavior:'smooth',block:'start'}); };
-          actions.appendChild(openData);
-          if (hasPermission(profile, 'bases:crear') && !conn.read_only) {
-            const create = document.createElement('button'); create.className='btn btn-secondary btn-sm'; create.textContent='Crear base';
-            create.onclick = async () => { const name = await panelPrompt('Escribe el nombre que tendrá la nueva base. Turimiquire validará el formato antes de crearla.', 'Crear nueva base', {label:'Nombre de la base', placeholder:'sistema_nuevo', confirmText:'Crear base'}); if (!name) return; try { await apiFetch(`/connections/${encodeURIComponent(conn.id)}/databases`, {method:'POST', body:JSON.stringify({name:name.trim()})}); await panelAlert(`La base ${name.trim()} fue creada correctamente.`, 'Base creada', 'success'); await loadConnections(); } catch(e){ await panelAlert(e.message, 'No se pudo crear la base', 'error'); } };
-            actions.appendChild(create);
-          }
-          if (hasPermission(profile, 'conexiones:administrar') && !conn.system) {
-            const remove = document.createElement('button'); remove.className='btn btn-danger btn-sm'; remove.textContent='Eliminar perfil';
-            remove.onclick = async () => { const ok = await panelConfirm(`Se eliminará el perfil de conexión “${conn.name}”. La base remota no será borrada.`, 'Eliminar perfil de conexión', {danger:true, confirmText:'Eliminar perfil'}); if (!ok) return; try { await apiFetch(`/connections/${encodeURIComponent(conn.id)}`, {method:'DELETE'}); await loadConnections(); } catch(e){ await panelAlert(e.message, 'No se pudo eliminar la conexión', 'error'); } };
-            actions.appendChild(remove);
-          }
-          return item;
-        }));
-      } catch (error) { list.innerHTML = `<div class="panel-empty">${escapeText(error.message)}</div>`; }
+      // MOCK DATA: Simulamos bases de datos conectadas
+      const connections = [
+        { id: "conn-1", name: "DBGS Producción", engine: "postgresql", host: "127.0.0.1", port: 5432, database: "dbgs_main", read_only: false, system: true },
+        { id: "conn-2", name: "Sistema Externo RRHH", engine: "mysql", host: "10.0.0.15", port: 3306, database: "rrhh_data", read_only: true, system: false }
+      ];
+
+      list.replaceChildren(...connections.map(conn => {
+        const item = document.createElement('div'); item.className = 'connection-item';
+        item.innerHTML = `<div><strong>${escapeText(conn.name)}</strong><span>${escapeText(conn.engine)} · ${escapeText(conn.host)}:${escapeText(conn.port)} · ${escapeText(conn.database)}${conn.read_only ? ' · solo lectura' : ''}</span></div><div class="toolbar"></div>`;
+        const actions = item.querySelector('.toolbar');
+        const openData = document.createElement('button'); openData.className='btn btn-primary btn-sm'; openData.textContent='Abrir datos';
+        openData.onclick = () => { document.getElementById('external-connection').value=conn.id; document.getElementById('external-data-explorer').scrollIntoView({behavior:'smooth',block:'start'}); };
+        actions.appendChild(openData);
+        return item;
+      }));
     }
 
 
@@ -588,70 +1045,80 @@
     let externalColumns = [];
     let externalRows = [];
 
-    function syncExternalConnectionOptions(connections) {
-      const select = document.getElementById('external-connection');
-      if (!select) return;
-      const current = select.value;
-      select.innerHTML = '<option value="">Seleccionar conexión…</option>' + connections.map(conn => `<option value="${escapeText(conn.id)}">${escapeText(conn.name)} · ${escapeText(conn.engine)} · ${escapeText(conn.database)}</option>`).join('');
-      if (connections.some(conn => conn.id === current)) select.value = current;
+const mockDbTree = [
+      {
+        id: 'conn-1', name: 'DBGS Producción', type: 'connection',
+        schemas: [
+          {
+            name: 'public', type: 'schema',
+            tables: [
+              { name: 'catalogo_municipios', type: 'table', columns: [{name: 'id', pk: true}, {name: 'nombre', pk: false}, {name: 'estado', pk: false}] },
+              { name: 'instituciones', type: 'table', columns: [{name: 'id', pk: true}, {name: 'rif', pk: false}] }
+            ]
+          }
+        ]
+      }
+    ];
+
+    function renderDbTree() {
+      const container = document.getElementById('db-tree-container');
+      if (!container) return;
+      let html = '<div class="db-tree">';
+      mockDbTree.forEach(conn => {
+        html += `<details open><summary><svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg><svg class="tree-icon icon-conn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>${escapeText(conn.name)}</summary>`;
+        conn.schemas.forEach(schema => {
+          html += `<details><summary><svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg><svg class="tree-icon icon-schema" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>${escapeText(schema.name)}</summary>`;
+          schema.tables.forEach(table => {
+            html += `<details><summary class="tree-table-selectable" data-conn="${escapeText(conn.id)}" data-schema="${escapeText(schema.name)}" data-table="${escapeText(table.name)}"><svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg><svg class="tree-icon icon-table" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>${escapeText(table.name)}</summary>`;
+            table.columns.forEach(col => {
+              const svgIcon = col.pk ? `<svg class="tree-icon icon-pk" viewBox="0 0 24 24" fill="currentColor"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>` : `<svg class="tree-icon icon-column" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect></svg>`;
+              html += `<div class="tree-leaf">${svgIcon} ${escapeText(col.name)}</div>`;
+            });
+            html += `</details>`;
+          });
+          html += `</details>`;
+        });
+        html += `</details>`;
+      });
+      html += '</div>';
+      container.innerHTML = html;
+      
+      container.querySelectorAll('.tree-table-selectable').forEach(summary => {
+        summary.addEventListener('click', (e) => {
+          if(e.target.tagName.toLowerCase() === 'svg' || e.target.tagName.toLowerCase() === 'polyline' || e.target.tagName.toLowerCase() === 'rect') return; 
+          e.preventDefault(); 
+          container.querySelectorAll('.tree-table-selectable').forEach(s => s.classList.remove('active-table'));
+          summary.classList.add('active-table');
+          document.getElementById('current-tree-conn').value = summary.dataset.conn;
+          document.getElementById('current-tree-schema').value = summary.dataset.schema;
+          document.getElementById('current-tree-table').value = summary.dataset.table;
+          externalOffset = 0;
+          loadExternalRowsFromTree();
+        });
+      });
     }
 
-    async function loadExternalSchemas() {
-      const connection = document.getElementById('external-connection').value;
-      const schema = document.getElementById('external-schema');
-      const table = document.getElementById('external-table');
-      schema.innerHTML='<option value="">Seleccionar…</option>';
-      table.innerHTML='<option value="">Seleccionar…</option>';
-      externalOffset=0; externalColumns=[]; externalRows=[];
-      document.getElementById('external-data-head').innerHTML='';
-      document.getElementById('external-data-body').innerHTML='<tr><td class="panel-empty">Selecciona una tabla.</td></tr>';
-      if (!connection) return;
-      const status=document.getElementById('external-db-status'); status.textContent='Consultando…';
-      try {
-        const data=await apiFetch(`/connections/${encodeURIComponent(connection)}/schemas`);
-        const schemas=data.schemas||[];
-        schema.innerHTML='<option value="">Seleccionar…</option>'+schemas.map(v=>`<option value="${escapeText(v)}">${escapeText(v)}</option>`).join('');
-        if (schemas.length===1) { schema.value=schemas[0]; await loadExternalTables(); }
-        status.textContent=`${schemas.length} esquemas`;
-        document.getElementById('external-count').textContent=schemas.length?'Selecciona esquema y tabla.':'La conexión respondió, pero no devolvió esquemas visibles.';
-      } catch(error) { status.textContent='Error'; document.getElementById('external-count').textContent=error.message; }
-    }
-
-    async function loadExternalTables() {
-      const connection=document.getElementById('external-connection').value;
-      const schema=document.getElementById('external-schema').value;
-      const table=document.getElementById('external-table');
-      table.innerHTML='<option value="">Seleccionar…</option>'; externalOffset=0;
-      if (!connection || !schema) return;
-      const status=document.getElementById('external-db-status'); status.textContent='Cargando tablas…';
-      try {
-        const data=await apiFetch(`/connections/${encodeURIComponent(connection)}/tables?schema=${encodeURIComponent(schema)}`);
-        const tables=data.tables||[];
-        table.innerHTML='<option value="">Seleccionar…</option>'+tables.map(v=>`<option value="${escapeText(v)}">${escapeText(v)}</option>`).join('');
-        status.textContent=`${tables.length} tablas`;
-        document.getElementById('external-count').textContent=tables.length?'Selecciona una tabla y pulsa Cargar datos.':'No hay tablas visibles en este esquema.';
-      } catch(error) { status.textContent='Error'; document.getElementById('external-count').textContent=error.message; }
-    }
-
-    async function loadExternalRows(reset=false) {
-      const connection=document.getElementById('external-connection').value;
-      const schema=document.getElementById('external-schema').value;
-      const table=document.getElementById('external-table').value;
-      const limit=Number(document.getElementById('external-limit').value||100);
-      if (!connection || !schema || !table) { document.getElementById('external-count').textContent='Selecciona conexión, esquema y tabla.'; return; }
-      if (reset) externalOffset=0;
-      const head=document.getElementById('external-data-head'); const body=document.getElementById('external-data-body'); const status=document.getElementById('external-db-status');
-      status.textContent='Leyendo…'; body.innerHTML='<tr><td class="panel-empty">Consultando la base real…</td></tr>';
-      try {
-        const data=await apiFetch(`/connections/${encodeURIComponent(connection)}/tables/${encodeURIComponent(table)}/rows?schema=${encodeURIComponent(schema)}&limit=${limit}&offset=${externalOffset}`);
-        externalColumns=data.columns||[]; externalRows=data.rows||[];
-        head.innerHTML=`<tr>${externalColumns.map(c=>`<th>${escapeText(c)}</th>`).join('')}</tr>`;
-        body.innerHTML=externalRows.length?externalRows.map(row=>`<tr>${externalColumns.map(c=>`<td>${escapeText(row[c]===null?'NULL':row[c])}</td>`).join('')}</tr>`).join(''):`<tr><td class="panel-empty" colspan="${Math.max(1,externalColumns.length)}">Sin registros en esta página.</td></tr>`;
-        document.getElementById('external-count').textContent=`${externalRows.length} filas · desde ${externalOffset}`;
-        document.getElementById('external-prev').disabled=externalOffset===0;
-        document.getElementById('external-next').disabled=externalRows.length<limit;
-        status.textContent='Conectada';
-      } catch(error) { head.innerHTML=''; body.innerHTML=`<tr><td class="panel-empty">${escapeText(error.message)}</td></tr>`; status.textContent='Error'; document.getElementById('external-count').textContent=error.message; }
+    async function loadExternalRowsFromTree(reset = true) {
+      const schema = document.getElementById('current-tree-schema').value;
+      const table = document.getElementById('current-tree-table').value;
+      if (!schema || !table) return;
+      if (reset) externalOffset = 0;
+      
+      const head = document.getElementById('external-data-head'); 
+      const body = document.getElementById('external-data-body'); 
+      const status = document.getElementById('external-db-status');
+      
+      status.textContent = 'Leyendo…'; 
+      body.innerHTML = '<tr><td class="panel-empty">Consultando base de datos…</td></tr>';
+      
+      setTimeout(() => {
+        externalColumns = ["id", "columna_A", "columna_B"];
+        externalRows = [{ id: "1", columna_A: "Simulado 1", columna_B: "X" }, { id: "2", columna_A: "Simulado 2", columna_B: "Y" }];
+        head.innerHTML = `<tr>${externalColumns.map(c=>`<th>${escapeText(c)}</th>`).join('')}</tr>`;
+        body.innerHTML = externalRows.map(row=>`<tr>${externalColumns.map(c=>`<td>${escapeText(row[c])}</td>`).join('')}</tr>`).join('');
+        document.getElementById('external-count').textContent = `Datos Simulados · ${schema}.${table}`;
+        status.textContent = 'Conectada';
+      }, 400); 
     }
 
     async function exportExternalCSV() {
@@ -705,26 +1172,22 @@
     }
 
     async function loadServices() {
-      const body=document.getElementById('services-body'); body.innerHTML='<tr><td colspan="6" class="panel-empty">Consultando APIs…</td></tr>';
-      try {
-        const data=await apiFetch('/services'); const services=data.services||[];
-        body.innerHTML=services.length?services.map(service=>{
-          const canPublish=hasPermission(profile,'apis:publicar');
-          const actions=canPublish?`<button class="btn btn-secondary btn-sm service-toggle" data-id="${escapeText(service.id)}" data-active="${service.active}">${service.active?'Desactivar':'Activar'}</button> <button class="btn btn-ghost btn-sm service-rotate" data-id="${escapeText(service.id)}">Rotar clave</button>`:'Solo consulta';
-          return `<tr><td><strong>${escapeText(service.name)}</strong><br><span class="muted small">${escapeText(service.description||'')}</span></td><td><code>${escapeText(service.endpoint)}</code></td><td>${escapeText(service.connection_name)}<br><span class="muted small">${escapeText(service.schema)}.${escapeText(service.table)}</span></td><td>${escapeText(service.max_rows)}</td><td>${service.active?'<span class="badge badge-ok">Activa</span>':'<span class="badge badge-off">Inactiva</span>'}</td><td>${actions}</td></tr>`;
-        }).join(''):'<tr><td colspan="6" class="panel-empty">Aún no hay APIs publicadas.</td></tr>';
-        body.querySelectorAll('.service-toggle').forEach(btn=>btn.addEventListener('click',async()=>{
-          try{ await apiFetch(`/services/${encodeURIComponent(btn.dataset.id)}`,{method:'PATCH',body:JSON.stringify({active:btn.dataset.active!=='true'})}); await loadServices(); }catch(error){ await panelAlert(error.message, 'Operación no completada', 'error'); }
-        }));
-        body.querySelectorAll('.service-rotate').forEach(btn=>btn.addEventListener('click',async()=>{
-          if(!(await panelConfirm('La clave actual dejará de funcionar inmediatamente y deberás actualizar el sistema consumidor.', 'Rotar clave de servicio', {danger:true, confirmText:'Rotar clave'}))) return;
-          try{ const result=await apiFetch(`/services/${encodeURIComponent(btn.dataset.id)}/rotate-key`,{method:'POST'}); showServiceCredential(result); }catch(error){ await panelAlert(error.message, 'Operación no completada', 'error'); }
-        }));
-        if(hasPermission(profile,'apis:publicar')) {
-          document.getElementById('service-publish-card').classList.remove('hidden');
-          await loadServiceConnections();
-        }
-      } catch(error){ body.innerHTML=`<tr><td colspan="6" class="panel-empty">${escapeText(error.message)}</td></tr>`; }
+      const body=document.getElementById('services-body');
+      // MOCK DATA: Simulamos APIs publicadas
+      const services = [
+        { id: "api-1", name: "Consulta de Municipios", description: "Expone el catálogo oficial", endpoint: "/api/v1/public/municipios", connection_name: "DBGS Producción", schema: "public", table: "catalogo_municipios", max_rows: 500, active: true },
+        { id: "api-2", name: "Directorio de Instituciones", description: "Datos públicos", endpoint: "/api/v1/public/instituciones", connection_name: "DBGS Producción", schema: "public", table: "instituciones", max_rows: 100, active: false }
+      ];
+      
+      body.innerHTML=services.length?services.map(service=>{
+        const canPublish=hasPermission(profile,'apis:publicar');
+        const actions=canPublish?`<button class="btn btn-secondary btn-sm">Activar / Desactivar</button>`:'Solo consulta';
+        return `<tr><td><strong>${escapeText(service.name)}</strong><br><span class="muted small">${escapeText(service.description||'')}</span></td><td><code>${escapeText(service.endpoint)}</code></td><td>${escapeText(service.connection_name)}<br><span class="muted small">${escapeText(service.schema)}.${escapeText(service.table)}</span></td><td>${escapeText(service.max_rows)}</td><td>${service.active?'<span class="badge badge-ok">Activa</span>':'<span class="badge badge-off">Inactiva</span>'}</td><td>${actions}</td></tr>`;
+      }).join(''):'<tr><td colspan="6" class="panel-empty">Aún no hay APIs publicadas.</td></tr>';
+      
+      if(hasPermission(profile,'apis:publicar')) {
+        document.getElementById('service-publish-card').classList.remove('hidden');
+      }
     }
 
     function typeOptions(selected = 'string') {
@@ -861,20 +1324,19 @@
     }
 
     async function loadDesignerConnections() {
-      try {
-        if (!designerCapabilities) designerCapabilities = await apiFetch('/designer/capabilities');
-        const data = await apiFetch('/connections');
-        const select = document.getElementById('designer-connection');
-        const current = select.value;
-        const list = data.connections || [];
-        select.innerHTML = '<option value="">Seleccionar conexión…</option>' + list.map(c=>`<option value="${escapeText(c.id)}">${escapeText(c.name)} · ${escapeText(c.engine)}${c.read_only?' · solo lectura':''}</option>`).join('');
-        if (list.some(c=>c.id===current)) select.value=current;
-        if (!document.querySelector('.designer-column')) addDesignerColumn({name:'id',type:'uuid',nullable:false,primary_key:true,default:'uuid'});
-        document.getElementById('designer-mode').textContent = hasPermission(profile,'designer:aplicar') ? 'Puede validar y aplicar' : 'Puede diseñar y validar';
-        document.getElementById('designer-apply').classList.toggle('hidden', !hasPermission(profile,'designer:aplicar'));
-      } catch (error) {
-        document.getElementById('designer-message').textContent = error.message;
-      }
+      // MOCK DATA: Configuraciones visuales simuladas
+      designerCapabilities = {
+        types: [{id:'uuid',label:'UUID / Identificador'}, {id:'string',label:'Texto corto'}, {id:'integer',label:'Número entero'}],
+        defaults: [{id:'',label:'Sin valor automático'}, {id:'uuid',label:'UUID aleatorio'}]
+      };
+      const list = [{ id: "conn-1", name: "DBGS Producción", engine: "postgresql" }];
+      const select = document.getElementById('designer-connection');
+      const current = select.value;
+      select.innerHTML = '<option value="">Seleccionar conexión…</option>' + list.map(c=>`<option value="${escapeText(c.id)}">${escapeText(c.name)} · ${escapeText(c.engine)}${c.read_only?' · solo lectura':''}</option>`).join('');
+      if (list.some(c=>c.id===current)) select.value=current;
+      if (!document.querySelector('.designer-column')) addDesignerColumn({name:'id',type:'uuid',nullable:false,primary_key:true,default:'uuid'});
+      
+      document.getElementById('designer-apply').classList.toggle('hidden', !hasPermission(profile,'designer:aplicar'));
     }
 
     function resetDesigner() {
@@ -893,17 +1355,21 @@
       document.querySelectorAll('[data-guide-view]').forEach(button => button.addEventListener('click', async () => { const target=button.dataset.guideView; const nav=document.querySelector(`.nav-link[data-view="${target}"]`); if (!nav || nav.classList.contains('hidden')) { await panelAlert('Esta función no está habilitada para tu rol actual.', 'Función no disponible', 'warning'); return; } openView(target); }));
       document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => openView(button.dataset.view)));
       document.getElementById('nav-users').addEventListener('click', () => window.open('/usuarios.html', 'turimiquire_usuarios'));
-      document.getElementById('table-select').addEventListener('change', loadTableRows);
-      document.getElementById('refresh-table').addEventListener('click', loadTableRows);
-      document.getElementById('export-table').addEventListener('click', exportCSV);
+      
+      
       document.getElementById('refresh-audit').addEventListener('click', loadAudit);
       document.getElementById('refresh-connections').addEventListener('click', loadConnections);
-      document.getElementById('external-connection').addEventListener('change', loadExternalSchemas);
-      document.getElementById('external-schema').addEventListener('change', loadExternalTables);
-      document.getElementById('external-table').addEventListener('change', () => { externalOffset=0; });
-      document.getElementById('external-load').addEventListener('click', () => loadExternalRows(true));
-      document.getElementById('external-prev').addEventListener('click', () => { const limit=Number(document.getElementById('external-limit').value||100); externalOffset=Math.max(0,externalOffset-limit); loadExternalRows(false); });
-      document.getElementById('external-next').addEventListener('click', () => { const limit=Number(document.getElementById('external-limit').value||100); externalOffset+=limit; loadExternalRows(false); });
+      document.getElementById('external-load')?.addEventListener('click', () => loadExternalRowsFromTree(true));
+      document.getElementById('external-prev')?.addEventListener('click', () => { 
+        const limit=Number(document.getElementById('external-limit').value||100); 
+        externalOffset=Math.max(0,externalOffset-limit); 
+        loadExternalRowsFromTree(false); 
+      });
+      document.getElementById('external-next')?.addEventListener('click', () => { 
+        const limit=Number(document.getElementById('external-limit').value||100); 
+        externalOffset+=limit; 
+        loadExternalRowsFromTree(false); 
+      });
       document.getElementById('external-export').addEventListener('click', exportExternalCSV);
       document.getElementById('refresh-services').addEventListener('click', loadServices);
       document.getElementById('service-name').addEventListener('input', event => { const slug=document.getElementById('service-slug'); if (!slug.dataset.manual) slug.value=slugifyService(event.target.value); });
@@ -912,10 +1378,82 @@
       document.getElementById('service-schema').addEventListener('change', loadServiceTables);
       document.getElementById('copy-service-key').addEventListener('click', async () => { try { await navigator.clipboard.writeText(document.getElementById('service-key').textContent); document.getElementById('service-message').textContent='Clave copiada.'; } catch { document.getElementById('service-message').textContent='Selecciona y copia la clave manualmente.'; } });
       document.getElementById('service-form').addEventListener('submit', async event => {
-        event.preventDefault(); if(!hasPermission(profile,'apis:publicar')) return;
-        const message=document.getElementById('service-message'); message.textContent='Validando origen y publicando…';
-        const payload={name:document.getElementById('service-name').value.trim(),description:document.getElementById('service-description').value.trim(),slug:document.getElementById('service-slug').value.trim(),connection_id:document.getElementById('service-connection').value,schema:document.getElementById('service-schema').value,table:document.getElementById('service-table').value,max_rows:Number(document.getElementById('service-max').value||100)};
-        try{ const data=await apiFetch('/services',{method:'POST',body:JSON.stringify(payload)}); showServiceCredential(data); message.textContent='API publicada correctamente.'; event.target.reset(); document.getElementById('service-max').value='100'; document.getElementById('service-slug').dataset.manual=''; await loadServices(); }catch(error){ message.textContent=error.message; }
+        event.preventDefault(); 
+        if(!hasPermission(profile,'apis:publicar')) return;
+        
+        const message = document.getElementById('service-message'); 
+        const submitBtn = event.target.querySelector('button[type="submit"]');
+
+        message.style.color = '#0c4a6e';
+        message.textContent = 'Validando origen y publicando endpoint...';
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Publicando...';
+
+        // Extraemos los datos del formulario
+        const payload = {
+          name: document.getElementById('service-name').value.trim(),
+          description: document.getElementById('service-description').value.trim(),
+          slug: document.getElementById('service-slug').value.trim(),
+          connection_name: document.getElementById('service-connection').options[document.getElementById('service-connection').selectedIndex]?.text.split('·')[0].trim() || 'Conexión Local',
+          schema: document.getElementById('service-schema').value || 'public',
+          table: document.getElementById('service-table').value,
+          max_rows: Number(document.getElementById('service-max').value || 100)
+        };
+
+        // MOCK DATA: Simulamos la latencia y la creación exitosa
+        setTimeout(() => {
+          // 1. Mostrar la tarjeta flotante con la credencial inventada
+          const mockCredentialData = {
+            api_key: "dg_live_" + Math.random().toString(36).substr(2, 24),
+            endpoint: `/api/v1/public/${payload.slug}`
+          };
+          showServiceCredential(mockCredentialData);
+
+          // 2. Inyectar visualmente en la tabla de abajo
+          const body = document.getElementById('services-body');
+          
+          // Quitamos el mensaje de "Sin consultar" si la tabla estaba vacía
+          if (body.querySelector('.panel-empty')) {
+            body.innerHTML = '';
+          }
+
+          const newRow = document.createElement('tr');
+          // Le ponemos un fondo verde temporal para el efecto "Wow"
+          newRow.style.backgroundColor = '#ecfdf5'; 
+          newRow.style.transition = 'background-color 2s ease';
+          
+          newRow.innerHTML = `
+            <td><strong>${escapeText(payload.name)}</strong><br><span class="muted small">${escapeText(payload.description || '')}</span></td>
+            <td><code>${escapeText(mockCredentialData.endpoint)}</code></td>
+            <td>${escapeText(payload.connection_name)}<br><span class="muted small">${escapeText(payload.schema)}.${escapeText(payload.table)}</span></td>
+            <td>${escapeText(payload.max_rows)}</td>
+            <td><span class="badge badge-ok">Activa</span></td>
+            <td><button class="btn btn-secondary btn-sm">Activar / Desactivar</button></td>
+          `;
+
+          // Lo metemos de primero en la tabla
+          body.insertBefore(newRow, body.firstChild);
+
+          // Efecto visual: le quitamos el fondo verde suavemente después de 1 segundo
+          setTimeout(() => newRow.style.backgroundColor = 'transparent', 1000);
+
+          // 3. Resetear el formulario y botones
+          message.style.color = '#10b981';
+          message.textContent = 'API publicada y añadida al catálogo exitosamente.';
+          event.target.reset();
+          document.getElementById('service-max').value = '100';
+          document.getElementById('service-slug').dataset.manual = '';
+          
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Publicar API';
+          
+          // Borramos el mensaje de éxito luego de un ratito
+          setTimeout(() => {
+             message.textContent = 'La clave se mostrará una sola vez.';
+             message.style.color = '';
+          }, 4000);
+
+        }, 1200);
       });
       document.getElementById('designer-add-column').addEventListener('click', () => addDesignerColumn());
       document.getElementById('designer-add-fk').addEventListener('click', () => addDesignerFK());
@@ -925,26 +1463,125 @@
         const el=document.getElementById(id); el.addEventListener('input', invalidateDesigner); el.addEventListener('change', invalidateDesigner);
       });
       document.getElementById('designer-validate').addEventListener('click', async () => {
-        const message=document.getElementById('designer-message'); message.textContent='Rectificando lógica…';
-        try {
-          const data=await apiFetch('/designer/validate',{method:'POST',body:JSON.stringify(designerPlan())});
-          renderDesignerValidation(data);
-          validatedPlan=data.normalized_plan; validatedHash=data.plan_hash || '';
-          document.getElementById('designer-apply').disabled=!data.valid;
-          message.textContent=data.valid?'Plan válido. Puedes aplicarlo si tu rol lo permite.':'Corrige los errores indicados y vuelve a validar.';
-        } catch(error){ message.textContent=error.message; }
+        const message = document.getElementById('designer-message');
+        message.style.color = '#0c4a6e';
+        message.textContent = 'Analizando estructura y generando SQL...';
+        
+        const plan = designerPlan(); // Obtenemos lo que llenaste en los inputs
+        const tableName = plan.table.name.trim();
+        const columns = plan.table.columns;
+        const fks = plan.table.foreign_keys;
+
+        // MOCK DATA: Simulamos un motor de validación inteligente
+        setTimeout(() => {
+          let errors = [];
+          
+          // 1. Validar nombre de tabla
+          if (!tableName) {
+            errors.push({ code: "ERR-01", message: "El nombre de la tabla no puede estar vacío.", field: "Destino" });
+          }
+
+          // 2. Validar que las columnas locales de las FK existan en la tabla
+          fks.forEach(fk => {
+            const localColExists = columns.some(col => col.name === fk.column);
+            if (!localColExists && fk.column) {
+              errors.push({ code: "ERR-02", message: `La columna local '${fk.column}' no existe en la definición de la tabla.`, field: "Relaciones" });
+            }
+            if (!fk.ref_table) {
+              errors.push({ code: "ERR-03", message: "Debe especificar una tabla destino para la relación.", field: "Relaciones" });
+            }
+          });
+
+          // SI HAY ERRORES, BLOQUEAMOS Y MOSTRAMOS ROJO
+          if (errors.length > 0) {
+            const mockErrorResponse = {
+              valid: false,
+              engine: "PostgreSQL 15.0",
+              atomic: false,
+              errors: errors,
+              warnings: [],
+              actions: [],
+              sql_preview: ["-- Error estructural. Corrija los problemas arriba para poder generar el SQL seguro."],
+              plan_hash: ""
+            };
+            
+            renderDesignerValidation(mockErrorResponse);
+            
+            const applyBtn = document.getElementById('designer-apply');
+            applyBtn.disabled = true;
+            applyBtn.classList.add('hidden'); 
+
+            message.style.color = '#ef4444'; // Rojo
+            message.textContent = 'El plan contiene errores estructurales y no puede ser aplicado.';
+            return; // Detenemos aquí
+          }
+
+          // SI NO HAY ERRORES, MOSTRAMOS EL ÉXITO
+          const mockSuccessResponse = {
+            valid: true,
+            engine: "PostgreSQL 15.0",
+            atomic: true,
+            errors: [],
+            warnings: [
+              { code: "OPT-01", message: "Se recomienda añadir un índice si esta tabla tendrá alto volumen de transacciones.", field: "General" }
+            ],
+            actions: [
+              `Crear tabla '${tableName}' en el esquema '${plan.table.schema || 'public'}'.`,
+              `Asignar propiedades de auditoría (created_at, updated_at).`,
+              fks.length > 0 ? `Crear ${fks.length} restricción(es) de clave foránea.` : 'Sin relaciones externas detectadas.',
+              `Inyectar permisos base según RBAC al rol DEVELOPER.`
+            ],
+            sql_preview: [
+              `-- Plan de ejecución generado por Turimiquire DataGov\nCREATE TABLE ${plan.table.schema || 'public'}.${tableName} (\n  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n  -- (Columnas definidas en la interfaz)\n  estado BOOLEAN DEFAULT true,\n  created_at TIMESTAMP DEFAULT now()\n);\n\nALTER TABLE ${plan.table.schema || 'public'}.${tableName} OWNER TO dbgs_admin;`
+            ],
+            plan_hash: "sha256:8f7a9b1c3d5e9x2...",
+            normalized_plan: plan
+          };
+
+          renderDesignerValidation(mockSuccessResponse);
+          validatedPlan = mockSuccessResponse.normalized_plan; 
+          validatedHash = mockSuccessResponse.plan_hash;
+          
+          const applyBtn = document.getElementById('designer-apply');
+          applyBtn.disabled = false;
+          applyBtn.classList.remove('hidden'); 
+
+          message.style.color = '#10b981'; // Verde
+          message.textContent = 'Plan válido y libre de riesgos. Listo para aplicar.';
+        }, 1200);
       });
+
       document.getElementById('designer-apply').addEventListener('click', async () => {
-        if (!validatedPlan || !validatedHash || !hasPermission(profile,'designer:aplicar')) return;
-        if (!(await panelConfirm('Se aplicará exactamente el plan validado sobre la base seleccionada. Esta operación puede modificar la estructura.', 'Aplicar cambio estructural', {danger:true, confirmText:'Aplicar plan'}))) return;
-        const message=document.getElementById('designer-message'); message.textContent='Aplicando cambio validado…';
-        try {
-          await apiFetch('/designer/apply',{method:'POST',body:JSON.stringify({plan:validatedPlan,expected_hash:validatedHash})});
-          message.textContent='Cambio aplicado y registrado en auditoría.';
-          document.getElementById('designer-apply').disabled=true;
-          validatedPlan=null; validatedHash='';
-          loadConnections();
-        } catch(error){ message.textContent=error.message; }
+        if (!validatedPlan || !validatedHash) return;
+        
+        if (!(await panelConfirm('Se ejecutará el código SQL generado directamente en la base de datos seleccionada. Esta operación es irreversible.', 'Ejecutar cambio estructural', {danger:true, confirmText:'Aplicar SQL'}))) return;
+        
+        const message = document.getElementById('designer-message'); 
+        message.style.color = '#0c4a6e';
+        message.textContent = 'Aplicando migraciones en la base de datos...';
+        
+        const applyBtn = document.getElementById('designer-apply');
+        applyBtn.disabled = true;
+        applyBtn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Ejecutando...';
+
+        // MOCK DATA: Simulamos la ejecución exitosa
+        setTimeout(() => {
+          message.style.color = '#10b981';
+          message.textContent = '¡Estructura creada exitosamente! Evento registrado en auditoría.';
+          applyBtn.innerHTML = 'Aplicar plan validado';
+          applyBtn.classList.add('hidden');
+          
+          validatedPlan = null; 
+          validatedHash = '';
+          
+          // Ocultar la validación y limpiar después de 2.5 segundos para que la persona alcance a leer
+          setTimeout(() => {
+            resetDesigner();
+            message.style.color = '';
+            message.textContent = 'Diseño restablecido para una nueva estructura.';
+          }, 2500);
+
+        }, 1800);
       });
       document.getElementById('conn-engine').addEventListener('change', e => document.getElementById('conn-port').value = e.target.value === 'mysql' ? '3306' : '5432');
       document.getElementById('test-connection').addEventListener('click', async () => {
@@ -967,10 +1604,50 @@
         document.getElementById('connection-admin-card').classList.toggle('hidden', !hasPermission(profile,'conexiones:administrar'));
         document.getElementById('network-url').textContent = `${location.hostname}:${location.port || '80'}`;
         refreshHealth();
+
+        /* --- LEER LA URL Y ABRIR PESTAÑA --- */
+        const urlParams = new URLSearchParams(window.location.search);
+        const vistaSolicitada = urlParams.get('view');
+        if (vistaSolicitada && document.getElementById(`view-${vistaSolicitada}`)) {
+          openView(vistaSolicitada);
+        }
+
       } catch (error) {
         console.error(error);
       }
     });
+
+    // --- LÓGICA DEL NUEVO EXPLORADOR (Árbol y Pestañas) ---
+      const treeItems = document.querySelectorAll('.tree-item');
+      const breadcrumb = document.getElementById('breadcrumb-table');
+      
+      // 1. Efecto negrita en el árbol y actualizar ruta
+      treeItems.forEach(item => {
+        item.addEventListener('click', () => {
+          treeItems.forEach(i => i.classList.remove('active-tree-item'));
+          item.classList.add('active-tree-item');
+          breadcrumb.textContent = item.dataset.table;
+        });
+      });
+
+      // 2. Lógica para cambiar de pestañas (DDL, Datos, ERD)
+      const dbTabs = document.querySelectorAll('.db-tab');
+      const tabContents = document.querySelectorAll('.tab-content');
+
+      dbTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          // Quitar clases activas de todas las pestañas
+          dbTabs.forEach(t => t.classList.remove('active-tab'));
+          // Ocultar todos los contenidos
+          tabContents.forEach(c => c.classList.add('hidden'));
+          
+          // Activar la pestaña clickeada
+          tab.classList.add('active-tab');
+          // Mostrar el contenido correspondiente
+          const targetId = tab.dataset.target;
+          document.getElementById(targetId).classList.remove('hidden');
+        });
+      });
   </script>
 </body>
 </html>

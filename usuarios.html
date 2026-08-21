@@ -8,110 +8,514 @@
   <link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png">
   <link rel="apple-touch-icon" href="/assets/favicon.png">
   <link rel="stylesheet" href="/assets/app.css">
+
+  <style>
+    .nav-link-text {
+      white-space: nowrap;
+    }
+
+    /* ========================================================
+       1. ANIMACIÓN DEL CONTENEDOR PRINCIPAL
+       ======================================================== */
+    .app-shell {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      transition: grid-template-columns 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+      min-height: 100vh;
+    }
+    .app-shell.sidebar-collapsed {
+      grid-template-columns: 76px 1fr !important;
+    }
+
+    /* ========================================================
+       2. BARRA LATERAL (ESTÁTICA Y COLAPSABLE)
+       ======================================================== */
+    .sidebar {
+      width: 100%;
+      position: sticky; 
+      top: 0;           
+      height: 100vh;    
+      overflow: visible;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+      background-color: #0b2748; 
+      box-shadow: 2px 0 15px rgba(0,0,0,0.1);
+    }
+    
+    .sidebar.collapsed .brand-title,
+    .sidebar.collapsed .brand-subtitle,
+    .sidebar.collapsed .nav-section,
+    .sidebar.collapsed .nav-link-text,
+    .sidebar.collapsed .user-menu-name {
+      display: none;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      margin: 4px 12px;
+      transition: all 0.2s ease;
+      color: #cbd5e1;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .nav-link:hover, .nav-link.active {
+      background: rgba(255,255,255,0.1);
+      color: #ffffff;
+    }
+    
+    .nav-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .sidebar.collapsed .nav-link {
+      padding: 12px 0;
+      width: 48px;
+      height: 48px;
+      margin: 6px auto;
+      justify-content: center;
+    }
+
+    .sidebar.collapsed .brand-lockup {
+      padding-left: 0;
+      justify-content: center;
+    }
+
+    /* ========================================================
+       3. BOTÓN FLOTANTE DE DESLIZAR (PESTAÑA MÁGICA)
+       ======================================================== */
+    .toggle-sidebar-btn {
+      position: absolute;
+      bottom: 85px; 
+      right: 16px;
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+      z-index: 200;
+    }
+    .toggle-sidebar-btn:hover {
+      background: rgba(255,255,255,0.1);
+      color: white;
+    }
+    
+    .sidebar.collapsed .toggle-sidebar-btn {
+      transform: rotate(180deg);
+      right: -16px; 
+      background-color: #0b2748; 
+      color: white;
+      box-shadow: 4px 0 8px rgba(0,0,0,0.15); 
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .sidebar.collapsed .toggle-sidebar-btn:hover {
+      background-color: #1e3a8a;
+    }
+
+    /* ========================================================
+       4. BOTÓN DE USUARIO INFERIOR
+       ======================================================== */
+    .sidebar-foot {
+      margin-top: auto; 
+      padding: 16px 12px; 
+      display: flex;
+      position: relative;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    .sidebar.collapsed .sidebar-foot {
+      padding: 16px 0;
+      justify-content: center;
+    }
+
+    .user-menu-btn {
+      background: transparent;
+      border: none;
+      color: #cbd5e1; 
+      cursor: pointer;
+      padding: 8px 10px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      width: 100%;
+      gap: 14px;
+      text-align: left;
+    }
+    .user-menu-name {
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex-grow: 1;
+    }
+    .user-menu-btn:hover {
+      color: #ffffff;
+      background: rgba(255,255,255,0.1);
+    }
+    
+    .sidebar.collapsed .user-menu-btn {
+      width: 48px;
+      height: 48px;
+      padding: 0;
+      justify-content: center;
+    }
+
+    /* ========================================================
+       5. TARJETA DE USUARIO FLOTANTE
+       ======================================================== */
+    .user-dropdown-card {
+      position: absolute;
+      bottom: 70px; 
+      left: 16px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      width: 280px;
+      padding: 24px;
+      z-index: 9999;
+      
+      opacity: 0;
+      transform: translateY(15px) scale(0.95);
+      transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+    }
+    .sidebar.collapsed .user-dropdown-card {
+      left: 70px;
+      bottom: 16px;
+    }
+    .user-dropdown-card.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .user-card-content {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .user-card-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #f1f5f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+      color: #94a3b8;
+    }
+    .user-card-info {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      text-align: left;
+    }
+    .user-card-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1e293b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 2px;
+    }
+    .user-card-email {
+      font-size: 13px;
+      color: #64748b;
+    }
+    .user-card-role {
+      font-size: 10px;
+      font-weight: 800;
+      color: #0b2748;
+      background: #e0f2fe;
+      padding: 4px 8px;
+      border-radius: 12px;
+      align-self: flex-start;
+      margin-top: 8px;
+      text-transform: uppercase;
+    }
+    .user-card-footer {
+      display: flex;
+      justify-content: center;
+      border-top: 1px solid #f1f5f9;
+      padding-top: 16px;
+    }
+    .logout-link {
+      background: transparent;
+      border: none;
+      color: #ef4444; 
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      justify-content: center;
+    }
+    .logout-link:hover {
+      background: #fef2f2;
+    }
+  </style>
 </head>
-<body class="standalone-shell">
-  <main class="main" style="min-height:100vh">
-    <header class="topbar">
-      <div class="topbar-left">
-        <img class="brand-logo-icon brand-logo-topbar" src="/assets/favicon.png" alt="Logo Turimiquire DataGov">
-        <div class="topbar-title"><strong>Usuarios registrados</strong><span>Administración de identidades · Turimiquire DataGov</span></div>
-      </div>
-      <div class="topbar-actions">
-        <a class="btn btn-ghost btn-sm" href="/dashboard.html">Volver al panel</a>
-        <button class="btn btn-danger btn-sm" onclick="logout()">Cerrar sesión</button>
-      </div>
-    </header>
+<body class="bg-white">
+  <div class="app-shell" id="app-shell">
+    <!-- TRUCO PARA EVITAR PARPADEO DEL CONTENEDOR -->
+    <script>
+      if (localStorage.getItem('sidebar_state') === 'collapsed') {
+        document.getElementById('app-shell').classList.add('sidebar-collapsed');
+      }
+    </script>
+    
+    <!-- BARRA LATERAL -->
+    <aside class="sidebar" id="sidebar">
+      <!-- TRUCO PARA EVITAR PARPADEO DE LA BARRA -->
+      <script>
+        if (localStorage.getItem('sidebar_state') === 'collapsed') {
+          document.getElementById('sidebar').classList.add('collapsed');
+        }
+      </script>
 
-    <div class="content">
-      <div class="page-head hero-head">
+      <div class="brand-lockup">
+        <img class="brand-logo-icon brand-logo-sidebar" src="/assets/favicon.png" alt="Logo Turimiquire DataGov">
         <div>
-          <p class="kicker">Directorio de acceso</p>
-          <h1>Gestión de usuarios</h1>
-          <p>Ventana independiente para administrar cuentas humanas y técnicas, distinguir administradores y mantener separados los perfiles operativos. Las contraseñas y hashes nunca se muestran.</p>
+          <div class="brand-title">Turimiquire DataGov</div>
+          <div class="brand-subtitle">Gobierno de datos</div>
         </div>
-        <span class="role-pill" id="viewer-role">Validando permiso…</span>
       </div>
 
-      <div class="grid grid-4" style="margin-bottom:18px">
-        <article class="card card-pad stat"><span>Total registrados</span><strong id="count-total">—</strong><span>Humanos y técnicos</span></article>
-        <article class="card card-pad stat"><span>Activos</span><strong id="count-active">—</strong><span>Acceso habilitado</span></article>
-        <article class="card card-pad stat"><span>Inactivos</span><strong id="count-inactive">—</strong><span>Acceso deshabilitado</span></article>
-        <article class="card card-pad stat"><span>Tipos de rol</span><strong id="count-roles">—</strong><span>Perfiles registrados</span></article>
-      </div>
-
-      <div class="module-guide"><div class="module-guide-icon">U</div><div><strong>Administración guiada de usuarios</strong><p>Usa “Directorio” para consultar cuentas, “Nuevo usuario” para crear accesos y “Roles y distribución” para revisar cómo están repartidos los perfiles.</p><div class="module-guide-steps"><span>Directorio · buscar y filtrar</span><span>Nuevo usuario · crear cuenta</span><span>Roles · revisar distribución</span></div></div></div>
-
-      <nav class="user-tabs" aria-label="Secciones de usuarios">
-        <button type="button" class="user-tab active" data-user-tab="directory">Directorio</button>
-        <button type="button" class="user-tab hidden" id="tab-create-user" data-user-tab="create">Nuevo usuario</button>
-        <button type="button" class="user-tab" data-user-tab="roles">Roles y distribución</button>
+      <nav class="nav" id="main-nav" style="flex-grow: 1;">
+        <div class="nav-section">Panel</div>
+        <button class="nav-link" onclick="window.location.href='/dashboard.html'">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          </span>
+          <span class="nav-link-text">Inicio</span>
+        </button>
+        <button class="nav-link" onclick="window.location.href='/dashboard.html?view=data'">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+          </span>
+          <span class="nav-link-text">Explorador de datos</span>
+        </button>
+        <button class="nav-link" onclick="window.location.href='/dashboard.html?view=audit'">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M9 12l2 2 4-4"></path></svg>
+          </span>
+          <span class="nav-link-text">Auditoría</span>
+        </button>
+        <button class="nav-link" onclick="window.location.href='/dashboard.html?view=connections'">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+          </span>
+          <span class="nav-link-text">Conexiones y bases</span>
+        </button>
+        <button class="nav-link" onclick="window.location.href='/dashboard.html?view=designer'">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+          </span>
+          <span class="nav-link-text">Diseñador visual</span>
+        </button>
+        <button class="nav-link" onclick="window.location.href='/dashboard.html?view=services'">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+          </span>
+          <span class="nav-link-text">APIs de servicio</span>
+        </button>
+        <div class="nav-section">Administración</div>
+        <!-- BOTÓN ACTIVO ÚNICO (Evita el parpadeo) -->
+        <button class="nav-link active">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          </span>
+          <span class="nav-link-text">Usuarios registrados</span>
+        </button>
       </nav>
 
-      <section class="user-tab-panel" id="users-tab-directory">
-        <article class="card card-pad">
-          <div class="section-title">
-            <div><h2>Directorio</h2><p>Busca por usuario, correo, perfil o estado sin mezclar los distintos tipos de administradores.</p></div>
-            <button class="btn btn-secondary btn-sm" id="refresh-users">Actualizar</button>
-          </div>
-          <div class="toolbar" style="margin-bottom:14px">
-            <input class="input" id="filter-q" placeholder="Buscar usuario, correo o rol…" style="min-width:280px">
-            <select class="select" id="filter-role"><option value="">Todos los roles</option></select>
-            <select class="select" id="filter-status"><option value="">Todos los estados</option><option value="active">Activos</option><option value="inactive">Inactivos</option></select>
-          </div>
-          <div class="table-shell">
-            <table>
-              <thead><tr><th>Usuario</th><th>Correo</th><th>Tipo de rol</th><th>Clase</th><th>Estado</th><th>Creado</th><th>Acciones</th></tr></thead>
-              <tbody id="users-body"><tr><td colspan="7" class="panel-empty">Cargando usuarios…</td></tr></tbody>
-            </table>
-          </div>
-        </article>
-      </section>
+      <button id="toggle-sidebar-btn" class="toggle-sidebar-btn" title="Contraer/Expandir menú">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+      </button>
 
-      <section class="user-tab-panel hidden" id="users-tab-create">
-        <div class="user-create-grid">
-          <article class="card card-pad hidden" id="create-user-card">
-            <div class="section-title">
-              <div><h2>Crear nuevo usuario</h2><p>Alta visual con validación de rol y contraseña. No necesitas editar SQL ni archivos.</p></div>
-              <span class="badge badge-admin">Administrador de plataforma</span>
+      <div class="sidebar-foot">
+        <button id="user-menu-btn" class="user-menu-btn" title="Ver mi perfil">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="26" height="26">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+          </svg>
+          <span id="user-menu-name" class="user-menu-name">Cargando...</span>
+        </button>
+
+        <div id="user-dropdown" class="user-dropdown-card">
+          <div class="user-card-content">
+            <div class="user-card-avatar">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+              </svg>
             </div>
-            <form id="create-user-form">
-              <div class="form-grid" style="grid-template-columns:repeat(2,minmax(0,1fr))">
-                <div class="field"><label>Usuario</label><input class="input" id="new-username" maxlength="100" autocomplete="off" placeholder="maria.perez" required></div>
-                <div class="field"><label>Correo</label><input class="input" id="new-email" type="email" maxlength="150" placeholder="maria@institucion.gob.ve" required></div>
-                <div class="field"><label>Tipo de usuario</label><select class="select" id="new-role" required><option value="">Seleccionar rol…</option></select></div>
-                <div class="field"><label>Contraseña inicial</label><input class="input" id="new-password" type="password" minlength="10" autocomplete="new-password" required></div>
-              </div>
-              <div class="toolbar" style="margin-top:16px">
-                <label class="checkbox-line" style="margin:0"><input id="new-technical" type="checkbox"> Cuenta técnica</label>
-                <label class="checkbox-line" style="margin:0"><input id="new-active" type="checkbox" checked> Usuario activo</label>
-                <button class="btn btn-primary btn-sm" type="submit">Crear usuario</button>
-              </div>
-              <div class="notice notice-info" id="create-user-message">La contraseña debe tener al menos 10 caracteres.</div>
-            </form>
-          </article>
-          <aside class="help-card">
-            <h3>Alta guiada</h3>
-            <p>Turimiquire valida la cuenta antes de crearla y aplica el rol también en backend.</p>
-            <ul>
-              <li>Usuario y correo con formato válido.</li>
-              <li>Contraseña inicial de al menos 10 caracteres.</li>
-              <li>Cuenta de servicio marcada como técnica.</li>
-              <li>Auditoría automática de la creación.</li>
-            </ul>
-          </aside>
+            <div class="user-card-info">
+              <strong id="user-card-name" class="user-card-name">Cargando...</strong>
+              <span id="sidebar-user" class="user-card-email">usuario@datagov</span>
+              <span id="sidebar-role" class="user-card-role">Perfil</span>
+            </div>
+          </div>
+          <div class="user-card-footer">
+            <button class="logout-link" onclick="logout()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/>
+                <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
+              </svg>
+              Cerrar sesión
+            </button>
+          </div>
         </div>
-      </section>
+      </div>
+    </aside>
 
-      <section class="user-tab-panel hidden" id="users-tab-roles">
-        <article class="card card-pad">
-          <div class="section-title"><div><h2>Distribución por tipo de usuario</h2><p>Resumen visual de perfiles administrativos, técnicos y de consulta.</p></div></div>
-          <div class="grid grid-3" id="role-summary"></div>
-        </article>
-      </section>
-    </div>
-  </main>
+    <main class="main" style="min-height:100vh">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="btn btn-ghost btn-sm mobile-menu" data-mobile-menu>☰</button>
+          <div class="topbar-title"><strong>Usuarios registrados</strong><span>Administración de identidades · Turimiquire DataGov</span></div>
+        </div>
+      </header>
+
+      <div class="content">
+        <div class="page-head hero-head">
+          <div>
+            <p class="kicker">Directorio de acceso</p>
+            <h1>Gestión de usuarios</h1>
+          </div>
+          <span class="role-pill" id="viewer-role">Validando permiso…</span>
+        </div>
+
+        <div class="grid grid-4" style="margin-bottom:18px">
+          <article class="card card-pad stat"><span>Total registrados</span><strong id="count-total">—</strong><span>Humanos y técnicos</span></article>
+          <article class="card card-pad stat"><span>Activos</span><strong id="count-active">—</strong><span>Acceso habilitado</span></article>
+          <article class="card card-pad stat"><span>Inactivos</span><strong id="count-inactive">—</strong><span>Acceso deshabilitado</span></article>
+          <article class="card card-pad stat"><span>Tipos de rol</span><strong id="count-roles">—</strong><span>Perfiles registrados</span></article>
+        </div>
+
+        <nav class="user-tabs" aria-label="Secciones de usuarios">
+          <button type="button" class="user-tab active" data-user-tab="directory">Directorio</button>
+          <button type="button" class="user-tab hidden" id="tab-create-user" data-user-tab="create">Nuevo usuario</button>
+          <button type="button" class="user-tab" data-user-tab="roles">Roles y distribución</button>
+        </nav>
+
+        <section class="user-tab-panel" id="users-tab-directory">
+          <article class="card card-pad">
+            <div class="section-title">
+              <div><h2>Directorio</h2><p>Busca por usuario, correo, perfil o estado sin mezclar los distintos tipos de administradores.</p></div>
+              <button class="btn btn-secondary btn-sm" id="refresh-users">Actualizar</button>
+            </div>
+            <div class="toolbar" style="margin-bottom:14px">
+              <input class="input" id="filter-q" placeholder="Buscar usuario, correo o rol…" style="min-width:280px">
+              <select class="select" id="filter-role"><option value="">Todos los roles</option></select>
+              <select class="select" id="filter-status"><option value="">Todos los estados</option><option value="active">Activos</option><option value="inactive">Inactivos</option></select>
+            </div>
+            <div class="table-shell">
+              <table>
+                <thead><tr><th>Usuario</th><th>Correo</th><th>Tipo de rol</th><th>Clase</th><th>Estado</th><th>Creado</th><th>Acciones</th></tr></thead>
+                <tbody id="users-body"><tr><td colspan="7" class="panel-empty">Cargando usuarios…</td></tr></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+
+        <section class="user-tab-panel hidden" id="users-tab-create">
+          <div class="user-create-grid">
+            <article class="card card-pad hidden" id="create-user-card" style="width: 100%;">
+              <div class="section-title">
+                <div><h2>Crear nuevo usuario</h2><p>Alta visual con validación de rol y contraseña. No necesitas editar SQL ni archivos.</p></div>
+                <span class="badge badge-admin">Administrador de plataforma</span>
+              </div>
+              <form id="create-user-form">
+                <div class="form-grid" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+                  <div class="field"><label>Usuario</label><input class="input" id="new-username" maxlength="100" autocomplete="off" placeholder="maria.perez" required></div>
+                  <div class="field"><label>Correo</label><input class="input" id="new-email" type="email" maxlength="150" placeholder="maria@institucion.gob.ve" required></div>
+                  <div class="field"><label>Tipo de usuario</label><select class="select" id="new-role" required><option value="">Seleccionar rol…</option></select></div>
+                  <div class="field"><label>Contraseña inicial</label><input class="input" id="new-password" type="password" minlength="10" autocomplete="new-password" required></div>
+                </div>
+                <div class="toolbar" style="margin-top:16px">
+                  <label class="checkbox-line" style="margin:0"><input id="new-technical" type="checkbox"> Cuenta técnica</label>
+                  <label class="checkbox-line" style="margin:0"><input id="new-active" type="checkbox" checked> Usuario activo</label>
+                  <button class="btn btn-primary btn-sm" type="submit">Crear usuario</button>
+                </div>
+                <div class="notice notice-info" id="create-user-message">La contraseña debe tener al menos 10 caracteres.</div>
+              </form>
+            </article>
+          </div>
+        </section>
+
+        <section class="user-tab-panel hidden" id="users-tab-roles">
+          <article class="card card-pad">
+            <div class="section-title"><div><h2>Distribución por tipo de usuario</h2><p>Resumen visual de perfiles administrativos, técnicos y de consulta.</p></div></div>
+            <div class="grid grid-3" id="role-summary"></div>
+          </article>
+        </section>
+      </div>
+    </main>
+  </div>
+
   <script src="/assets/auth.js"></script>
   <script src="/assets/ui.js"></script>
+  
+  <script>
+    // Mostrar/Ocultar Tarjeta de usuario con animación
+    document.getElementById('user-menu-btn').addEventListener('click', function(e) {
+      e.stopPropagation();
+      document.getElementById('user-dropdown').classList.toggle('show');
+    });
+
+    // Cerrar la tarjeta al hacer clic afuera
+    document.addEventListener('click', function(event) {
+      const dropdown = document.getElementById('user-dropdown');
+      const btn = document.getElementById('user-menu-btn');
+      if (dropdown && dropdown.classList.contains('show')) {
+        if (!dropdown.contains(event.target) && !btn.contains(event.target)) {
+          dropdown.classList.remove('show');
+        }
+      }
+    });
+
+    // Lógica fluida con memoria para colapsar/expandir la barra lateral
+    document.getElementById('toggle-sidebar-btn').addEventListener('click', function() {
+      const sidebar = document.getElementById('sidebar');
+      const shell = document.getElementById('app-shell');
+      sidebar.classList.toggle('collapsed');
+      shell.classList.toggle('sidebar-collapsed');
+      localStorage.setItem('sidebar_state', sidebar.classList.contains('collapsed') ? 'collapsed' : 'open');
+    });
+  </script>
+
   <script>
     let viewer = null;
     let users = [];
@@ -128,7 +532,7 @@
       const role = document.getElementById('filter-role').value;
       const status = document.getElementById('filter-status').value;
       const filtered = users.filter(user => {
-        const haystack = `${user.username} ${user.email} ${user.role} ${user.role_description}`.toLowerCase();
+        const haystack = `${user.username} ${user.email} ${user.role} ${user.role_description || ''}`.toLowerCase();
         if (q && !haystack.includes(q)) return false;
         if (role && user.role !== role) return false;
         if (status === 'active' && !user.active) return false;
@@ -182,29 +586,48 @@
       const body = document.getElementById('users-body');
       body.innerHTML = '<tr><td colspan="7" class="panel-empty">Consultando directorio…</td></tr>';
       try {
-        const [directory, roleData] = await Promise.all([apiFetch('/admin/users'), apiFetch('/admin/roles')]);
+        // MOCK DATA
+        const directory = {
+          summary: { total: 3, active: 3, inactive: 0 },
+          users: [
+            { id: "1", username: "superadmin", email: "admin@datagov.ve", role: "ADMIN_PLATFORM", is_technical: false, active: true, created_at: new Date().toISOString() },
+            { id: "2", username: "dba", email: "dba@datagov.ve", role: "DBA", is_technical: false, active: true, created_at: new Date().toISOString() },
+            { id: "3", username: "servicio_api", email: "api@datagov.ve", role: "SERVICE_ACCOUNT", is_technical: true, active: true, created_at: new Date().toISOString() }
+          ]
+        };
+        
+        const roleData = {
+          roles: [
+            { name: "ADMIN_PLATFORM", description: "Administrador de plataforma", user_count: 1 },
+            { name: "DBA", description: "Administrador de base de datos", user_count: 1 },
+            { name: "DEVELOPER", description: "Desarrollador institucional", user_count: 0 },
+            { name: "AUDITOR", description: "Auditor de seguridad", user_count: 0 },
+            { name: "SERVICE_ACCOUNT", description: "Cuenta técnica para integraciones", user_count: 1 }
+          ]
+        };
+
         users = directory.users || [];
         roles = roleData.roles || [];
+        
         document.getElementById('count-total').textContent = directory.summary?.total ?? users.length;
         document.getElementById('count-active').textContent = directory.summary?.active ?? users.filter(u => u.active).length;
         document.getElementById('count-inactive').textContent = directory.summary?.inactive ?? users.filter(u => !u.active).length;
+        
         const select = document.getElementById('filter-role');
         const current = select.value;
         select.innerHTML = '<option value="">Todos los roles</option>' + roles.map(r => `<option value="${escapeText(r.name)}">${escapeText(roleLabel(r.name))}</option>`).join('');
         if (roles.some(r => r.name === current)) select.value = current;
+        
         const createRole = document.getElementById('new-role');
         if (createRole) {
           const selected = createRole.value;
-          createRole.innerHTML = '<option value="">Seleccionar rol…</option>' + roles.filter(r => r.active).map(r => `<option value="${escapeText(r.name)}">${escapeText(roleLabel(r.name))}</option>`).join('');
+          createRole.innerHTML = '<option value="">Seleccionar rol…</option>' + roles.map(r => `<option value="${escapeText(r.name)}">${escapeText(roleLabel(r.name))}</option>`).join('');
           if (roles.some(r => r.name === selected)) createRole.value = selected;
         }
+        
         renderUsers();
         renderRoleSummary();
       } catch (error) {
-        if (error.status === 403) {
-          body.innerHTML = '<tr><td colspan="7" class="panel-empty">Este perfil no tiene permiso para consultar el directorio completo de usuarios.</td></tr>';
-          return;
-        }
         body.innerHTML = `<tr><td colspan="7" class="panel-empty">${escapeText(error.message)}</td></tr>`;
       }
     }
@@ -213,44 +636,89 @@
       document.querySelectorAll('.user-tab').forEach(tab => tab.addEventListener('click', () => openUserTab(tab.dataset.userTab)));
       try {
         viewer = await requireSession();
+        
+        // --- INYECTAR PERFIL EN LA BARRA LATERAL ---
+        let apodo = viewer.username;
+        if (apodo === 'superadmin' || apodo === 'admin') apodo = 'Administrador Principal';
+        else if (apodo === 'dba') apodo = 'Especialista de Datos';
+        else apodo = apodo.charAt(0).toUpperCase() + apodo.slice(1);
+
+        document.getElementById('user-menu-name').textContent = viewer.username;
+        document.getElementById('user-card-name').textContent = apodo;
+        document.getElementById('sidebar-user').textContent = viewer.username + '@datagov.ve';
+        document.getElementById('sidebar-role').textContent = roleLabel(viewer.role);
+        // ---------------------------------------------
+
         document.getElementById('viewer-role').textContent = roleLabel(viewer.role);
-        if (!hasPermission(viewer, 'usuarios:directorio')) {
-          document.getElementById('users-body').innerHTML = '<tr><td colspan="7" class="panel-empty">Acceso denegado: tu rol no tiene permiso usuarios:directorio.</td></tr>';
-          return;
-        }
-        if (hasPermission(viewer, 'usuarios:admin')) {
-          document.getElementById('create-user-card').classList.remove('hidden');
-          document.getElementById('tab-create-user').classList.remove('hidden');
-        }
+        
+        // Simulación temporal para ver la pantalla completa sin permisos reales del backend aún
+        document.getElementById('create-user-card').classList.remove('hidden');
+        document.getElementById('tab-create-user').classList.remove('hidden');
+        
         await loadDirectory();
       } catch (error) { console.error(error); }
+      
       document.getElementById('refresh-users').addEventListener('click', loadDirectory);
       ['filter-q','filter-role','filter-status'].forEach(id => document.getElementById(id).addEventListener(id === 'filter-q' ? 'input' : 'change', renderUsers));
+      
       document.getElementById('new-role')?.addEventListener('change', event => {
         if (event.target.value === 'SERVICE_ACCOUNT') document.getElementById('new-technical').checked = true;
       });
+      
       document.getElementById('create-user-form')?.addEventListener('submit', async event => {
         event.preventDefault();
-        if (!hasPermission(viewer, 'usuarios:admin')) return;
         const message = document.getElementById('create-user-message');
+        const submitBtn = event.target.querySelector('button[type="submit"]');
+        
         const payload = {
+          id: "temp-" + Date.now(), // ID temporal para la simulación
           username: document.getElementById('new-username').value.trim(),
           email: document.getElementById('new-email').value.trim(),
-          password: document.getElementById('new-password').value,
           role: document.getElementById('new-role').value,
           is_technical: document.getElementById('new-technical').checked,
-          active: document.getElementById('new-active').checked
+          active: document.getElementById('new-active').checked,
+          created_at: new Date().toISOString()
         };
-        message.textContent = 'Creando usuario…';
-        try {
-          const created = await apiFetch('/admin/users', {method:'POST', body:JSON.stringify(payload)});
-          message.textContent = `Usuario ${created.username} creado correctamente como ${roleLabel(created.role)}.`;
+        
+        message.style.color = '#0c4a6e';
+        message.textContent = 'Validando y creando usuario...';
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Creando...';
+        
+        // MOCK DATA: Simulamos la latencia de red y creación exitosa
+        setTimeout(() => {
+          // 1. Inyectamos el nuevo usuario en nuestra lista de memoria
+          users.unshift(payload); // Lo ponemos de primero en la lista
+          
+          // 2. Sumamos 1 al contador del rol correspondiente
+          const roleObj = roles.find(r => r.name === payload.role);
+          if (roleObj) roleObj.user_count++;
+          
+          // 3. Actualizamos los contadores de arriba
+          document.getElementById('count-total').textContent = users.length;
+          document.getElementById('count-active').textContent = users.filter(u => u.active).length;
+          document.getElementById('count-inactive').textContent = users.filter(u => !u.active).length;
+          
+          // 4. Redibujamos la tabla y las tarjetas de roles
+          renderUsers();
+          renderRoleSummary();
+
+          // 5. Damos feedback de éxito
+          message.style.color = '#10b981'; // Verde éxito
+          message.textContent = `¡Usuario ${payload.username} creado con éxito!`;
           event.target.reset();
           document.getElementById('new-active').checked = true;
-          await loadDirectory();
-        } catch (error) {
-          message.textContent = error.message;
-        }
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = 'Crear usuario';
+
+          // 6. Magia: Lo devolvemos automáticamente a la pestaña del Directorio después de 1.5s
+          setTimeout(() => {
+            openUserTab('directory');
+            message.style.color = ''; // Resetear color original
+            message.textContent = 'La contraseña debe tener al menos 10 caracteres.';
+          }, 1500);
+
+        }, 800);
       });
     });
   </script>

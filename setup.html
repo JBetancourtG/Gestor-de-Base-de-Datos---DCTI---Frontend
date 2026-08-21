@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b2748">
+  <title>Instalación · Turimiquire DataGov</title>
+  <link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png">
+  <link rel="apple-touch-icon" href="/assets/favicon.png">
+  <link rel="stylesheet" href="/assets/app.css">
+
+  <style>
+    /* Diseño exclusivo para la pantalla de instalación anclada al centro */
+    body {
+      background-color: #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    .setup-container {
+      background: #ffffff;
+      width: 100%;
+      max-width: 440px;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+      padding: 40px;
+      box-sizing: border-box;
+      border: 1px solid #e2e8f0;
+    }
+
+    .setup-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .setup-header img {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 16px;
+    }
+
+    .setup-header h1 {
+      font-size: 24px;
+      color: #0b2748;
+      margin: 0 0 8px 0;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .setup-header p {
+      color: #64748b;
+      margin: 0;
+      font-size: 15px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 6px;
+    }
+
+    .setup-input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 15px;
+      color: #1e293b;
+      transition: all 0.2s;
+      box-sizing: border-box;
+      background: #f8fafc;
+    }
+
+    .setup-input:focus {
+      outline: none;
+      border-color: #0ea5e9;
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+    }
+
+    /* Medidor de contraseña */
+    .password-meter {
+      display: flex;
+      gap: 4px;
+      margin-top: 8px;
+      height: 4px;
+    }
+
+    .meter-segment {
+      flex: 1;
+      background-color: #e2e8f0;
+      border-radius: 2px;
+      transition: background-color 0.3s;
+    }
+
+    .meter-text {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 6px;
+      display: block;
+      text-align: right;
+      font-weight: 500;
+    }
+
+    /* Colores del medidor */
+    .strength-1 .seg-1 { background-color: #ef4444; } /* Rojo */
+    .strength-2 .seg-1, .strength-2 .seg-2 { background-color: #f59e0b; } /* Amarillo */
+    .strength-3 .meter-segment { background-color: #10b981; } /* Verde */
+
+    .setup-btn {
+      width: 100%;
+      background-color: #0b2748;
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 12px;
+      transition: background-color 0.2s;
+    }
+
+    .setup-btn:hover {
+      background-color: #1e3a8a;
+    }
+
+    .setup-btn:disabled {
+      background-color: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    .notice-box {
+      background-color: #f0fdf4;
+      border-left: 4px solid #0284c7;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 24px;
+    }
+    
+    .notice-box p {
+      margin: 0;
+      font-size: 13px;
+      color: #0c4a6e;
+      line-height: 1.5;
+    }
+
+    .error-msg {
+      color: #ef4444;
+      font-size: 13px;
+      margin-top: 4px;
+      display: none;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="setup-container">
+    <header class="setup-header">
+      <img src="/assets/favicon.png" alt="Turimiquire Logo">
+      <h1>Bienvenido a Turimiquire</h1>
+      <p>Configuración inicial de la plataforma</p>
+    </header>
+
+    <div class="notice-box">
+      <p><strong>Primer paso:</strong> Crea la cuenta de Administrador Principal. Esta cuenta tendrá control total sobre la plataforma, roles y parámetros del sistema.</p>
+    </div>
+
+    <form id="setup-form">
+      <div class="form-group">
+        <label for="admin-user">Usuario maestro</label>
+        <input type="text" id="admin-user" class="setup-input" placeholder="superadmin" value="superadmin" required autocomplete="off">
+      </div>
+
+      <div class="form-group">
+        <label for="admin-email">Correo institucional</label>
+        <input type="email" id="admin-email" class="setup-input" placeholder="admin@institucion.gob.ve" required autocomplete="off">
+      </div>
+
+      <div class="form-group">
+        <label for="admin-pass">Contraseña maestra</label>
+        <input type="password" id="admin-pass" class="setup-input" placeholder="Mínimo 10 caracteres" required autocomplete="new-password">
+        
+        <div class="password-meter" id="meter-container">
+          <div class="meter-segment seg-1"></div>
+          <div class="meter-segment seg-2"></div>
+          <div class="meter-segment seg-3"></div>
+        </div>
+        <span class="meter-text" id="meter-text">Seguridad: Ninguna</span>
+      </div>
+
+      <div class="form-group">
+        <label for="admin-pass-confirm">Confirmar contraseña</label>
+        <input type="password" id="admin-pass-confirm" class="setup-input" placeholder="Repite la contraseña" required autocomplete="new-password">
+        <div class="error-msg" id="pass-error">Las contraseñas no coinciden.</div>
+      </div>
+
+      <button type="submit" class="setup-btn" id="submit-btn" disabled>Crear y finalizar instalación</button>
+    </form>
+  </div>
+
+  <script>
+    const passInput = document.getElementById('admin-pass');
+    const confirmInput = document.getElementById('admin-pass-confirm');
+    const meterContainer = document.getElementById('meter-container');
+    const meterText = document.getElementById('meter-text');
+    const submitBtn = document.getElementById('submit-btn');
+    const passError = document.getElementById('pass-error');
+    
+    let isPasswordStrong = false;
+    let isPasswordMatch = false;
+
+    // Lógica para medir la fuerza de la contraseña
+    passInput.addEventListener('input', function() {
+      const val = passInput.value;
+      let strength = 0;
+
+      if (val.length > 0) {
+        if (val.length >= 10) strength += 1; // Mínimo 10 caracteres
+        if (/[A-Z]/.test(val) && /[0-9]/.test(val)) strength += 1; // Mayúsculas y números
+        if (/[^A-Za-z0-9]/.test(val)) strength += 1; // Símbolos especiales
+      }
+
+      // Reiniciar clases
+      meterContainer.className = 'password-meter';
+      
+      if (strength === 0 && val.length > 0) {
+        meterContainer.classList.add('strength-1');
+        meterText.textContent = 'Seguridad: Débil';
+        meterText.style.color = '#ef4444';
+        isPasswordStrong = false;
+      } else if (strength === 1 || strength === 2) {
+        meterContainer.classList.add('strength-2');
+        meterText.textContent = 'Seguridad: Aceptable';
+        meterText.style.color = '#f59e0b';
+        isPasswordStrong = true; // Permitimos a partir de "Aceptable"
+      } else if (strength === 3) {
+        meterContainer.classList.add('strength-3');
+        meterText.textContent = 'Seguridad: Fuerte';
+        meterText.style.color = '#10b981';
+        isPasswordStrong = true;
+      } else {
+        meterText.textContent = 'Seguridad: Ninguna';
+        meterText.style.color = '#64748b';
+        isPasswordStrong = false;
+      }
+
+      validateForm();
+    });
+
+    // Validar que las contraseñas coincidan
+    function checkMatch() {
+      if (confirmInput.value.length > 0) {
+        if (passInput.value !== confirmInput.value) {
+          passError.style.display = 'block';
+          isPasswordMatch = false;
+        } else {
+          passError.style.display = 'none';
+          isPasswordMatch = true;
+        }
+      } else {
+        passError.style.display = 'none';
+        isPasswordMatch = false;
+      }
+      validateForm();
+    }
+
+    confirmInput.addEventListener('input', checkMatch);
+    passInput.addEventListener('input', checkMatch); // Volver a chequear si se edita la original
+
+    // Habilitar botón solo si todo es correcto
+    function validateForm() {
+      if (isPasswordStrong && isPasswordMatch) {
+        submitBtn.disabled = false;
+      } else {
+        submitBtn.disabled = true;
+      }
+    }
+
+    // Enviar el formulario al backend real de Luis
+    document.getElementById('setup-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Configurando plataforma...';
+      passError.style.display = 'none';
+
+      // Estructura exacta que pide Luis en Postman
+      const payload = {
+        username: document.getElementById('admin-user').value.trim(),
+        email: document.getElementById('admin-email').value.trim(),
+        password: passInput.value
+      };
+
+      try {
+        const response = await fetch('http://localhost:8080/v1/auth/setup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const errData = await response.json().catch(()=>({}));
+            throw new Error(errData.message || errData.error || 'Error al crear el superusuario.');
+        }
+
+        submitBtn.style.backgroundColor = '#10b981'; // Verde de éxito
+        submitBtn.textContent = '¡Instalación Completada!';
+        
+        // Redirigir al nuevo y hermoso Login después de 1.5 segundos
+        setTimeout(() => {
+          window.location.replace('./index.html');
+        }, 1500);
+
+      } catch (error) {
+        passError.textContent = error.message;
+        passError.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Crear y finalizar instalación';
+        submitBtn.style.backgroundColor = '#0b2748';
+      }
+    });
+  </script>
+</body>
+</html>
