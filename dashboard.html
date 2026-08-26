@@ -1,0 +1,2758 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sistema Turimiquire DataGov · Panel</title>
+  <link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png">
+  <link rel="apple-touch-icon" href="/assets/favicon.png">
+  <link rel="stylesheet" href="/assets/app.css">
+  
+  <style>
+
+    .nav-link-text {
+      white-space: nowrap;
+    }
+    /* ========================================================
+       1. ANIMACIÓN DEL CONTENEDOR PRINCIPAL
+       ======================================================== */
+    .app-shell {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      transition: grid-template-columns 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+      min-height: 100vh;
+    }
+    .app-shell.sidebar-collapsed {
+      grid-template-columns: 76px 1fr !important;
+    }
+
+    /* ========================================================
+       2. BARRA LATERAL (ESTÁTICA Y COLAPSABLE)
+       ======================================================== */
+    .sidebar {
+      width: 100%;
+      position: sticky; 
+      top: 0;           
+      height: 100vh;    
+      overflow: visible; /* Vital para que el botón y la tarjeta salgan de la barra */
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+      background-color: #0b2748; 
+      box-shadow: 2px 0 15px rgba(0,0,0,0.1);
+    }
+    
+    .sidebar.collapsed .brand-title,
+    .sidebar.collapsed .brand-subtitle,
+    .sidebar.collapsed .nav-section,
+    .sidebar.collapsed .nav-link-text,
+    .sidebar.collapsed .user-menu-name {
+      display: none;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      margin: 4px 12px;
+      transition: all 0.2s ease;
+      color: #cbd5e1;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      width: calc(100% - 24px); /* Ajuste para mantener el botón dentro de los márgenes */
+      text-align: left;
+    }
+    .nav-link:hover, .nav-link.active {
+      background: rgba(255,255,255,0.1);
+      color: #ffffff;
+    }
+    
+    .nav-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .sidebar.collapsed .nav-link {
+      padding: 12px 0;
+      width: 48px;
+      height: 48px;
+      margin: 6px auto;
+      justify-content: center;
+    }
+
+    .sidebar.collapsed .brand-lockup {
+      padding-left: 0;
+      justify-content: center;
+    }
+
+    /* ========================================================
+       3. BOTÓN FLOTANTE DE DESLIZAR (PESTAÑA MÁGICA)
+       ======================================================== */
+    .toggle-sidebar-btn {
+      position: absolute;
+      bottom: 85px; /* Altura cómoda sobre el usuario */
+      right: 16px;
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+      z-index: 200;
+    }
+    .toggle-sidebar-btn:hover {
+      background: rgba(255,255,255,0.1);
+      color: white;
+    }
+    
+    /* Magia cuando se esconde la barra */
+    .sidebar.collapsed .toggle-sidebar-btn {
+      transform: rotate(180deg);
+      right: -16px; /* SOBRESALE DE LA BARRA */
+      background-color: #0b2748; 
+      color: white;
+      box-shadow: 4px 0 8px rgba(0,0,0,0.15); 
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .sidebar.collapsed .toggle-sidebar-btn:hover {
+      background-color: #1e3a8a;
+    }
+
+    /* ========================================================
+       4. BOTÓN DE USUARIO INFERIOR Y ALINEACIÓN EXACTA
+       ======================================================== */
+    .sidebar-foot {
+      margin-top: auto; 
+      padding: 16px 12px; 
+      display: flex;
+      position: relative;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    .sidebar.collapsed .sidebar-foot {
+      padding: 16px 0;
+      justify-content: center;
+    }
+
+    .user-menu-btn {
+      background: transparent;
+      border: none;
+      color: #cbd5e1; 
+      cursor: pointer;
+      padding: 8px 10px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      width: 100%;
+      gap: 14px;
+      text-align: left;
+    }
+    .user-menu-name {
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex-grow: 1;
+    }
+    .user-menu-btn:hover {
+      color: #ffffff;
+      background: rgba(255,255,255,0.1);
+    }
+    
+    .sidebar.collapsed .user-menu-btn {
+      width: 48px;
+      height: 48px;
+      padding: 0;
+      justify-content: center;
+    }
+
+    /* ========================================================
+       5. TARJETA DE USUARIO FLOTANTE
+       ======================================================== */
+    .user-dropdown-card {
+      position: absolute;
+      bottom: 70px; 
+      left: 16px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      width: 280px;
+      padding: 24px;
+      z-index: 9999;
+      
+      opacity: 0;
+      transform: translateY(15px) scale(0.95);
+      transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+    }
+    .sidebar.collapsed .user-dropdown-card {
+      left: 70px;
+      bottom: 16px;
+    }
+    .user-dropdown-card.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .user-card-content {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .user-card-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #f1f5f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+      color: #94a3b8;
+    }
+    .user-card-info {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      text-align: left;
+    }
+    .user-card-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1e293b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 2px;
+    }
+    .user-card-email {
+      font-size: 13px;
+      color: #64748b;
+    }
+    .user-card-role {
+      font-size: 10px;
+      font-weight: 800;
+      color: #0b2748;
+      background: #e0f2fe;
+      padding: 4px 8px;
+      border-radius: 12px;
+      align-self: flex-start;
+      margin-top: 8px;
+      text-transform: uppercase;
+    }
+    .user-card-footer {
+      display: flex;
+      justify-content: center;
+      border-top: 1px solid #f1f5f9;
+      padding-top: 16px;
+    }
+    .logout-link {
+      background: transparent;
+      border: none;
+      color: #ef4444; 
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      justify-content: center;
+    }
+    .logout-link:hover {
+      background: #fef2f2;
+    }
+
+    /* DISEÑO EXPLORADOR DE BASE DE DATOS (TIPO DBEAVER) */
+    .explorer-grid { display: grid; grid-template-columns: 300px 1fr; gap: 24px; align-items: start; }
+    .db-tree-panel { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px 12px; height: 600px; overflow-y: auto; }
+    .db-data-panel { min-width: 0; }
+    .db-tree details { margin-left: 16px; }
+    .db-tree > details { margin-left: 0; }
+    .db-tree summary { cursor: pointer; padding: 6px 8px; display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: #334155; user-select: none; border-radius: 6px; list-style: none; transition: background 0.2s; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .db-tree summary::-webkit-details-marker { display: none; }
+    .db-tree summary:hover { background: #e2e8f0; }
+    .db-tree summary.active-table { background: #e0f2fe; color: #0369a1; font-weight: 700; }
+    .db-tree .chevron { transition: transform 0.2s ease; width: 14px; height: 14px; color: #94a3b8; flex-shrink: 0; }
+    .db-tree details[open] > summary > .chevron { transform: rotate(90deg); }
+    .tree-icon { width: 16px; height: 16px; flex-shrink: 0; }
+    .icon-conn { color: #0284c7; } .icon-schema { color: #f59e0b; } .icon-table { color: #10b981; }
+    .icon-column { color: #94a3b8; width: 14px; height: 14px; } .icon-pk { color: #eab308; width: 14px; height: 14px; }
+    .tree-leaf { padding: 6px 8px 6px 38px; font-size: 13px; color: #64748b; display: flex; align-items: center; gap: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  </style>
+</head>
+<body class="bg-white">
+  <div class="app-shell">
+    
+    <!-- BARRA LATERAL -->
+    <aside class="sidebar" id="sidebar">
+      <div class="brand-lockup">
+        <img class="brand-logo-icon brand-logo-sidebar" src="/assets/favicon.png" alt="Logo Turimiquire DataGov">
+        <div>
+          <div class="brand-title">Turimiquire DataGov</div>
+          <div class="brand-subtitle">Gobierno de datos</div>
+        </div>
+      </div>
+
+      <nav class="nav" id="main-nav" style="flex-grow: 1;">
+        <div class="nav-section">Panel</div>
+        <button class="nav-link" data-view="home">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          </span>
+          <span class="nav-link-text">Inicio</span>
+        </button>
+        <button class="nav-link hidden" id="nav-data" data-view="data">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+          </span>
+          <span class="nav-link-text">Explorador de datos</span>
+        </button>
+        <button class="nav-link hidden" id="nav-audit" data-view="audit">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M9 12l2 2 4-4"></path></svg>
+          </span>
+          <span class="nav-link-text">Auditoría</span>
+        </button>
+        <button class="nav-link hidden" id="nav-connections" data-view="connections">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+          </span>
+          <span class="nav-link-text">Conexiones y bases</span>
+        </button>
+        <button class="nav-link hidden" id="nav-designer" data-view="designer">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+          </span>
+          <span class="nav-link-text">Diseñador visual</span>
+        </button>
+        <button class="nav-link hidden" id="nav-services" data-view="services">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+          </span>
+          <span class="nav-link-text">APIs de servicio</span>
+        </button>
+        <button class="nav-link hidden" id="nav-backups" data-view="backups">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          </span>
+          <span class="nav-link-text">Respaldos del Sistema</span>
+        </button>
+        <div class="nav-section">Administración</div>
+        <!-- BOTÓN DE USUARIOS CORREGIDO -->
+        <button class="nav-link hidden" id="nav-users" onclick="window.location.href='/usuarios.html'">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          </span>
+          <span class="nav-link-text">Usuarios registrados</span>
+        </button>
+      </nav>
+      
+      <!-- SCRIPT ANTI-PARPADEO PARA LOS BOTONES -->
+      <script>
+        (function() {
+          const params = new URLSearchParams(window.location.search);
+          const view = params.get('view') || 'home';
+          const btn = document.querySelector('.nav-link[data-view="' + view + '"]');
+          if (btn) btn.classList.add('active');
+        })();
+      </script>
+      <!-- ===================================== -->
+
+      <!-- BOTÓN FLOTANTE PARA COLAPSAR -->
+      <button id="toggle-sidebar-btn" class="toggle-sidebar-btn" title="Contraer/Expandir menú">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+      </button>
+
+      <!-- BASE DE LA BARRA: PERFIL DE USUARIO -->
+      <div class="sidebar-foot">
+        <button id="user-menu-btn" class="user-menu-btn" title="Ver mi perfil">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="26" height="26">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+          </svg>
+          <span id="user-menu-name" class="user-menu-name">Cargando...</span>
+        </button>
+
+        <!-- Tarjeta Flotante Estilo Microsoft -->
+        <div id="user-dropdown" class="user-dropdown-card">
+          <div class="user-card-content">
+            <div class="user-card-avatar">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+              </svg>
+            </div>
+            <div class="user-card-info">
+              <strong id="user-card-name" class="user-card-name">Cargando...</strong>
+              <span id="sidebar-user" class="user-card-email">usuario@datagov</span>
+              <span id="sidebar-role" class="user-card-role">Perfil</span>
+            </div>
+          </div>
+          <div class="user-card-footer">
+            <button class="logout-link" onclick="logout()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/>
+                <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
+              </svg>
+              Cerrar sesión
+            </button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main" style="min-height:100vh">
+
+
+      <div class="content">
+        <!-- VISTA DE INICIO -->
+        <section id="view-home" class="app-view">
+          
+          <div class="grid grid-4" style="margin-top: 10px;">
+            <article class="card card-pad stat"><span>Plataforma</span><strong id="health-status">Verificando…</strong><span id="health-detail">API y base principal</span></article>
+            <article class="card card-pad stat"><span>Rol activo</span><strong id="role-stat">—</strong><span>Funciones filtradas por RBAC</span></article>
+            <article class="card card-pad stat"><span>Permisos efectivos</span><strong id="permission-count">0</strong><span>Aplicados también en backend</span></article>
+            <article class="card card-pad stat"><span>Red local</span><strong id="network-url" style="font-size:1rem">—</strong><span>Interfaz HTTP compartida</span></article>
+          </div>
+
+          <section class="section card card-pad">
+            <div class="section-title"><div><h2>Ruta rápida</h2></div></div>
+            <div class="quick-route">
+              <article class="quick-step"><span class="quick-step-number">1</span><h3>Conecta una base</h3><p>Registra PostgreSQL o MySQL/MariaDB, prueba la conexión y guárdala de forma segura.</p><button class="btn btn-secondary btn-sm" type="button" data-guide-view="connections">Ir a conexiones</button></article>
+              <article class="quick-step"><span class="quick-step-number">2</span><h3>Explora los datos</h3><p>Abre una conexión, elige esquema y tabla y consulta registros reales sin escribir SQL.</p><button class="btn btn-secondary btn-sm" type="button" data-guide-view="connections">Abrir explorador</button></article>
+              <article class="quick-step"><span class="quick-step-number">3</span><h3>Diseña cambios</h3><p>Crea tablas, columnas, relaciones e índices con el asistente visual Diseñar → Validar → Aplicar.</p><button class="btn btn-secondary btn-sm" type="button" data-guide-view="designer">Ir al diseñador</button></article>
+              <article class="quick-step"><span class="quick-step-number">4</span><h3>Publica un servicio</h3><p>Expón únicamente los datos autorizados como API y genera una clave técnica independiente.</p><button class="btn btn-secondary btn-sm" type="button" data-guide-view="services">Ir a APIs</button></article>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="section-title"><div><h2>Funciones principales del perfil</h2><p>Accesos visibles según responsabilidad y mínimo privilegio.</p></div></div>
+            <div class="grid grid-3" id="role-actions"></div>
+          </section>
+
+          <section class="section grid grid-2">
+            <article class="card card-pad">
+              <div class="section-title"><div><h2 id="process-title">Proceso del rol</h2><p id="process-subtitle">Secuencia de trabajo adaptada al documento de roles.</p></div></div>
+              <ol class="process-list" id="role-process"></ol>
+            </article>
+            <article class="card card-pad">
+              <div class="section-title"><div><h2>Límite operativo</h2><p>Lo que este perfil no debe hacer.</p></div></div>
+              <p id="role-limit" class="muted" style="line-height:1.7;margin:0"></p>
+              <div class="notice notice-info" id="role-result" style="margin-top:18px"></div>
+            </article>
+          </section>
+
+          <section class="section card card-pad">
+            <div class="section-title"><div><h2>Flujo de trabajo conjunto</h2><p>Cadena de colaboración para un nuevo módulo o servicio de datos.</p></div></div>
+            <div class="flow-wrap"><div class="flow-track" id="workflow-track"></div></div>
+          </section>
+        </section>
+
+        <!-- EXPLORADOR DE DATOS -->
+        <section id="view-data" class="app-view hidden" style="display: flex; flex-direction: column; height: calc(100vh - 64px); margin: -24px; background: white;">
+          
+          <!-- ESTILOS INTERNOS PARA EL ÁRBOL Y PESTAÑAS -->
+          <style>
+            .active-tree-item { background: #e0f2fe !important; color: #1e3a8a !important; font-weight: bold !important; }
+            .db-tab { padding: 8px 16px; font-size: 13px; font-weight: 700; color: #64748b; border: none; background: transparent; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
+            .db-tab:hover { color: #1e293b; }
+            .db-tab.active-tab { color: #1d4ed8; background: white; border-top: 1px solid #e2e8f0; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 2px solid #2563eb; border-radius: 6px 6px 0 0; }
+          </style>
+
+          <!-- Header Superior / Migas de pan (Breadcrumbs) INTERACTIVAS -->
+          <header style="height: 60px; background: white; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0;">
+              <div style="display: flex; gap: 8px; font-size: 14px; font-weight: 500; color: #64748b; align-items: center;" id="breadcrumb-container">
+                  <span id="bc-db" style="cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='#1d4ed8'" onmouseout="this.style.color='#64748b'">Base Conectada</span>
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
+                  <span id="bc-schema" style="cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='#1d4ed8'" onmouseout="this.style.color='#64748b'">dbgs_schema</span>
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
+                  <span id="breadcrumb-table" style="color: #1d4ed8; font-weight: 700;">catalogos</span>
+              </div>
+          </header>
+
+          <!-- CONTENEDOR DIVIDIDO -->
+          <div style="flex: 1; display: flex; overflow: hidden;">
+              
+              <!-- Inputs ocultos necesarios para la lógica JS -->
+              <input type="hidden" id="current-tree-conn" value="">
+              <input type="hidden" id="current-tree-schema" value="">
+              <input type="hidden" id="current-tree-table" value="">
+
+              <!-- PANEL IZQUIERDO: Árbol DBeaver -->
+              <aside style="width: 260px; background: #f8fafc; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; overflow-y: auto;">
+                  <div style="padding: 16px; border-bottom: 1px solid #e2e8f0; background: white; position: sticky; top: 0; z-index: 10;">
+                      <input type="text" class="input" placeholder="Buscar tabla..." style="width: 100%; font-size: 13px;">
+                  </div>
+                  
+                  <!-- AQUÍ SE INYECTARÁ EL ÁRBOL DINÁMICO -->
+                  <div style="padding: 8px;" id="db-tree-container">
+                      <div class="panel-empty" style="padding: 20px; text-align: center; color: #94a3b8;">Cargando estructura...</div>
+                  </div>
+              </aside>
+
+              <!-- PANEL DERECHO: Datos y Pestañas -->
+              <section style="flex: 1; display: flex; flex-direction: column; background: white; overflow: hidden;">
+                  
+                  <!-- Pestañas (Tabs) -->
+                  <div style="background: #f1f5f9; border-bottom: 1px solid #e2e8f0; padding: 8px 16px 0; display: flex; gap: 4px;" id="data-tabs">
+                      <button class="db-tab" data-target="vista-ddl">Estructura (DDL)</button>
+                      <button class="db-tab active-tab" data-target="vista-datos">Datos</button>
+                      <button class="db-tab" data-target="vista-erd">Diagrama (ERD)</button>
+                  </div>
+
+                  <!-- Toolbar -->
+                  <div style="height: 48px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; padding: 0 16px;">
+                      <div style="display: flex; gap: 8px; align-items: center;">
+                          <!-- Le añadí el ID btn-refresh-data -->
+                          <button class="btn btn-ghost btn-sm" id="btn-refresh-data" title="Refrescar datos">↻</button>
+                          <div style="width: 1px; height: 16px; background: #e2e8f0; margin: 0 4px;"></div>
+                          
+                          <!-- Le añadí el ID btn-toggle-filters -->
+                          <button class="btn btn-ghost btn-sm" id="btn-toggle-filters">Filtros</button>
+                          
+                          <!-- La nueva caja de texto para filtrar (oculta por defecto) -->
+                          <input type="text" id="input-data-filter" class="input hidden" placeholder="Buscar en esta página..." style="font-size: 12px; padding: 4px 8px; height: 28px; width: 220px; border-radius: 6px;">
+                      </div>
+                      <div style="display: flex; gap: 12px; align-items: center;">
+                          <span class="muted small" id="db-row-count">Cargando...</span>
+                          
+                          <!-- Botón para Eliminar la Tabla completa -->
+                          <button class="btn btn-ghost btn-sm" id="btn-delete-table" style="color: #ef4444; border: 1px solid #fecaca; display: none;">🗑️ Eliminar Tabla</button>
+                          
+                          <button class="btn btn-secondary btn-sm" id="external-export" type="button">Exportar CSV</button>
+                          <button class="btn btn-primary btn-sm" id="btn-add-record">+ Añadir Registro</button>
+                      </div>
+                  </div>
+
+                  <!-- Área de Contenido de las Pestañas -->
+                  <div style="flex: 1; overflow: auto; background: #f8fafc; padding: 16px;">
+                      
+                  <!-- Vista DATOS -->
+                  <div id="vista-datos" class="tab-content" style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+                      <table style="width: 100%; text-align: left; border-collapse: collapse;">
+                          <!-- AQUÍ ESTÁN LOS NUEVOS IDs -->
+                          <thead id="db-data-head" style="background: #f1f5f9; border-bottom: 1px solid #e2e8f0;">
+                              <tr><th style="padding: 10px; font-size: 12px; color: #475569;">Estructura</th></tr>
+                          </thead>
+                          <tbody id="db-data-body" style="font-family: monospace; font-size: 13px;">
+                              <tr><td class="panel-empty" colspan="100%">Selecciona una tabla en el esquema izquierdo.</td></tr>
+                          </tbody>
+                      </table>
+                  </div>
+
+                      <!-- Vista DDL (Oculta por defecto) -->
+                      <div id="vista-ddl" class="tab-content hidden" style="background: #1e293b; border-radius: 8px; padding: 20px; color: #38bdf8; font-family: monospace; font-size: 14px; white-space: pre-wrap;">-- Estructura de la tabla (DDL)
+
+CREATE TABLE dbgs_schema.catalogos (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    codigo VARCHAR(50) NOT NULL UNIQUE,
+    nombre VARCHAR(150) NOT NULL,
+    descripcion TEXT,
+    estado BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT now()
+);
+
+CREATE INDEX idx_catalogos_codigo ON dbgs_schema.catalogos(codigo);</div>
+
+                      <!-- Vista ERD (Oculta por defecto) -->
+                      <div id="vista-erd" class="tab-content hidden" style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 40px; text-align: center; color: #64748b;">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="margin: 0 auto 16px; opacity: 0.5;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
+                          <h3 style="font-size: 16px; font-weight: bold; color: #334155;">Diagrama Entidad-Relación</h3>
+                          <p style="font-size: 13px;">La generación visual del diagrama ERD no está disponible en la vista de esquema actual.</p>
+                      </div>
+
+                  </div>
+              </section>
+          </div>
+        </section>
+
+<!-- AUDITORÍA -->
+        <section id="view-audit" class="app-view hidden">
+          <div class="page-head"><div><h1>Bitácora de auditoría</h1></div></div>
+          <article class="card card-pad">
+            
+            <!-- NUEVO TOOLBAR CON BUSCADOR Y EXPORTAR -->
+            <div class="toolbar" style="margin-bottom:12px; display: flex; justify-content: space-between;">
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-secondary btn-sm" id="refresh-audit">↻ Actualizar eventos</button>
+                    <input type="text" id="input-audit-filter" class="input" placeholder="Buscar por usuario, IP, operación..." style="font-size: 12px; padding: 4px 8px; height: 28px; width: 250px; border-radius: 6px;">
+                </div>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <span class="muted small" id="audit-count"></span>
+                    <button class="btn btn-primary btn-sm" id="export-audit-csv">Exportar CSV</button>
+                </div>
+            </div>
+            <!-- FIN DEL NUEVO TOOLBAR -->
+
+            <div class="table-shell"><table><thead id="audit-head"></thead><tbody id="audit-body"><tr><td class="panel-empty">Cargando auditoría…</td></tr></tbody></table></div>
+          </article>
+        </section>
+
+        <!-- CONEXIONES -->
+        <section id="view-connections" class="app-view hidden">
+          <div class="page-head"><div><h1>Conexiones y bases de datos</h1><p>Registra conexiones PostgreSQL o MySQL/MariaDB. La contraseña no vuelve al navegador después del registro.</p></div></div>
+          <article class="card card-pad" id="connection-admin-card">
+            <form id="connection-form">
+              <div class="form-grid">
+                <div class="field"><label>Nombre</label><input class="input" id="conn-name" placeholder="Sistema futuro" required></div>
+                <div class="field"><label>Motor</label><select class="select" id="conn-engine"><option value="postgresql">PostgreSQL / compatible</option><option value="mysql">MySQL / MariaDB</option></select></div>
+                <div class="field"><label>Host</label><input class="input" id="conn-host" placeholder="172.16.4.20" required></div>
+                <div class="field"><label>Puerto</label><input class="input" id="conn-port" type="number" value="5432" required></div>
+                <div class="field"><label>Usuario</label><input class="input" id="conn-user" required></div>
+                <div class="field"><label>Contraseña</label><input class="input" id="conn-password" type="password"></div>
+                <div class="field"><label>Base inicial</label><input class="input" id="conn-database" required></div>
+                <div class="field"><label>SSL</label><select class="select" id="conn-ssl"><option value="disable">Desactivado</option><option value="require">Requerido</option><option value="verify-full">Verificar certificado</option></select></div>
+              </div>
+              <label class="checkbox-line"><input id="conn-readonly" type="checkbox"> Conexión de solo lectura</label>
+              <div class="toolbar"><button type="button" class="btn btn-ghost btn-sm" id="test-connection">Probar conexión</button><button type="submit" class="btn btn-primary btn-sm">Guardar y conectar</button><span class="muted small" id="connection-message"></span></div>
+            </form>
+          </article>
+          <section class="section card card-pad">
+            <div class="section-title"><div><h2>Conexiones activas</h2><p>Los perfiles se conservan entre reinicios; las contraseñas se almacenan cifradas y nunca vuelven al navegador.</p></div><button class="btn btn-secondary btn-sm" id="refresh-connections">Actualizar</button></div>
+            <div id="connection-list"><div class="panel-empty">Sin conexiones cargadas.</div></div>
+          </section>
+
+          <section class="section card card-pad" id="external-data-explorer">
+            <div class="section-title">
+              <div><h2>Explorador de base conectada</h2><p>Selecciona una conexión real, carga sus esquemas y tablas y consulta los registros sin escribir SQL.</p></div>
+              <span class="badge badge-ok" id="external-db-status">Listo</span>
+            </div>
+            <div class="form-grid">
+              <div class="field"><label>Conexión</label><select class="select" id="external-connection"><option value="">Seleccionar conexión…</option></select></div>
+              <div class="field"><label>Esquema / base</label><select class="select" id="external-schema"><option value="">Seleccionar…</option></select></div>
+              <div class="field"><label>Tabla</label><select class="select" id="external-table"><option value="">Seleccionar…</option></select></div>
+              <div class="field"><label>Filas por página</label><select class="select" id="external-limit"><option value="50">50</option><option value="100" selected>100</option><option value="200">200</option><option value="500">500</option></select></div>
+            </div>
+            <div class="toolbar" style="margin-top:14px">
+              <button class="btn btn-primary btn-sm" id="external-load" type="button">Cargar datos</button>
+              <button class="btn btn-secondary btn-sm" id="external-prev" type="button">Anterior</button>
+              <button class="btn btn-secondary btn-sm" id="external-next" type="button">Siguiente</button>
+              <button class="btn btn-ghost btn-sm" id="external-export" type="button">Exportar CSV</button>
+              <span class="muted small" id="external-count">Selecciona una conexión.</span>
+            </div>
+            <div class="table-shell" style="margin-top:14px"><table><thead id="external-data-head"></thead><tbody id="external-data-body"><tr><td class="panel-empty">Sin datos cargados.</td></tr></tbody></table></div>
+          </section>
+        </section>
+
+        <!-- APIs -->
+        <section id="view-services" class="app-view hidden">
+          <div class="page-head">
+            <div><h1>APIs de servicio</h1><p>Publica lectura controlada de una tabla seleccionada sin exponer usuarios, contraseñas ni acceso directo al motor.</p></div>
+          </div>
+          <article class="card card-pad hidden" id="service-publish-card">
+            <div class="section-title"><div><h2>Publicar una API</h2></div><span class="badge badge-admin">Publicación controlada</span></div>
+            <form id="service-form">
+              <div class="form-grid">
+                <div class="field"><label>Nombre del servicio</label><input class="input" id="service-name" placeholder="Municipios del estado" required></div>
+                <div class="field"><label>Identificador URL</label><input class="input" id="service-slug" placeholder="municipios" required></div>
+                <div class="field"><label>Conexión</label><select class="select" id="service-connection" required><option value="">Seleccionar…</option></select></div>
+                <div class="field"><label>Esquema / base</label><select class="select" id="service-schema" required><option value="">Seleccionar…</option></select></div>
+                <div class="field"><label>Tabla</label><select class="select" id="service-table" required><option value="">Seleccionar…</option></select></div>
+                <div class="field"><label>Máximo por solicitud</label><input class="input" id="service-max" type="number" min="1" max="500" value="100"></div>
+                <div class="field" style="grid-column:span 2"><label>Descripción</label><input class="input" id="service-description" placeholder="Datos autorizados para consumo institucional"></div>
+              </div>
+              <div class="toolbar" style="margin-top:14px"><button class="btn btn-primary" type="submit">Publicar API</button><span class="muted small" id="service-message">La clave se mostrará una sola vez.</span></div>
+            </form>
+          </article>
+
+          <article class="card card-pad hidden" id="service-credential" style="margin-top:16px">
+            <div class="section-title"><div><h2>Credencial generada</h2><p>Guárdala ahora. Turimiquire conserva únicamente su hash.</p></div><span class="badge badge-tech">Se muestra una sola vez</span></div>
+            <div class="credential-box"><code id="service-key"></code><button class="btn btn-secondary btn-sm" id="copy-service-key">Copiar clave</button></div>
+            <p class="muted small" id="service-endpoint"></p>
+          </article>
+
+          <section class="section card card-pad">
+            <div class="section-title"><div><h2>Catálogo de APIs</h2><p>Servicios creados desde la interfaz y su origen autorizado.</p></div><button class="btn btn-secondary btn-sm" id="refresh-services">Actualizar</button></div>
+            <div class="table-shell"><table><thead><tr><th>Servicio</th><th>Endpoint</th><th>Origen</th><th>Límite</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="services-body"><tr><td colspan="6" class="panel-empty">Sin consultar.</td></tr></tbody></table></div>
+          </section>
+        </section>
+
+        <!-- RESPALDOS DEL SISTEMA -->
+        <section id="view-backups" class="app-view hidden">
+          <div class="page-head">
+            <div>
+              <h1>Gestión de Respaldos (Backups)</h1>
+              <p>Motor automatizado de seguridad y restauración física de la base de datos.</p>
+            </div>
+          </div>
+          
+          <div class="grid grid-2">
+            <article class="card card-pad">
+              <div class="section-title"><div><h2>Crear Respaldo</h2></div></div>
+              <form id="backup-form">
+                <div class="form-grid">
+                  <div class="field">
+                    <label>Tipo de volcado</label>
+                    <select class="select" id="backup-type"><option value="FULL">Completo (FULL)</option></select>
+                  </div>
+                  <div class="field">
+                    <label>Días de retención</label>
+                    <input type="number" class="input" id="backup-retention" value="30" min="1" max="365">
+                  </div>
+                  <div class="field" style="grid-column: span 2;">
+                    <label>Detalles / Motivo</label>
+                    <input type="text" class="input" id="backup-details" placeholder="Respaldo previo a actualización mayor" required>
+                  </div>
+                </div>
+                <div class="toolbar" style="margin-top: 16px;">
+                  <button type="submit" class="btn btn-primary" id="btn-create-backup">Ejecutar Respaldo</button>
+                  <span class="muted small" id="backup-message"></span>
+                </div>
+              </form>
+            </article>
+
+            <article class="card card-pad">
+               <div class="section-title"><div><h2>Política de Retención</h2><p>Limpia copias antiguas automáticamente.</p></div></div>
+               <p class="muted small" style="margin-bottom: 16px;">El motor elimina de forma segura los respaldos que hayan superado su tiempo de vida útil para liberar espacio en el disco duro del servidor.</p>
+               <button class="btn btn-secondary" id="btn-apply-retention" onclick="alert('El motor de retención cronometrado se ejecuta cada medianoche de forma nativa.')">Verificar Retención</button>
+            </article>
+          </div>
+
+          <section class="section card card-pad" style="margin-top: 24px;">
+            <div class="section-title">
+              <div><h2>Historial de Volcados Físicos</h2></div>
+              <button class="btn btn-secondary btn-sm" id="btn-refresh-backups">Actualizar Historial</button>
+            </div>
+            <div class="table-shell">
+              <table>
+                <thead>
+                  <tr><th>Fecha</th><th>Tipo</th><th>Detalles</th><th>Tamaño</th><th>Estado</th><th style="text-align:right;">Acciones</th></tr>
+                </thead>
+                <tbody id="backups-body">
+                  <tr><td colspan="6" class="panel-empty">Cargando respaldos...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <!-- DISEÑADOR VISUAL -->
+        <section id="view-designer" class="app-view hidden">
+          <div class="page-head">
+            <div>
+              <h1>Diseñador visual de estructura</h1>
+              <p>Describe la tabla y sus reglas con controles visuales. Turimiquire valida nombres, tipos, claves, relaciones y riesgos antes de ejecutar cualquier cambio.</p>
+            </div>
+          </div>
+          <article class="card card-pad">
+            <div class="section-title"><div><h2>Destino y tabla</h2></div></div>
+            <div class="form-grid">
+              <div class="field"><label>Conexión destino</label><select class="select" id="designer-connection"><option value="">Seleccionar conexión…</option></select></div>
+              <div class="field">
+                <label>Esquema / base</label>
+                <select class="select" id="designer-schema" required>
+                  <option value="public" selected>public</option>
+                    <option value="dbgs_schema">dbgs_schema</option>
+                </select>
+              </div>
+              <div class="field"><label>Nombre de tabla</label><input class="input" id="designer-table" placeholder="personas" required></div>
+              <div class="field"><label>Descripción</label><input class="input" id="designer-description" placeholder="Registro institucional"></div>
+            </div>
+          </article>
+
+          <section class="section card card-pad">
+            <div class="section-title">
+              <div><h2>2. Columnas</h2><p>Agrega campos sin escribir SQL. Puedes marcar clave primaria, único, obligatorio y autonumérico.</p></div>
+              <button class="btn btn-secondary btn-sm" id="designer-add-column">Añadir columna</button>
+            </div>
+            <div class="table-shell">
+              <table>
+                <thead><tr><th>Nombre</th><th>Tipo</th><th>Long./precisión</th><th>Automático</th><th>Obligatorio</th><th>PK</th><th>Único</th><th>Autonum.</th><th></th></tr></thead>
+                <tbody id="designer-columns"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="section grid grid-2">
+            <article class="card card-pad">
+              <div class="section-title"><div><h2>3. Relaciones</h2><p>Define claves foráneas visualmente.</p></div><button class="btn btn-secondary btn-sm" id="designer-add-fk">Añadir relación</button></div>
+              <div id="designer-fks"><div class="panel-empty">Sin relaciones.</div></div>
+            </article>
+            <article class="card card-pad">
+              <div class="section-title"><div><h2>4. Índices</h2><p>Optimiza búsquedas sobre una o varias columnas.</p></div><button class="btn btn-secondary btn-sm" id="designer-add-index">Añadir índice</button></div>
+              <div id="designer-indexes"><div class="panel-empty">Sin índices adicionales.</div></div>
+            </article>
+          </section>
+
+          <section class="section card card-pad">
+            <div class="section-title"><div><h2>5. Rectificación lógica</h2><p>Primero se valida el plan. Solo un perfil con permiso de aplicación puede ejecutarlo.</p></div></div>
+            <div class="toolbar">
+              <button class="btn btn-primary" id="designer-validate">Validar y rectificar plan</button>
+              <button class="btn btn-danger hidden" id="designer-apply">Aplicar plan validado</button>
+              <button class="btn btn-ghost" id="designer-reset">Limpiar</button>
+              <span class="muted small" id="designer-message">Aún no se ha validado.</span>
+            </div>
+            <div id="designer-validation" class="section hidden"></div>
+          </section>
+        </section>
+      </div>
+
+      <!-- MODAL PARA AÑADIR REGISTRO -->
+        <div id="add-record-modal" class="hidden" style="position: fixed; inset: 0; background: rgba(15,23,42,0.6); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; transition: opacity 0.2s;">
+          <div class="card card-pad" style="width: 100%; max-width: 450px; background: white; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);">
+            <div class="section-title" style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+              <div><h2 id="add-record-title">Añadir registro</h2></div>
+              <button class="btn btn-ghost btn-sm" onclick="closeAddModal()" style="font-size: 18px;">✕</button>
+            </div>
+            <form id="add-record-form">
+              <!-- Los campos se inyectarán aquí dinámicamente según la tabla -->
+              <div class="form-grid" id="add-record-fields" style="display: flex; flex-direction: column; gap: 14px; max-height: 50vh; overflow-y: auto;">
+              </div>
+              <div class="toolbar" style="margin-top: 24px; justify-content: flex-end;">
+                <button type="button" class="btn btn-ghost" onclick="closeAddModal()">Cancelar</button>
+                <button type="submit" class="btn btn-primary" id="add-record-submit">Guardar Registro</button>
+              </div>
+              <div id="add-record-message" class="muted small" style="margin-top: 12px; text-align: right;"></div>
+            </form>
+          </div>
+        </div>
+
+        <!-- MODAL PARA EDITAR REGISTRO -->
+        <div id="edit-record-modal" class="hidden" style="position: fixed; inset: 0; background: rgba(15,23,42,0.6); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; transition: opacity 0.2s;">
+          <div class="card card-pad" style="width: 100%; max-width: 450px; background: white; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);">
+            <div class="section-title" style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+              <div><h2 id="edit-record-title">Editar registro</h2></div>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="closeEditModal()" style="font-size: 18px;">✕</button>
+            </div>
+            <form id="edit-record-form">
+              <!-- Campo oculto vital para saber a qué ID le haremos el PUT -->
+              <input type="hidden" id="edit-record-id">
+              
+              <div class="form-grid" id="edit-record-fields" style="display: flex; flex-direction: column; gap: 14px; max-height: 50vh; overflow-y: auto;">
+              </div>
+              <div class="toolbar" style="margin-top: 24px; justify-content: flex-end;">
+                <button type="button" class="btn btn-ghost" onclick="closeEditModal()">Cancelar</button>
+                <button type="submit" class="btn btn-primary" id="edit-record-submit">Guardar Cambios</button>
+              </div>
+              <div id="edit-record-message" class="muted small" style="margin-top: 12px; text-align: right;"></div>
+            </form>
+          </div>
+        </div>
+    </main>
+  </div>
+
+  <script src="/assets/auth.js"></script>
+  <script src="/assets/ui.js"></script>
+  
+  <!-- SCRIPT PARA INTERACCIÓN DEL MENÚ DE USUARIO Y BARRA LATERAL -->
+  <script>
+    // Mostrar/Ocultar Tarjeta de usuario con animación
+    document.getElementById('user-menu-btn').addEventListener('click', function(e) {
+      e.stopPropagation();
+      document.getElementById('user-dropdown').classList.toggle('show');
+    });
+
+    // Cerrar la tarjeta al hacer clic afuera
+    document.addEventListener('click', function(event) {
+      const dropdown = document.getElementById('user-dropdown');
+      const btn = document.getElementById('user-menu-btn');
+      if (dropdown && dropdown.classList.contains('show')) {
+        if (!dropdown.contains(event.target) && !btn.contains(event.target)) {
+          dropdown.classList.remove('show');
+        }
+      }
+    });
+
+    // Lógica fluida para colapsar/expandir la barra lateral
+    document.getElementById('toggle-sidebar-btn').addEventListener('click', function() {
+      document.getElementById('sidebar').classList.toggle('collapsed');
+      document.querySelector('.app-shell').classList.toggle('sidebar-collapsed');
+    });
+  </script>
+
+  
+
+  <script>
+    let profile = null;
+    let currentRows = [];
+    let currentColumns = [];
+    let designerCapabilities = null;
+    let validatedPlan = null;
+    let validatedHash = '';
+
+    const ROLE_CONFIG = {
+      ADMIN_PLATFORM: {
+        title: 'Administrador de plataforma',
+        description: 'Configura la operación general, cuentas técnicas y monitoreo sin acceso irrestricto a los datos operativos.',
+        limit: 'No debe utilizar su perfil para consultar o modificar libremente los datos de las aplicaciones. Su alcance se concentra en plataforma, configuración, cuentas y disponibilidad.',
+        result: 'Resultado esperado: entorno técnico disponible, seguro y con las cuentas del equipo correctamente habilitadas.',
+        process: ['Validar infraestructura y prerrequisitos del servidor.', 'Configurar variables de entorno y parámetros de seguridad.', 'Levantar la base principal y los servicios de la plataforma.', 'Gestionar cuentas técnicas y tipos de usuario autorizados.', 'Comprobar disponibilidad; si falla, registrar la incidencia y corregir la configuración.'],
+        actions: [
+          ['Usuarios registrados', 'Abrir el directorio específico con todos los usuarios, su tipo de rol y estado.', 'users'],
+          ['Salud de plataforma', 'Comprobar API, base principal y disponibilidad del servicio.', 'health'],
+          ['Conexiones técnicas', 'Registrar conexiones que la plataforma administrará sin abrir datos operativos por defecto.', 'connections']
+        ]
+      },
+      DBA: {
+        title: 'Administrador de base de datos (DBA)',
+        description: 'Gestiona esquemas, rendimiento, conexiones, respaldos, recuperación y cambios estructurales aprobados.',
+        limit: 'No actúa como desarrollador ni debe crear o modificar datos operativos sin autorización. Su función se limita al mantenimiento, estructura y recuperabilidad.',
+        result: 'Resultado esperado: structure actualizada de forma controlada, respaldada y recuperable.',
+        process: ['Recibir el paquete de migración o cambio estructural.', 'Validar convenciones, claves, índices y diseño.', 'Ejecutar la migración aprobada en el entorno correspondiente.', 'Generar respaldo y ejecutar prueba de restauración aislada.', 'Registrar evidencia cuando la integridad quede verificada.'],
+        actions: [
+          ['Diseñador visual', 'Validar y aplicar cambios estructurales sin escribir SQL.', 'designer'],
+          ['Conexiones y bases', 'Conectar motores externos y crear nuevas bases cuando la credencial remota lo permita.', 'connections'],
+          ['Publicar API', 'Exponer una tabla autorizada como servicio de solo lectura con credencial propia.', 'services'],
+          ['Recuperabilidad', 'Seguir el flujo de respaldo y restauración antes de cerrar un cambio.', 'workflow']
+        ]
+      },
+      DEVELOPER: {
+        title: 'Desarrollador institucional',
+        description: 'Diseña modelos, scripts y contratos de API en ambientes de desarrollo y prueba.',
+        limit: 'No posee administración de producción ni puede alterar seguridad, usuarios o parámetros del servidor productivo.',
+        result: 'Resultado esperado: entregable versionado, probado y listo para revisión del DBA antes de producción.',
+        process: ['Diseñar el modelo de datos según normas y diccionario institucional.', 'Escribir migración versionada y datos sintéticos de prueba.', 'Desarrollar endpoint o contrato con consultas parametrizadas.', 'Ejecutar pruebas locales de integridad y respuesta.', 'Entregar cambios para revisión e integración por el DBA.'],
+        actions: [
+          ['Diseñador visual', 'Preparar y validar modelos sin acceso de aplicación a producción.', 'designer'],
+          ['Datos de referencia', 'Consultar catálogos y datasets permitidos para construir y probar funciones.', 'data'],
+          ['Servicios de datos', 'Consultar servicios publicados y preparar contratos para integración futura.', 'services'],
+          ['Flujo de entrega', 'Revisar la cadena Desarrollador → DBA → Auditor antes de producción.', 'workflow']
+        ]
+      },
+      AUDITOR: {
+        title: 'Responsable de seguridad / auditor',
+        description: 'Supervisa accesos, permisos, eventos y cumplimiento con un perfil pasivo sobre los datos operativos.',
+        limit: 'No puede crear, modificar o borrar información operativa ni cambiar configuraciones. Su trabajo es inspeccionar, probar denegaciones y dejar evidencia.',
+        result: 'Resultado esperado: bitácoras y matriz de acceso revisadas, con hallazgos o constancia de conformidad.',
+        process: ['Autenticarse con perfil restringido a revisión.', 'Consultar la bitácora de auditoría.', 'Validar accesos permitidos y pruebas negativas de denegación.', 'Comprobar que no existan secretos expuestos.', 'Notificar irregularidades o emitir conformidad.'],
+        actions: [
+          ['Bitácora de auditoría', 'Revisar eventos sensibles sin capacidad de alterar datos.', 'audit'],
+          ['Matriz de permisos', 'Inspeccionar roles y permisos visibles por el perfil de auditoría.', 'data'],
+          ['APIs publicadas', 'Revisar qué servicios de datos están activos y desde qué origen.', 'services'],
+          ['Flujo de seguridad', 'Ubicar la validación de seguridad dentro del paso a producción.', 'workflow']
+        ]
+      },
+      ANALYST: {
+        title: 'Analista autorizado',
+        description: 'Consulta y extrae únicamente conjuntos de datos previamente autorizados en modo de solo lectura.',
+        limit: 'No puede insertar, modificar o eliminar información. Su acceso se limita a fuentes, catálogos y datasets expresamente habilitados.',
+        result: 'Resultado esperado: información filtrada y obtenida en modo de solo lectura para análisis o reportes.',
+        process: ['Autenticarse con credenciales de lectura.', 'Consultar catálogos o datasets disponibles.', 'Aplicar filtros y límites de paginación.', 'Validar que la respuesta corresponda al dato autorizado.', 'Exportar o utilizar el resultado sin alterar la fuente.'],
+        actions: [
+          ['Consultar datos', 'Explorar tablas autorizadas y obtener información de lectura.', 'data'],
+          ['Exportar reporte', 'Descargar la vista actual a CSV cuando el permiso lo permita.', 'data'],
+          ['Reportar inconsistencias', 'Escalar hallazgos a los administradores sin modificar la fuente.', 'workflow']
+        ]
+      }
+    };
+
+    const WORKFLOW = [
+      ['ADMIN_PLATFORM', 'Administrador de plataforma', 'Prepara infraestructura y servicios base.'],
+      ['DEVELOPER', 'Desarrollador', 'Diseña, programa y prueba el nuevo módulo.'],
+      ['DBA', 'DBA / mantenimiento', 'Revisa y aplica migraciones controladas.'],
+      ['AUDITOR', 'Auditor', 'Valida seguridad, permisos y trazabilidad.'],
+      ['PRODUCTION', 'API / producción', 'Publica el servicio en el entorno autorizado.'],
+      ['ANALYST', 'Analista / cuenta de servicio', 'Consume datos o servicios bajo permisos mínimos.']
+    ];
+
+    function openView(name) {
+      document.querySelectorAll('.app-view').forEach(view => view.classList.add('hidden'));
+      const nextView = document.getElementById(`view-${name}`);
+      nextView?.classList.remove('hidden');
+      document.querySelectorAll('[data-view]').forEach(button => button.classList.toggle('active', button.dataset.view === name));
+      window.activateModuleTab?.(name);
+      window.scrollTo({top: 0, behavior: 'smooth'});
+      if (name === 'data') renderDbTree();
+      if (name === 'audit') loadAudit();
+      if (name === 'connections') loadConnections();
+      if (name === 'designer') loadDesignerConnections();
+      if (name === 'services') loadServices();
+      if (name === 'backups') loadBackups();
+    }
+    window.openView = openView;
+
+    function actionButton(action) {
+      const [title, text, target] = action;
+      const article = document.createElement('article');
+      article.className = 'card action-card';
+      const icon = ({users:'♙',health:'●',connections:'⇄',designer:'◇',services:'↗',data:'▦',audit:'◎',workflow:'→'})[target] || '•';
+      article.innerHTML = `<div><div class="action-icon">${icon}</div><h3>${escapeText(title)}</h3><p>${escapeText(text)}</p></div><footer><button class="btn btn-secondary btn-sm">Abrir <span aria-hidden="true">→</span></button></footer>`;
+      article.querySelector('button').addEventListener('click', () => {
+        if (target === 'users') return window.location.href = '/usuarios.html';
+        if (target === 'health') return refreshHealth();
+        if (['data','audit','connections','designer','services'].includes(target)) return openView(target);
+        document.getElementById('workflow-track')?.scrollIntoView({behavior:'smooth', block:'center'});
+      });
+      return article;
+    }
+
+    function renderProfile() {
+      const config = ROLE_CONFIG[profile.role] || {
+        title: roleLabel(profile.role), description: profile.role_description || 'Perfil institucional', limit: 'Este perfil no tiene panel definido.', result: 'Contacta al administrador de plataforma.', process: [], actions: []
+      };
+      
+      let apodo = profile.username;
+      document.getElementById('user-menu-name').textContent = profile.username;
+      if (apodo === 'superadmin' || apodo === 'admin') apodo = 'Administrador Principal';
+      else if (apodo === 'dba') apodo = 'Especialista de Datos';
+      else apodo = apodo.charAt(0).toUpperCase() + apodo.slice(1);
+
+      document.getElementById('user-card-name').textContent = apodo;
+      document.getElementById('sidebar-user').textContent = profile.username + '@datagov.ve';
+      document.getElementById('sidebar-role').textContent = config.title;
+      
+      document.getElementById('role-stat').textContent = config.title.replace('Administrador de ', 'Admin. ');
+      document.getElementById('permission-count').textContent = String(profile.permissions?.length || 0);
+      document.getElementById('role-limit').textContent = config.limit;
+      document.getElementById('role-result').textContent = config.result;
+      document.getElementById('process-title').textContent = `Proceso: ${config.title}`;
+
+      const actions = document.getElementById('role-actions');
+      actions.replaceChildren(...config.actions.map(actionButton));
+      const process = document.getElementById('role-process');
+      process.innerHTML = config.process.map(step => `<li>${escapeText(step)}</li>`).join('');
+
+      const workflow = document.getElementById('workflow-track');
+      workflow.replaceChildren();
+      WORKFLOW.forEach((item, index) => {
+        const [key, title, description] = item;
+        const node = document.createElement('div');
+        node.className = `flow-node ${key === profile.role || (profile.role === 'SERVICE_ACCOUNT' && key === 'ANALYST') ? 'current' : ''}`;
+        node.innerHTML = `<strong>${escapeText(title)}</strong><span>${escapeText(description)}</span>`;
+        workflow.appendChild(node);
+        if (index < WORKFLOW.length - 1) {
+          const arrow = document.createElement('span');
+          arrow.className = 'flow-arrow'; arrow.textContent = '→'; workflow.appendChild(arrow);
+        }
+      });
+
+      document.getElementById('nav-data').classList.toggle('hidden', !['catalogos:leer','datasets:leer','esquema:leer','permisos:auditar'].some(p => hasPermission(profile,p)));
+      document.getElementById('nav-audit').classList.toggle('hidden', !hasPermission(profile, 'auditoria:leer'));
+      document.getElementById('nav-connections').classList.toggle('hidden', !hasPermission(profile, 'conexiones:leer'));
+      document.getElementById('nav-designer').classList.toggle('hidden', !hasPermission(profile, 'designer:validar'));
+      document.getElementById('nav-services').classList.toggle('hidden', !hasPermission(profile, 'apis:consultar'));
+      document.getElementById('nav-backups').classList.toggle('hidden', profile.username !== 'superadmin' && profile.role !== 'DBA' && profile.role !== 'ADMIN_PLATFORM');
+
+      /* --- SOLUCIÓN: El botón de usuarios se muestra y se asigna el click --- */
+      document.getElementById('nav-users').classList.toggle('hidden', !hasPermission(profile, 'usuarios:directorio')); 
+      document.getElementById('nav-users').onclick = () => window.location.href = '/usuarios.html';
+      /* ------------------------------------------------------------------------ */
+
+      window.syncModuleTabs?.();
+    }
+
+async function refreshHealth() {
+      const el = document.getElementById('health-status');
+      const detail = document.getElementById('health-detail');
+      
+      el.textContent = 'Midiendo pulso...';
+      el.className = 'muted';
+      
+      try {
+        // Hacemos ping al endpoint real que me acabas de pasar
+        const res = await apiFetch('/system/health');
+        
+        if (res.status === 'SERVING' || res.status === 'UP') {
+            el.textContent = 'Operativa';
+            el.className = 'status-ok'; // Se pondrá verde
+            
+            // Si PostgreSQL responde, mostramos los milisegundos de latencia real
+            if (res.database && res.database.status === 'UP') {
+                detail.textContent = `Latencia PostgreSQL: ${res.database.latency_ms.toFixed(2)} ms`;
+            } else {
+                detail.textContent = `Base de datos desconectada`;
+            }
+        } else {
+            el.textContent = 'Degradada';
+            el.style.color = '#f59e0b'; // Naranja
+            detail.textContent = 'El motor reporta fallas internas';
+        }
+      } catch (error) {
+        el.textContent = 'Caída';
+        el.style.color = '#ef4444'; // Rojo
+        detail.textContent = 'Sin conexión con el servidor Go';
+      }
+    }
+    
+
+    async function exportCSV() {
+      if (!currentColumns.length || !currentRows.length) return;
+      if (!hasPermission(profile, 'reportes:exportar') && profile.role !== 'DBA') {
+        await panelAlert('Tu perfil no posee el permiso de exportación de reportes.', 'Exportación no autorizada', 'warning');
+        return;
+      }
+      const q = value => `"${String(value ?? '').replaceAll('"','""')}"`;
+      const content = [currentColumns.map(q).join(','), ...currentRows.map(row => currentColumns.map(c => q(row[c])).join(','))].join('\n');
+      const blob = new Blob(['\uFEFF' + content], {type:'text/csv;charset=utf-8'});
+      const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `${document.getElementById('table-select').value || 'datos'}.csv`; link.click(); URL.revokeObjectURL(link.href);
+    }
+
+// =========================================================================
+    // 6. LÓGICA DE AUDITORÍA (LECTURA DE EVENTOS INMUTABLES)
+    // =========================================================================
+    async function loadAudit() {
+      const body = document.getElementById('audit-body');
+      const head = document.getElementById('audit-head');
+      const countLabel = document.getElementById('audit-count');
+      
+      body.innerHTML = '<tr><td class="panel-empty" colspan="100%"><span class="loading loading-spinner loading-sm"></span> Extrayendo bitácora inmutable de PostgreSQL...</td></tr>';
+      
+      try {
+        const data = await apiFetch('/auditoria/eventos?limit=100');
+        const eventos = data.eventos || data.Eventos || [];
+        
+        if (eventos.length === 0) {
+            head.innerHTML = '';
+            body.innerHTML = '<tr><td class="panel-empty" colspan="100%">No se han registrado eventos de auditoría aún.</td></tr>';
+            countLabel.textContent = '0 eventos';
+            return;
+        }
+
+        const headers = ['Fecha', 'Usuario', 'Operación', 'Recurso', 'Detalles', 'Resultado', 'IP Origen'];
+        head.innerHTML = `<tr>${headers.map(c => `<th style="padding: 14px 16px; font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700; border-bottom: 2px solid #e2e8f0; background: #f8fafc; white-space: nowrap;">${escapeText(c)}</th>`).join('')}</tr>`;
+        
+        // --- FUNCIÓN DE LIMPIEZA DE JEROGLÍFICOS (JSON) ---
+        const formatDetalles = (rawString) => {
+            if (!rawString || rawString === '-') return { short: '-', full: '-' };
+            
+            let shortDesc = rawString;
+            let fullDesc = rawString;
+            
+            // Buscamos si el texto tiene el formato "Prefijo: {json}"
+            const jsonMatch = rawString.match(/(.*?):\s*({.*})/);
+            
+            if (jsonMatch) {
+                const prefix = jsonMatch[1].trim(); // Ej: "Datos eliminados"
+                const jsonStr = jsonMatch[2]; // Ej: "{"id":"...", "nombre":"Messi"}"
+                
+                try {
+                    const obj = JSON.parse(jsonStr);
+                    
+                    // Filtramos la "basura técnica" para no mostrarla en la tabla principal
+                    const interestingKeys = Object.keys(obj).filter(k => 
+                        !['id', 'created_at', 'updated_at', 'deleted_at', 'created_by', 'updated_by'].includes(k.toLowerCase())
+                    );
+                    
+                    // Armamos un resumen bonito: Ej "Datos eliminados (nombre: Messi)"
+                    if (interestingKeys.length > 0) {
+                        const summaryParts = interestingKeys.slice(0, 2).map(k => `${k}: ${obj[k]}`);
+                        shortDesc = `${prefix} (${summaryParts.join(', ')}${interestingKeys.length > 2 ? ', ...' : ''})`;
+                    } else {
+                        shortDesc = `${prefix} (Registro de sistema)`;
+                    }
+                    
+                    // Formateamos el JSON completo con espacios e indentación para el Tooltip flotante
+                    fullDesc = `${prefix}:\n${JSON.stringify(obj, null, 2)}`;
+                } catch(e) {
+                    shortDesc = rawString.length > 50 ? rawString.substring(0, 47) + '...' : rawString;
+                }
+            } else {
+                 shortDesc = rawString.length > 50 ? rawString.substring(0, 47) + '...' : rawString;
+            }
+            return { short: shortDesc, full: fullDesc };
+        };
+
+        body.innerHTML = eventos.map((ev, index) => {
+            const bg = index % 2 === 0 ? '#ffffff' : '#f8fafc';
+            
+            const fechaRaw = ev.fecha_creacion || ev.fechaCreacion || '';
+            let fechaFmt = fechaRaw;
+            if (fechaRaw) {
+                try { 
+                    const d = new Date(fechaRaw); 
+                    if (!isNaN(d)) fechaFmt = d.toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' }); 
+                } catch(e) {}
+            }
+            
+            const username = ev.username || ev.usuario_id || ev.usuarioId || 'Sistema';
+            const operacion = ev.operacion || '-';
+            const recurso = ev.recurso || '-';
+            const resultado = ev.resultado || 'OK';
+            const ip = ev.ip_origen || ev.ipOrigen || 'Local';
+
+            // Aplicamos nuestra función de limpieza al campo detalles
+            const detallesLimpios = formatDetalles(ev.detalles || '-');
+
+            let resBadge = `<span class="badge badge-tech" style="font-size:10px;">${escapeText(resultado)}</span>`;
+            if (resultado.toUpperCase() === 'OK' || resultado.toUpperCase() === 'EXITO' || resultado.toUpperCase() === 'TRUE') {
+                resBadge = `<span class="badge badge-ok" style="font-size:10px;">${escapeText(resultado)}</span>`;
+            } else if (resultado.toUpperCase() === 'ERROR' || resultado.toUpperCase() === 'FALSE' || resultado.toUpperCase() === 'FALLO') {
+                resBadge = `<span class="badge badge-off" style="font-size:10px;">${escapeText(resultado)}</span>`;
+            }
+
+            return `<tr style="background: ${bg}; transition: background 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='${bg}'">
+                <td style="padding: 12px 16px; font-size: 13px; color: #64748b; border-bottom: 1px solid #f1f5f9; white-space: nowrap;">${escapeText(fechaFmt)}</td>
+                <td style="padding: 12px 16px; font-size: 13px; font-weight: bold; color: #1d4ed8; border-bottom: 1px solid #f1f5f9;">${escapeText(username)}</td>
+                <td style="padding: 12px 16px; font-size: 13px; color: #1e293b; font-weight: 600; border-bottom: 1px solid #f1f5f9;">${escapeText(operacion)}</td>
+                <td style="padding: 12px 16px; font-size: 13px; color: #475569; font-family: monospace; border-bottom: 1px solid #f1f5f9;">${escapeText(recurso)}</td>
+                
+                <td style="padding: 12px 16px; font-size: 13px; color: #64748b; border-bottom: 1px solid #f1f5f9;">
+                    <div style="max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor: help; background: #e2e8f0; padding: 2px 6px; border-radius: 4px;" title="${escapeText(detallesLimpios.full)}">
+                        ${escapeText(detallesLimpios.short)}
+                    </div>
+                </td>
+                
+                <td style="padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #f1f5f9; text-align: center;">${resBadge}</td>
+                <td style="padding: 12px 16px; font-size: 12px; color: #94a3b8; font-family: monospace; border-bottom: 1px solid #f1f5f9; text-align: right;">${escapeText(ip)}</td>
+            </tr>`;
+        }).join('');
+        
+        countLabel.textContent = `${data.total || eventos.length} eventos registrados`;
+
+      } catch (error) {
+        head.innerHTML = '';
+        body.innerHTML = `<tr><td class="panel-empty" style="color: #ef4444;" colspan="100%">Fallo al leer la bitácora: ${escapeText(error.message)}</td></tr>`;
+        countLabel.textContent = 'Error de conexión';
+      }
+    }
+
+
+    function connectionProfile() {
+      return {
+        name: document.getElementById('conn-name').value.trim(),
+        engine: document.getElementById('conn-engine').value,
+        host: document.getElementById('conn-host').value.trim(),
+        port: Number(document.getElementById('conn-port').value),
+        user: document.getElementById('conn-user').value.trim(),
+        password: document.getElementById('conn-password').value,
+        database: document.getElementById('conn-database').value.trim(),
+        ssl_mode: document.getElementById('conn-ssl').value,
+        read_only: document.getElementById('conn-readonly').checked
+      };
+    }
+
+    async function loadConnections() {
+      const list = document.getElementById('connection-list');
+      // MOCK DATA: Simulamos bases de datos conectadas
+      const connections = [
+        { id: "conn-1", name: "DBGS Producción", engine: "postgresql", host: "127.0.0.1", port: 5432, database: "dbgs_main", read_only: false, system: true },
+        { id: "conn-2", name: "Sistema Externo RRHH", engine: "mysql", host: "10.0.0.15", port: 3306, database: "rrhh_data", read_only: true, system: false }
+      ];
+
+      list.replaceChildren(...connections.map(conn => {
+        const item = document.createElement('div'); item.className = 'connection-item';
+        item.innerHTML = `<div><strong>${escapeText(conn.name)}</strong><span>${escapeText(conn.engine)} · ${escapeText(conn.host)}:${escapeText(conn.port)} · ${escapeText(conn.database)}${conn.read_only ? ' · solo lectura' : ''}</span></div><div class="toolbar"></div>`;
+        const actions = item.querySelector('.toolbar');
+        const openData = document.createElement('button'); openData.className='btn btn-primary btn-sm'; openData.textContent='Abrir datos';
+        openData.onclick = () => { document.getElementById('external-connection').value=conn.id; document.getElementById('external-data-explorer').scrollIntoView({behavior:'smooth',block:'start'}); };
+        actions.appendChild(openData);
+        return item;
+      }));
+    }
+
+
+    let externalOffset = 0;
+    let externalColumns = [];
+    let externalRows = [];
+
+
+
+
+
+// --- EVENTOS DE CLIC PARA LAS MIGAS DE PAN ---
+    document.getElementById('bc-db').addEventListener('click', () => {
+        document.getElementById('breadcrumb-table').textContent = '...';
+        document.getElementById('bc-schema').textContent = '...';
+        document.getElementById('db-data-body').innerHTML = '<tr><td class="panel-empty" colspan="100%">Selecciona un esquema y tabla en el árbol para ver sus datos.</td></tr>';
+        document.querySelectorAll('.tree-table-selectable').forEach(s => s.classList.remove('active-table'));
+    });
+
+    document.getElementById('bc-schema').addEventListener('click', () => {
+        if(document.getElementById('bc-schema').textContent === '...') return;
+        document.getElementById('breadcrumb-table').textContent = '...';
+        document.getElementById('db-data-body').innerHTML = '<tr><td class="panel-empty" colspan="100%">Selecciona una tabla en el esquema actual.</td></tr>';
+        document.querySelectorAll('.tree-table-selectable').forEach(s => s.classList.remove('active-table'));
+    });
+// =========================================================================
+    // 1. DIBUJAR EL ÁRBOL LATERAL LEYENDO DESDE LA BASE DE DATOS REAL
+    // =========================================================================
+    async function renderDbTree() {
+      const container = document.getElementById('db-tree-container');
+      if (!container) return;
+      container.innerHTML = '<div class="panel-empty" style="padding: 20px; text-align: center;"><span class="loading loading-spinner loading-sm"></span> Conectando con PostgreSQL...</div>';
+
+      try {
+        const data = await apiFetch('/colecciones?limit=100');
+        const colecciones = data.colecciones || data.Colecciones || [];
+
+        // CREAMOS LA MEMORIA CACHÉ PARA LAS COLUMNAS
+        window.tableColumnsCache = window.tableColumnsCache || {};
+
+        let html = '<div class="db-tree">';
+        html += `<details open><summary><svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg><svg class="tree-icon icon-conn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>DBGS Producción</summary>`;
+        
+        // --- ESQUEMA PUBLIC (Tablas Dinámicas) ---
+        html += `<details open><summary><svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg><svg class="tree-icon icon-schema" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>public (Tablas Dinámicas)</summary>`;
+
+        if (colecciones.length === 0) {
+            html += `<div class="tree-leaf" style="font-style:italic">No hay tablas creadas aún.</div>`;
+        } else {
+            colecciones.forEach(tabla => {
+                const nombre = tabla.nombreLogico || tabla.nombre_logico || tabla.NombreLogico || tabla.nombre || "Tabla_Sin_Nombre";
+                
+                // AQUÍ AÑADIMOS EL title="${escapeText(nombre)}" PARA LA TABLA
+                html += `<details><summary class="tree-table-selectable" title="${escapeText(nombre)}" data-conn="conn-1" data-schema="public" data-table="${escapeText(nombre)}"><svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg><svg class="tree-icon icon-table" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>${escapeText(nombre)}</summary>`;
+                
+                let columnas = [];
+                try {
+                    let raw = tabla.estructuraJson || tabla.estructura_json || tabla.EstructuraJSON || tabla.estructura;
+                    if (typeof raw === 'string') {
+                        try { raw = decodeURIComponent(escape(window.atob(raw))); } catch(err) {}
+                        columnas = JSON.parse(raw);
+                    } else if (raw) {
+                        columnas = raw;
+                    }
+                } catch(e) {}
+                if (!Array.isArray(columnas)) columnas = [];
+                
+                window.tableColumnsCache[nombre] = columnas.map(c => c.nombre || c.name || c.Nombre || "columna");
+
+                columnas.forEach(col => {
+                    const colNombre = col.nombre || col.name || col.Nombre || "columna";
+                    const isPk = col.primary_key || col.primaryKey || colNombre.toLowerCase() === 'id';
+                    const svgIcon = isPk ? `<svg class="tree-icon icon-pk" viewBox="0 0 24 24" fill="currentColor"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>` : `<svg class="tree-icon icon-column" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect></svg>`;
+                    
+                    // AQUÍ AÑADIMOS EL title="${escapeText(colNombre)}" PARA LA COLUMNA
+                    html += `<div class="tree-leaf" title="${escapeText(colNombre)}">${svgIcon} ${escapeText(colNombre)}</div>`;
+                });
+                html += `</details>`;
+            });
+        }
+        html += `</details>`; 
+
+        // --- ESQUEMA DBGS_SCHEMA ---
+        html += `<details><summary><svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg><svg class="tree-icon icon-schema" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>dbgs_schema (Sistema Interno)</summary>`;
+        html += `<details><summary class="tree-table-selectable" data-conn="conn-1" data-schema="dbgs_schema" data-table="usuarios"><svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg><svg class="tree-icon icon-table" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>usuarios</summary><div class="tree-leaf">Tabla protegida</div></details>`;
+        html += `<details><summary class="tree-table-selectable" data-conn="conn-1" data-schema="dbgs_schema" data-table="roles"><svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg><svg class="tree-icon icon-table" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>roles</summary><div class="tree-leaf">Tabla protegida</div></details>`;
+        html += `</details></details></div>`; 
+        
+        container.innerHTML = html;
+
+        container.querySelectorAll('.tree-table-selectable').forEach(summary => {
+            summary.addEventListener('click', (e) => {
+                if(e.target.tagName.toLowerCase() === 'svg' || e.target.tagName.toLowerCase() === 'polyline' || e.target.tagName.toLowerCase() === 'rect') return; 
+                e.preventDefault(); 
+                container.querySelectorAll('.tree-table-selectable').forEach(s => s.classList.remove('active-table'));
+                summary.classList.add('active-table');
+                
+                document.getElementById('bc-schema').textContent = summary.dataset.schema;
+                document.getElementById('breadcrumb-table').textContent = summary.dataset.table;
+                document.getElementById('current-tree-conn').value = summary.dataset.conn;
+                document.getElementById('current-tree-schema').value = summary.dataset.schema;
+                document.getElementById('current-tree-table').value = summary.dataset.table;
+                
+                // --- NUEVO PARCHE UX: FORZAR CAMBIO A LA PESTAÑA "DATOS" ---
+                document.querySelectorAll('.db-tab').forEach(t => t.classList.remove('active-tab'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+                document.querySelector('.db-tab[data-target="vista-datos"]').classList.add('active-tab');
+                document.getElementById('vista-datos').classList.remove('hidden');
+                // -----------------------------------------------------------
+
+                // --- MOSTRAR/OCULTAR BOTÓN DE ELIMINAR TABLA ---
+                if (summary.dataset.schema === 'public') {
+                    document.getElementById('btn-delete-table').style.display = ''; // Lo mostramos
+                } else {
+                    document.getElementById('btn-delete-table').style.display = 'none'; // Lo ocultamos
+                }
+                // -----------------------------------------------------------
+
+                externalOffset = 0;
+                loadExternalRowsFromTree(); 
+            });
+        });
+
+      } catch (error) {
+        container.innerHTML = `<div class="panel-empty" style="color: #ef4444;">Error de red: ${escapeText(error.message)}</div>`;
+      }
+    }
+
+
+// =========================================================================
+    // 2. OBTENER Y MAQUILLAR LOS DATOS REALES DE LA TABLA SELECCIONADA
+    // =========================================================================
+// =========================================================================
+    // 2. OBTENER Y MAQUILLAR LOS DATOS REALES DE LA TABLA SELECCIONADA
+    // =========================================================================
+    async function loadExternalRowsFromTree(reset = true) {
+      const schema = document.getElementById('current-tree-schema').value;
+      const table = document.getElementById('current-tree-table').value.toLowerCase();
+      if (!schema || !table) return;
+
+      const head = document.getElementById('db-data-head'); 
+      const body = document.getElementById('db-data-body'); 
+      const countDisplay = document.getElementById('db-row-count') || document.getElementById('table-row-count'); 
+
+      if (schema === 'dbgs_schema') {
+          head.innerHTML = '';
+          body.innerHTML = `<tr><td class="panel-empty" colspan="100%">
+              <svg width="40" height="40" fill="none" stroke="#94a3b8" stroke-width="1.5" viewBox="0 0 24 24" style="margin: 0 auto 12px; display: block;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+              <strong>Acceso denegado por diseño</strong><br>
+              Las tablas del esquema <code>dbgs_schema</code> conforman el núcleo del sistema. <br>Por seguridad, no se exponen en este explorador. Utiliza los módulos nativos.
+          </td></tr>`;
+          if(countDisplay) countDisplay.textContent = `Protegida · ${schema}.${table}`;
+          return;
+      }
+
+      if (reset) externalOffset = 0;
+      const limit = Number(document.getElementById('external-limit')?.value || 100);
+      body.innerHTML = '<tr><td class="panel-empty" colspan="100%"><span class="loading loading-spinner loading-sm"></span> Obteniendo registros de la base de datos...</td></tr>';
+      
+      try {
+        const endpoint = `/data/${table}?limit=${limit}&offset=${externalOffset}`;
+        const res = await apiFetch(endpoint);
+        
+        let registros = [];
+        if (Array.isArray(res)) registros = res;
+        else if (res.registros) registros = res.registros;
+        else if (res.data) registros = res.data;
+
+        window.tableColumnsCache = window.tableColumnsCache || {};
+        let columnasAMostrar = window.tableColumnsCache[table] || [];
+
+        if (registros && registros.length > 0) {
+            const auditCols = ['created_at', 'updated_at', 'deleted_at', 'created_by', 'updated_by'];
+            columnasAMostrar = Object.keys(registros[0]).sort((a, b) => {
+                let al = a.toLowerCase(), bl = b.toLowerCase();
+                if (al === 'id') return -1;
+                if (bl === 'id') return 1;
+                let aAudit = auditCols.includes(al), bAudit = auditCols.includes(bl);
+                if (aAudit && !bAudit) return 1;
+                if (!aAudit && bAudit) return -1;
+                return 0; 
+            });
+            externalRows = registros;
+        } else {
+            externalRows = [];
+        }
+        externalColumns = columnasAMostrar;
+
+        // DIBUJAR CABECERAS (+ COLUMNA ACCIONES)
+        if (columnasAMostrar.length > 0) {
+            head.innerHTML = `<tr>${columnasAMostrar.map(c => `<th style="padding: 14px 16px; font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700; border-bottom: 2px solid #e2e8f0; white-space: nowrap; background: #f8fafc; letter-spacing: 0.5px;">${escapeText(c)}</th>`).join('')}<th style="padding: 14px 16px; font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700; border-bottom: 2px solid #e2e8f0; background: #f8fafc; text-align: right;">Acciones</th></tr>`;
+        } else {
+            head.innerHTML = `<tr><th style="padding: 14px 16px; font-size: 11px; color: #64748b; background: #f8fafc;">ESTRUCTURA DE LA TABLA</th></tr>`;
+        }
+
+        const formatCell = (colName, value) => {
+            if (value === null || value === undefined) return '<span style="color:#cbd5e1; font-style:italic;">null</span>';
+            const valStr = String(value);
+            const lowerCol = colName.toLowerCase();
+            if (typeof value === 'boolean' || valStr === 'true' || valStr === 'false') {
+                const isTrue = value === true || valStr === 'true';
+                return isTrue ? '<span class="badge badge-ok" style="font-size: 10px;">TRUE</span>' : '<span class="badge badge-off" style="font-size: 10px;">FALSE</span>';
+            }
+            if (lowerCol.includes('_at') && valStr.includes('T')) {
+                try { const d = new Date(valStr); if (!isNaN(d)) return `<span style="color:#64748b; font-size:12px;" title="${valStr}">${d.toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}</span>`; } catch(e) {}
+            }
+            if (lowerCol === 'id' || lowerCol.endsWith('_id')) {
+                if (valStr.length > 20) return `<span style="font-family: monospace; color:#94a3b8; font-size: 12px; cursor: help;" title="${escapeText(valStr)}">${escapeText(valStr.substring(0,8))}...${escapeText(valStr.substring(valStr.length-4))}</span>`;
+                return `<span style="font-family: monospace; color:#94a3b8; font-size: 12px;">${escapeText(valStr)}</span>`;
+            }
+            return `<div style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500;" title="${escapeText(valStr)}">${escapeText(valStr)}</div>`;
+        };
+
+        // DIBUJAMOS EL CUERPO (+ BOTÓN DE EDITAR)
+        if (externalRows.length === 0) {
+            body.innerHTML = `<tr><td class="panel-empty" colspan="${columnasAMostrar.length + 1 || 2}">La tabla está vacía en PostgreSQL. ¡Anímate a añadir el primer registro!</td></tr>`;
+            if(countDisplay) countDisplay.textContent = `0 filas · ${schema}.${table}`;
+        } else {
+            body.innerHTML = externalRows.map((row, index) => {
+                const bg = index % 2 === 0 ? '#ffffff' : '#f8fafc';
+                // Encriptamos la fila entera para pasársela al Modal
+                const rowJson = encodeURIComponent(JSON.stringify(row));
+                return `<tr style="background: ${bg}; transition: background 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='${bg}'">
+                    ${columnasAMostrar.map(c => `<td style="padding: 12px 16px; font-size: 13px; color: #1e293b; border-bottom: 1px solid #f1f5f9;">${formatCell(c, row[c])}</td>`).join('')}
+                    <td style="padding: 12px 16px; text-align: right; border-bottom: 1px solid #f1f5f9;">
+                        <button class="btn btn-ghost btn-sm" onclick="openEditModal('${rowJson}')" title="Editar este registro">✏️</button>
+                        <button class="btn btn-ghost btn-sm" onclick="deleteRecord('${table}', '${escapeText(String(row.id || row.ID || row.Id))}')" title="Eliminar registro" style="color: #ef4444;">🗑️</button>
+                    </td>
+                </tr>`;
+            }).join('');
+            if(countDisplay) countDisplay.textContent = `${externalRows.length} filas extraídas · ${schema}.${table}`;
+        }
+
+        // --- NUEVO: CONTROL INTELIGENTE DE PAGINACIÓN ---
+        const btnPrev = document.getElementById('external-prev');
+        if (btnPrev) {
+            btnPrev.disabled = externalOffset === 0;
+            btnPrev.style.opacity = externalOffset === 0 ? '0.5' : '1';
+            btnPrev.style.cursor = externalOffset === 0 ? 'not-allowed' : 'pointer';
+        }
+        // ------------------------------------------------
+
+      } catch (error) {
+        head.innerHTML = '';
+        body.innerHTML = `<tr><td class="panel-empty" style="color: #ef4444;" colspan="100%">No se pudo leer la tabla: ${escapeText(error.message)}</td></tr>`;
+        if(countDisplay) countDisplay.textContent = `Error de lectura`;
+      }
+    }
+
+    // =========================================================================
+    // 3. LÓGICA PARA AÑADIR REGISTROS (DML - INSERT)
+    // =========================================================================
+
+    // Conectar el botón para abrir el Modal
+    document.getElementById('btn-add-record')?.addEventListener('click', () => {
+        const schema = document.getElementById('current-tree-schema').value;
+        const table = document.getElementById('current-tree-table').value;
+        
+        if (!table) return;
+        if (schema === 'dbgs_schema') {
+            alert("No se pueden añadir registros manualmente a las tablas de sistema.");
+            return;
+        }
+
+        document.getElementById('add-record-title').textContent = `Nuevo registro: ${table}`;
+        const fieldsContainer = document.getElementById('add-record-fields');
+        fieldsContainer.innerHTML = '';
+
+        // Sacamos las columnas de nuestra memoria Caché
+        const columnas = window.tableColumnsCache[table] || [];
+        
+        if (columnas.length === 0) {
+            fieldsContainer.innerHTML = '<p class="muted">No hay columnas detectadas.</p>';
+        }
+
+        // Dibujamos un input por cada columna
+        columnas.forEach(col => {
+            let placeholder = "";
+            let extraAttrs = "";
+            let label = col.toUpperCase();
+
+            // Si la columna es el ID o fechas de auditoría, las dejamos bloqueadas
+            if (col.toLowerCase() === 'id' || col.toLowerCase() === 'created_at' || col.toLowerCase() === 'updated_at') {
+                placeholder = "Generado automáticamente por PostgreSQL";
+                extraAttrs = "disabled style='background: #f8fafc;'";
+                label += " (Auto)";
+            }
+            
+            fieldsContainer.innerHTML += `
+                <div class="field">
+                    <label style="font-size: 11px; font-weight: bold; color: #475569;">${escapeText(label)}</label>
+                    <input type="text" class="input add-record-input" data-col="${escapeText(col)}" placeholder="${placeholder}" ${extraAttrs}>
+                </div>
+            `;
+        });
+
+        // Mostramos el modal con una transición suave
+        const modal = document.getElementById('add-record-modal');
+        modal.classList.remove('hidden');
+        setTimeout(() => modal.style.opacity = '1', 10);
+    });
+
+    // Función para cerrar el Modal
+    window.closeAddModal = function() {
+        const modal = document.getElementById('add-record-modal');
+        modal.style.opacity = '0';
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            document.getElementById('add-record-form').reset();
+            document.getElementById('add-record-message').textContent = '';
+        }, 200);
+    };
+
+    // Función para enviar los datos al Backend de Lucho
+    document.getElementById('add-record-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const table = document.getElementById('current-tree-table').value;
+        const msg = document.getElementById('add-record-message');
+        const submitBtn = document.getElementById('add-record-submit');
+        
+        const inputs = document.querySelectorAll('.add-record-input:not([disabled])');
+        
+        // Armamos el objeto dinámico puro que espera Lucho
+        const payload = {};
+        inputs.forEach(input => {
+            const val = input.value.trim();
+            // Truco: Convertimos a minúsculas por si el backend es estricto
+            const col = input.dataset.col.toLowerCase(); 
+            if (val !== "") {
+                payload[col] = val;
+            }
+        });
+
+        msg.style.color = '#0c4a6e';
+        msg.textContent = 'Guardando en PostgreSQL...';
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Guardando';
+
+        try {
+            // Mandamos la orden al endpoint dinámico
+            const response = await apiFetch(`/data/${table}`, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+            
+            msg.style.color = '#10b981';
+            msg.textContent = '¡Registro insertado con éxito!';
+            
+            // Refrescamos la tabla y cerramos en 1 segundo
+            setTimeout(() => {
+                closeAddModal();
+                loadExternalRowsFromTree(false); 
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Guardar Registro';
+            }, 1200);
+            
+        } catch(error) {
+            msg.style.color = '#ef4444';
+            msg.textContent = 'Error: ' + error.message;
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Guardar Registro';
+        }
+    });
+
+    // =========================================================================
+    // 4. LÓGICA PARA EDITAR REGISTROS (DML - UPDATE/PUT)
+    // =========================================================================
+    
+    // Función que se activa al darle clic al lápiz ✏️
+    window.openEditModal = function(rowJsonEncoded) {
+        const row = JSON.parse(decodeURIComponent(rowJsonEncoded));
+        const table = document.getElementById('current-tree-table').value;
+        
+        document.getElementById('edit-record-title').textContent = `Editar registro: ${table}`;
+        
+        // Atrapamos el ID principal del registro (PostgreSQL usa 'id' pero cubrimos variables)
+        const recordId = row.id || row.ID || row.Id;
+        document.getElementById('edit-record-id').value = recordId;
+
+        const fieldsContainer = document.getElementById('edit-record-fields');
+        fieldsContainer.innerHTML = '';
+
+        const columnas = window.tableColumnsCache[table] || Object.keys(row);
+        
+        // Dibujamos las cajas y las rellenamos con la data actual
+        columnas.forEach(col => {
+            let val = row[col] !== null && row[col] !== undefined ? row[col] : '';
+            let extraAttrs = "";
+            let label = col.toUpperCase();
+
+            // Protegemos el ID y las fechas automáticas
+            if (col.toLowerCase() === 'id' || col.toLowerCase() === 'created_at' || col.toLowerCase() === 'updated_at') {
+                extraAttrs = "disabled style='background: #f8fafc;'";
+                label += " (Protegido)";
+            }
+            
+            fieldsContainer.innerHTML += `
+                <div class="field">
+                    <label style="font-size: 11px; font-weight: bold; color: #475569;">${escapeText(label)}</label>
+                    <input type="text" class="input edit-record-input" data-col="${escapeText(col)}" value="${escapeText(String(val))}" ${extraAttrs}>
+                </div>
+            `;
+        });
+
+        const modal = document.getElementById('edit-record-modal');
+        modal.classList.remove('hidden');
+        setTimeout(() => modal.style.opacity = '1', 10);
+    };
+
+    window.closeEditModal = function() {
+        const modal = document.getElementById('edit-record-modal');
+        modal.style.opacity = '0';
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            document.getElementById('edit-record-form').reset();
+            document.getElementById('edit-record-message').textContent = '';
+        }, 200);
+    };
+
+    // Envío del paquete PUT al servidor
+    document.getElementById('edit-record-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const table = document.getElementById('current-tree-table').value;
+        const recordId = document.getElementById('edit-record-id').value;
+        const msg = document.getElementById('edit-record-message');
+        const submitBtn = document.getElementById('edit-record-submit');
+        
+        if (!recordId) {
+            msg.style.color = '#ef4444';
+            msg.textContent = 'Error crítico: Esta fila carece de identificador (ID).';
+            return;
+        }
+
+        const inputs = document.querySelectorAll('.edit-record-input:not([disabled])');
+        const payload = {};
+        
+        inputs.forEach(input => {
+            const val = input.value.trim();
+            const col = input.dataset.col.toLowerCase(); 
+            // Aunque esté en blanco, lo enviamos (por si el usuario quiere borrar un campo opcional)
+            payload[col] = val;
+        });
+
+        msg.style.color = '#0c4a6e';
+        msg.textContent = 'Actualizando en PostgreSQL...';
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Guardando';
+
+        try {
+            // Llamamos a la ruta PUT con el UUID en la URL: /v1/data/{tabla}/{id}
+            const response = await apiFetch(`/data/${table}/${recordId}`, {
+                method: 'PUT',
+                body: JSON.stringify(payload)
+            });
+            
+            msg.style.color = '#10b981';
+            msg.textContent = '¡Registro actualizado con éxito!';
+            
+            setTimeout(() => {
+                closeEditModal();
+                loadExternalRowsFromTree(false); // Refresca la tabla automáticamente
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Guardar Cambios';
+            }, 1200);
+            
+        } catch(error) {
+            msg.style.color = '#ef4444';
+            msg.textContent = 'Fallo en la actualización: ' + error.message;
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Guardar Cambios';
+        }
+    });
+
+    // =========================================================================
+    // 5. LÓGICA PARA ELIMINAR REGISTROS (DML - DELETE)
+    // =========================================================================
+    window.deleteRecord = async function(table, recordId) {
+        if (!recordId) return;
+        
+        // Usamos tu hermosa alerta nativa de confirmación
+        const confirmado = await panelConfirm(
+            '¿Estás seguro de que deseas eliminar este registro de PostgreSQL? Esta acción es irreversible.', 
+            'Eliminar registro', 
+            { danger: true, confirmText: 'Eliminar definitivamente' }
+        );
+        
+        if (!confirmado) return;
+
+        try {
+            // Llamamos a la ruta DELETE de Lucho: /v1/data/{tabla}/{id}
+            await apiFetch(`/data/${table}/${recordId}`, {
+                method: 'DELETE'
+            });
+            
+            // Refrescamos la tabla instantáneamente
+            loadExternalRowsFromTree(false); 
+            
+        } catch(error) {
+            alert('Fallo al eliminar: ' + error.message);
+        }
+    };
+
+    async function exportExternalCSV() {
+      if (!externalColumns.length || !externalRows.length) return;
+      if (!hasPermission(profile,'reportes:exportar') && profile.role!=='DBA') { await panelAlert('Tu perfil no posee permiso de exportación.', 'Exportación no autorizada', 'warning'); return; }
+      const q=value=>`"${String(value??'').replaceAll('"','""')}"`;
+      const content=[externalColumns.map(q).join(','),...externalRows.map(row=>externalColumns.map(c=>q(row[c])).join(','))].join('\n');
+      const blob=new Blob(['\uFEFF'+content],{type:'text/csv;charset=utf-8'});
+      const link=document.createElement('a'); link.href=URL.createObjectURL(blob); link.download=`${document.getElementById('external-table').value||'datos-externos'}.csv`; link.click(); URL.revokeObjectURL(link.href);
+    }
+
+    function slugifyService(value) {
+      return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,80);
+    }
+
+    async function loadServiceConnections() {
+      if (!hasPermission(profile,'apis:publicar')) return;
+      const data = await apiFetch('/connections');
+      const select = document.getElementById('service-connection');
+      select.innerHTML = '<option value="">Seleccionar…</option>' + (data.connections||[]).map(c=>`<option value="${escapeText(c.id)}">${escapeText(c.name)} · ${escapeText(c.engine)}</option>`).join('');
+    }
+
+    async function loadServiceSchemas() {
+      const connection = document.getElementById('service-connection').value;
+      const schema = document.getElementById('service-schema');
+      const table = document.getElementById('service-table');
+      schema.innerHTML='<option value="">Seleccionar…</option>'; table.innerHTML='<option value="">Seleccionar…</option>';
+      if (!connection) return;
+      try {
+        const data=await apiFetch(`/connections/${encodeURIComponent(connection)}/schemas`);
+        schema.innerHTML='<option value="">Seleccionar…</option>'+(data.schemas||[]).map(v=>`<option value="${escapeText(v)}">${escapeText(v)}</option>`).join('');
+      } catch(error){ document.getElementById('service-message').textContent=error.message; }
+    }
+
+    async function loadServiceTables() {
+      const connection=document.getElementById('service-connection').value;
+      const schema=document.getElementById('service-schema').value;
+      const table=document.getElementById('service-table'); table.innerHTML='<option value="">Seleccionar…</option>';
+      if (!connection || !schema) return;
+      try {
+        const data=await apiFetch(`/connections/${encodeURIComponent(connection)}/tables?schema=${encodeURIComponent(schema)}`);
+        table.innerHTML='<option value="">Seleccionar…</option>'+(data.tables||[]).map(v=>`<option value="${escapeText(v)}">${escapeText(v)}</option>`).join('');
+      } catch(error){ document.getElementById('service-message').textContent=error.message; }
+    }
+
+    function showServiceCredential(data) {
+      const card=document.getElementById('service-credential'); card.classList.remove('hidden');
+      document.getElementById('service-key').textContent=data.api_key || '';
+      document.getElementById('service-endpoint').textContent=`Endpoint: ${location.origin}${data.endpoint} · Header: X-API-Key`;
+      card.scrollIntoView({behavior:'smooth',block:'center'});
+    }
+
+    async function loadServices() {
+      const body=document.getElementById('services-body');
+      // MOCK DATA: Simulamos APIs publicadas
+      const services = [
+        { id: "api-1", name: "Consulta de Municipios", description: "Expone el catálogo oficial", endpoint: "/api/v1/public/municipios", connection_name: "DBGS Producción", schema: "public", table: "catalogo_municipios", max_rows: 500, active: true },
+        { id: "api-2", name: "Directorio de Instituciones", description: "Datos públicos", endpoint: "/api/v1/public/instituciones", connection_name: "DBGS Producción", schema: "public", table: "instituciones", max_rows: 100, active: false }
+      ];
+      
+      body.innerHTML=services.length?services.map(service=>{
+        const canPublish=hasPermission(profile,'apis:publicar');
+        const actions=canPublish?`<button class="btn btn-secondary btn-sm">Activar / Desactivar</button>`:'Solo consulta';
+        return `<tr><td><strong>${escapeText(service.name)}</strong><br><span class="muted small">${escapeText(service.description||'')}</span></td><td><code>${escapeText(service.endpoint)}</code></td><td>${escapeText(service.connection_name)}<br><span class="muted small">${escapeText(service.schema)}.${escapeText(service.table)}</span></td><td>${escapeText(service.max_rows)}</td><td>${service.active?'<span class="badge badge-ok">Activa</span>':'<span class="badge badge-off">Inactiva</span>'}</td><td>${actions}</td></tr>`;
+      }).join(''):'<tr><td colspan="6" class="panel-empty">Aún no hay APIs publicadas.</td></tr>';
+      
+      if(hasPermission(profile,'apis:publicar')) {
+        document.getElementById('service-publish-card').classList.remove('hidden');
+      }
+    }
+
+    function typeOptions(selected = 'string') {
+      const types = designerCapabilities?.types || [
+        {id:'uuid',label:'UUID / Identificador'}, {id:'string',label:'Texto corto'}, {id:'text',label:'Texto largo'},
+        {id:'integer',label:'Número entero'}, {id:'bigint',label:'Número entero grande'}, {id:'decimal',label:'Número decimal'},
+        {id:'boolean',label:'Sí / No'}, {id:'date',label:'Fecha'}, {id:'timestamp',label:'Fecha y hora'}, {id:'json',label:'Objeto JSON'}
+      ];
+      return types.map(t => `<option value="${escapeText(t.id)}" ${t.id===selected?'selected':''}>${escapeText(t.label)}</option>`).join('');
+    }
+
+    function defaultOptions(selected = '') {
+      const defaults = designerCapabilities?.defaults || [
+        {id:'',label:'Sin valor automático'}, {id:'uuid',label:'UUID aleatorio'}, {id:'now',label:'Fecha/hora actual'}, {id:'true',label:'Verdadero'}, {id:'false',label:'Falso'}, {id:'zero',label:'Cero'}
+      ];
+      return defaults.map(d => `<option value="${escapeText(d.id)}" ${d.id===selected?'selected':''}>${escapeText(d.label)}</option>`).join('');
+    }
+
+    function addDesignerColumn(column = {}) {
+      const body = document.getElementById('designer-columns');
+      const row = document.createElement('tr');
+      row.className = 'designer-column';
+      row.innerHTML = `
+        <td><input class="input col-name" value="${escapeText(column.name || '')}" placeholder="id"></td>
+        <td><select class="select col-type">${typeOptions(column.type || 'string')}</select></td>
+        <td><input class="input col-length" type="number" min="0" value="${escapeText(column.length || '')}" placeholder="255"></td>
+        <td><select class="select col-default">${defaultOptions(column.default || '')}</select></td>
+        <td style="text-align:center"><input class="col-required" type="checkbox" ${column.nullable === false ? 'checked' : ''}></td>
+        <td style="text-align:center"><input class="col-pk" type="checkbox" ${column.primary_key ? 'checked' : ''}></td>
+        <td style="text-align:center"><input class="col-unique" type="checkbox" ${column.unique ? 'checked' : ''}></td>
+        <td style="text-align:center"><input class="col-auto" type="checkbox" ${column.auto_increment ? 'checked' : ''}></td>
+        <td><button type="button" class="btn btn-danger btn-sm col-remove">Quitar</button></td>`;
+      row.querySelector('.col-remove').onclick = () => { row.remove(); invalidateDesigner(); };
+      row.querySelectorAll('input,select').forEach(el => el.addEventListener('change', invalidateDesigner));
+      row.querySelectorAll('input').forEach(el => el.addEventListener('input', invalidateDesigner));
+      body.appendChild(row);
+      invalidateDesigner();
+    }
+
+    function addDesignerFK(fk = {}) {
+      const container = document.getElementById('designer-fks');
+      if (container.querySelector('.panel-empty')) container.innerHTML = '';
+      const card = document.createElement('div');
+      card.className = 'subform designer-fk';
+      const actions = designerCapabilities?.on_delete || ['NO ACTION','RESTRICT','CASCADE','SET NULL'];
+      card.innerHTML = `<div class="form-grid compact-grid">
+        <div class="field"><label>Columna local</label><input class="input fk-column" value="${escapeText(fk.column || '')}" placeholder="municipio_id"></div>
+        <div class="field"><label>Esquema destino</label><input class="input fk-schema" value="${escapeText(fk.ref_schema || '')}" placeholder="public"></div>
+        <div class="field"><label>Tabla destino</label><input class="input fk-table" value="${escapeText(fk.ref_table || '')}" placeholder="municipios"></div>
+        <div class="field"><label>Columna destino</label><input class="input fk-ref-column" value="${escapeText(fk.ref_column || '')}" placeholder="id"></div>
+        <div class="field"><label>Al eliminar</label><select class="select fk-delete">${actions.map(a=>`<option ${a===(fk.on_delete||'NO ACTION')?'selected':''}>${escapeText(a)}</option>`).join('')}</select></div>
+        <div class="field"><label>&nbsp;</label><button type="button" class="btn btn-danger btn-sm fk-remove">Quitar relación</button></div>
+      </div>`;
+      card.querySelector('.fk-remove').onclick = () => { card.remove(); if (!container.children.length) container.innerHTML='<div class="panel-empty">Sin relaciones.</div>'; invalidateDesigner(); };
+      card.querySelectorAll('input,select').forEach(el => { el.addEventListener('input', invalidateDesigner); el.addEventListener('change', invalidateDesigner); });
+      container.appendChild(card);
+      invalidateDesigner();
+    }
+
+    function addDesignerIndex(index = {}) {
+      const container = document.getElementById('designer-indexes');
+      if (container.querySelector('.panel-empty')) container.innerHTML = '';
+      const card = document.createElement('div');
+      card.className = 'subform designer-index';
+      card.innerHTML = `<div class="form-grid compact-grid">
+        <div class="field"><label>Nombre (opcional)</label><input class="input idx-name" value="${escapeText(index.name || '')}" placeholder="idx_personas_cedula"></div>
+        <div class="field"><label>Columnas</label><input class="input idx-columns" value="${escapeText((index.columns || []).join(', '))}" placeholder="cedula, estado"></div>
+        <div class="field"><label>Tipo</label><label class="checkbox-line"><input class="idx-unique" type="checkbox" ${index.unique ? 'checked' : ''}> Índice único</label></div>
+        <div class="field"><label>&nbsp;</label><button type="button" class="btn btn-danger btn-sm idx-remove">Quitar índice</button></div>
+      </div>`;
+      card.querySelector('.idx-remove').onclick = () => { card.remove(); if (!container.children.length) container.innerHTML='<div class="panel-empty">Sin índices adicionales.</div>'; invalidateDesigner(); };
+      card.querySelectorAll('input').forEach(el => { el.addEventListener('input', invalidateDesigner); el.addEventListener('change', invalidateDesigner); });
+      container.appendChild(card);
+      invalidateDesigner();
+    }
+
+    function invalidateDesigner() {
+      validatedPlan = null;
+      validatedHash = '';
+      const apply = document.getElementById('designer-apply');
+      if (apply) apply.disabled = true;
+      const msg = document.getElementById('designer-message');
+      if (msg) msg.textContent = 'El plan cambió; vuelve a validarlo antes de aplicar.';
+    }
+
+    function designerPlan() {
+      const columns = [...document.querySelectorAll('.designer-column')].map(row => {
+        const type = row.querySelector('.col-type').value;
+        const size = Number(row.querySelector('.col-length').value || 0);
+        const item = {
+          // VACUNA: Nombre de columna forzado a minúsculas
+          name: row.querySelector('.col-name').value.trim().toLowerCase(), 
+          type,
+          nullable: !row.querySelector('.col-required').checked,
+          unique: row.querySelector('.col-unique').checked,
+          primary_key: row.querySelector('.col-pk').checked,
+          auto_increment: row.querySelector('.col-auto').checked,
+          default: row.querySelector('.col-default').value
+        };
+        if (type === 'string' && size) item.length = size;
+        if (type === 'decimal' && size) { item.precision = size; item.scale = 2; }
+        return item;
+      });
+      const foreign_keys = [...document.querySelectorAll('.designer-fk')].map(card => ({
+        // VACUNA: Relaciones forzadas a minúsculas
+        column: card.querySelector('.fk-column').value.trim().toLowerCase(), 
+        ref_schema: card.querySelector('.fk-schema').value.trim(),
+        ref_table: card.querySelector('.fk-table').value.trim().toLowerCase(), 
+        ref_column: card.querySelector('.fk-ref-column').value.trim().toLowerCase(), 
+        on_delete: card.querySelector('.fk-delete').value
+      }));
+      const indexes = [...document.querySelectorAll('.designer-index')].map(card => ({
+        // VACUNA: Índices forzados a minúsculas
+        name: card.querySelector('.idx-name').value.trim().toLowerCase(),
+        columns: card.querySelector('.idx-columns').value.split(',').map(v=>v.trim().toLowerCase()).filter(Boolean),
+        unique: card.querySelector('.idx-unique').checked
+      }));
+      return {
+        connection_id: document.getElementById('designer-connection').value,
+        operation: 'create_table',
+        table: {
+          schema: document.getElementById('designer-schema').value.trim(),
+          // VACUNA: Nombre de la tabla forzado a minúsculas
+          name: document.getElementById('designer-table').value.trim().toLowerCase(), 
+          description: document.getElementById('designer-description').value.trim(),
+          columns, foreign_keys, indexes
+        }
+      };
+    }
+
+    function renderDesignerValidation(data) {
+      const box = document.getElementById('designer-validation');
+      box.classList.remove('hidden');
+      const errors = data.errors || [], warnings = data.warnings || [], actions = data.actions || [];
+      const issueList = (items, cls) => items.length ? `<div class="validation-group ${cls}">${items.map(i=>`<div><strong>${escapeText(i.code)}</strong> · ${escapeText(i.message)}${i.field?` <span>${escapeText(i.field)}</span>`:''}</div>`).join('')}</div>` : '';
+      box.innerHTML = `
+        <div class="validation-status ${data.valid?'valid':'invalid'}"><strong>${data.valid?'Plan válido':'Plan con observaciones obligatorias'}</strong><span>Motor: ${escapeText(data.engine)} · ${data.atomic?'Aplicación atómica':'Aplicación no atómica'}</span></div>
+        ${issueList(errors,'errors')}${issueList(warnings,'warnings')}
+        <div class="validation-group"><strong>Acciones previstas</strong>${actions.length?`<ol>${actions.map(a=>`<li>${escapeText(a)}</li>`).join('')}</ol>`:'<p>Sin acciones ejecutables.</p>'}</div>
+        <details><summary>Vista técnica para programadores</summary><pre>${escapeText((data.sql_preview || []).join('\n\n'))}</pre><p class="muted small">Hash del plan: ${escapeText(data.plan_hash || '')}</p></details>`;
+    }
+
+    async function loadDesignerConnections() {
+      // MOCK DATA: Configuraciones visuales simuladas
+      designerCapabilities = {
+        types: [{id:'uuid',label:'UUID / Identificador'}, {id:'string',label:'Texto corto'}, {id:'integer',label:'Número entero'}],
+        defaults: [{id:'',label:'Sin valor automático'}, {id:'uuid',label:'UUID aleatorio'}]
+      };
+      const list = [{ id: "conn-1", name: "DBGS Producción", engine: "postgresql" }];
+      const select = document.getElementById('designer-connection');
+      const current = select.value;
+      select.innerHTML = '<option value="">Seleccionar conexión…</option>' + list.map(c=>`<option value="${escapeText(c.id)}">${escapeText(c.name)} · ${escapeText(c.engine)}${c.read_only?' · solo lectura':''}</option>`).join('');
+      if (list.some(c=>c.id===current)) select.value=current;
+      if (!document.querySelector('.designer-column')) addDesignerColumn({name:'id',type:'uuid',nullable:false,primary_key:true,default:'uuid'});
+      
+      document.getElementById('designer-apply').classList.toggle('hidden', !hasPermission(profile,'designer:aplicar'));
+    }
+
+    function resetDesigner() {
+      document.getElementById('designer-table').value='';
+      document.getElementById('designer-description').value='';
+      document.getElementById('designer-columns').innerHTML='';
+      document.getElementById('designer-fks').innerHTML='<div class="panel-empty">Sin relaciones.</div>';
+      document.getElementById('designer-indexes').innerHTML='<div class="panel-empty">Sin índices adicionales.</div>';
+      document.getElementById('designer-validation').classList.add('hidden');
+      addDesignerColumn({name:'id',type:'uuid',nullable:false,primary_key:true,default:'uuid'});
+      document.getElementById('designer-message').textContent='Aún no se ha validado.';
+    }
+
+    // =========================================================================
+    // 7. BUSCADOR EN TIEMPO REAL PARA EL ÁRBOL DE TABLAS
+    // =========================================================================
+    const searchInput = document.querySelector('.db-tree-panel input, aside input[placeholder="Buscar tabla..."]');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            const term = e.target.value.toLowerCase().trim();
+            const treeContainer = document.getElementById('db-tree-container');
+            if (!treeContainer) return;
+            
+            // Atrapamos todas las "hojas" principales que representan las tablas
+            const tableDetails = treeContainer.querySelectorAll('details > details > details');
+            
+            tableDetails.forEach(details => {
+                const summary = details.querySelector('summary');
+                if (!summary) return;
+                
+                const tableName = summary.textContent.toLowerCase();
+                
+                if (tableName.includes(term)) {
+                    // Si coincide, mostramos la tabla
+                    details.style.display = '';
+                    
+                    // Si el usuario está buscando algo específico, expandimos los menús padre automáticamente
+                    if (term !== '') {
+                        let parent = details.parentElement;
+                        while(parent && parent.tagName.toLowerCase() === 'details') {
+                            parent.open = true;
+                            parent = parent.parentElement;
+                        }
+                    }
+                } else {
+                    // Si no coincide, la ocultamos suavemente
+                    details.style.display = 'none';
+                }
+            });
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      setupMobileMenu();
+      document.querySelectorAll('[data-guide-view]').forEach(button => button.addEventListener('click', async () => { const target=button.dataset.guideView; const nav=document.querySelector(`.nav-link[data-view="${target}"]`); if (!nav || nav.classList.contains('hidden')) { await panelAlert('Esta función no está habilitada para tu rol actual.', 'Función no disponible', 'warning'); return; } openView(target); }));
+      document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => openView(button.dataset.view)));
+      document.getElementById('nav-users').addEventListener('click', () => window.open('/usuarios.html', 'turimiquire_usuarios'));
+      
+      
+      document.getElementById('refresh-audit').addEventListener('click', loadAudit);
+      document.getElementById('refresh-connections').addEventListener('click', loadConnections);
+      document.getElementById('external-load')?.addEventListener('click', () => loadExternalRowsFromTree(true));
+      document.getElementById('external-prev')?.addEventListener('click', () => { 
+        const limit=Number(document.getElementById('external-limit').value||100); 
+        externalOffset=Math.max(0,externalOffset-limit); 
+        loadExternalRowsFromTree(false); 
+      });
+      document.getElementById('external-next')?.addEventListener('click', () => { 
+        const limit=Number(document.getElementById('external-limit').value||100); 
+        externalOffset+=limit; 
+        loadExternalRowsFromTree(false); 
+      });
+      document.getElementById('external-export').addEventListener('click', exportExternalCSV);
+      document.getElementById('refresh-services').addEventListener('click', loadServices);
+      document.getElementById('service-name').addEventListener('input', event => { const slug=document.getElementById('service-slug'); if (!slug.dataset.manual) slug.value=slugifyService(event.target.value); });
+      document.getElementById('service-slug').addEventListener('input', event => { event.target.dataset.manual='true'; event.target.value=slugifyService(event.target.value); });
+      document.getElementById('service-connection').addEventListener('change', loadServiceSchemas);
+      document.getElementById('service-schema').addEventListener('change', loadServiceTables);
+      document.getElementById('copy-service-key').addEventListener('click', async () => { try { await navigator.clipboard.writeText(document.getElementById('service-key').textContent); document.getElementById('service-message').textContent='Clave copiada.'; } catch { document.getElementById('service-message').textContent='Selecciona y copia la clave manualmente.'; } });
+      document.getElementById('service-form').addEventListener('submit', async event => {
+        event.preventDefault(); 
+        if(!hasPermission(profile,'apis:publicar')) return;
+        
+        const message = document.getElementById('service-message'); 
+        const submitBtn = event.target.querySelector('button[type="submit"]');
+
+        message.style.color = '#0c4a6e';
+        message.textContent = 'Validando origen y publicando endpoint...';
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Publicando...';
+
+        // Extraemos los datos del formulario
+        const payload = {
+          name: document.getElementById('service-name').value.trim(),
+          description: document.getElementById('service-description').value.trim(),
+          slug: document.getElementById('service-slug').value.trim(),
+          connection_name: document.getElementById('service-connection').options[document.getElementById('service-connection').selectedIndex]?.text.split('·')[0].trim() || 'Conexión Local',
+          schema: document.getElementById('service-schema').value || 'public',
+          table: document.getElementById('service-table').value,
+          max_rows: Number(document.getElementById('service-max').value || 100)
+        };
+
+        // MOCK DATA: Simulamos la latencia y la creación exitosa
+        setTimeout(() => {
+          // 1. Mostrar la tarjeta flotante con la credencial inventada
+          const mockCredentialData = {
+            api_key: "dg_live_" + Math.random().toString(36).substr(2, 24),
+            endpoint: `/api/v1/public/${payload.slug}`
+          };
+          showServiceCredential(mockCredentialData);
+
+          // 2. Inyectar visualmente en la tabla de abajo
+          const body = document.getElementById('services-body');
+          
+          // Quitamos el mensaje de "Sin consultar" si la tabla estaba vacía
+          if (body.querySelector('.panel-empty')) {
+            body.innerHTML = '';
+          }
+
+          const newRow = document.createElement('tr');
+          // Le ponemos un fondo verde temporal para el efecto "Wow"
+          newRow.style.backgroundColor = '#ecfdf5'; 
+          newRow.style.transition = 'background-color 2s ease';
+          
+          newRow.innerHTML = `
+            <td><strong>${escapeText(payload.name)}</strong><br><span class="muted small">${escapeText(payload.description || '')}</span></td>
+            <td><code>${escapeText(mockCredentialData.endpoint)}</code></td>
+            <td>${escapeText(payload.connection_name)}<br><span class="muted small">${escapeText(payload.schema)}.${escapeText(payload.table)}</span></td>
+            <td>${escapeText(payload.max_rows)}</td>
+            <td><span class="badge badge-ok">Activa</span></td>
+            <td><button class="btn btn-secondary btn-sm">Activar / Desactivar</button></td>
+          `;
+
+          // Lo metemos de primero en la tabla
+          body.insertBefore(newRow, body.firstChild);
+
+          // Efecto visual: le quitamos el fondo verde suavemente después de 1 segundo
+          setTimeout(() => newRow.style.backgroundColor = 'transparent', 1000);
+
+          // 3. Resetear el formulario y botones
+          message.style.color = '#10b981';
+          message.textContent = 'API publicada y añadida al catálogo exitosamente.';
+          event.target.reset();
+          document.getElementById('service-max').value = '100';
+          document.getElementById('service-slug').dataset.manual = '';
+          
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Publicar API';
+          
+          // Borramos el mensaje de éxito luego de un ratito
+          setTimeout(() => {
+             message.textContent = 'La clave se mostrará una sola vez.';
+             message.style.color = '';
+          }, 4000);
+
+        }, 1200);
+      });
+      document.getElementById('designer-add-column').addEventListener('click', () => addDesignerColumn());
+      document.getElementById('designer-add-fk').addEventListener('click', () => addDesignerFK());
+      document.getElementById('designer-add-index').addEventListener('click', () => addDesignerIndex());
+      document.getElementById('designer-reset').addEventListener('click', resetDesigner);
+      ['designer-connection','designer-schema','designer-table','designer-description'].forEach(id => {
+        const el=document.getElementById(id); el.addEventListener('input', invalidateDesigner); el.addEventListener('change', invalidateDesigner);
+      });
+      document.getElementById('designer-validate').addEventListener('click', async () => {
+        const message = document.getElementById('designer-message');
+        message.style.color = '#0c4a6e';
+        message.textContent = 'Analizando estructura y generando SQL...';
+        
+        const plan = designerPlan(); // Obtenemos lo que llenaste en los inputs
+        const tableName = plan.table.name.trim();
+        const columns = plan.table.columns;
+        const fks = plan.table.foreign_keys;
+
+        // MOCK DATA: Simulamos un motor de validación inteligente
+        setTimeout(() => {
+          let errors = [];
+          
+          // 1. Validar nombre de tabla
+          if (!tableName) {
+            errors.push({ code: "ERR-01", message: "El nombre de la tabla no puede estar vacío.", field: "Destino" });
+          }
+
+          // 2. Validar que las columnas locales de las FK existan en la tabla
+          fks.forEach(fk => {
+            const localColExists = columns.some(col => col.name === fk.column);
+            if (!localColExists && fk.column) {
+              errors.push({ code: "ERR-02", message: `La columna local '${fk.column}' no existe en la definición de la tabla.`, field: "Relaciones" });
+            }
+            if (!fk.ref_table) {
+              errors.push({ code: "ERR-03", message: "Debe especificar una tabla destino para la relación.", field: "Relaciones" });
+            }
+          });
+
+          // SI HAY ERRORES, BLOQUEAMOS Y MOSTRAMOS ROJO
+          if (errors.length > 0) {
+            const mockErrorResponse = {
+              valid: false,
+              engine: "PostgreSQL 15.0",
+              atomic: false,
+              errors: errors,
+              warnings: [],
+              actions: [],
+              sql_preview: ["-- Error estructural. Corrija los problemas arriba para poder generar el SQL seguro."],
+              plan_hash: ""
+            };
+            
+            renderDesignerValidation(mockErrorResponse);
+            
+            const applyBtn = document.getElementById('designer-apply');
+            applyBtn.disabled = true;
+            applyBtn.classList.add('hidden'); 
+
+            message.style.color = '#ef4444'; // Rojo
+            message.textContent = 'El plan contiene errores estructurales y no puede ser aplicado.';
+            return; // Detenemos aquí
+          }
+
+          // SI NO HAY ERRORES, MOSTRAMOS EL ÉXITO
+          const mockSuccessResponse = {
+            valid: true,
+            engine: "PostgreSQL 15.0",
+            atomic: true,
+            errors: [],
+            warnings: [
+              { code: "OPT-01", message: "Se recomienda añadir un índice si esta tabla tendrá alto volumen de transacciones.", field: "General" }
+            ],
+            actions: [
+              `Crear tabla '${tableName}' en el esquema '${plan.table.schema || 'public'}'.`,
+              `Asignar propiedades de auditoría (created_at, updated_at).`,
+              fks.length > 0 ? `Crear ${fks.length} restricción(es) de clave foránea.` : 'Sin relaciones externas detectadas.',
+              `Inyectar permisos base según RBAC al rol DEVELOPER.`
+            ],
+            sql_preview: [
+              `-- Plan de ejecución generado por Turimiquire DataGov\nCREATE TABLE ${plan.table.schema || 'public'}.${tableName} (\n  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n  -- (Columnas definidas en la interfaz)\n  estado BOOLEAN DEFAULT true,\n  created_at TIMESTAMP DEFAULT now()\n);\n\nALTER TABLE ${plan.table.schema || 'public'}.${tableName} OWNER TO dbgs_admin;`
+            ],
+            plan_hash: "sha256:8f7a9b1c3d5e9x2...",
+            normalized_plan: plan
+          };
+
+          renderDesignerValidation(mockSuccessResponse);
+          validatedPlan = mockSuccessResponse.normalized_plan; 
+          validatedHash = mockSuccessResponse.plan_hash;
+          
+          const applyBtn = document.getElementById('designer-apply');
+          applyBtn.disabled = false;
+          applyBtn.classList.remove('hidden'); 
+
+          message.style.color = '#10b981'; // Verde
+          message.textContent = 'Plan válido y libre de riesgos. Listo para aplicar.';
+        }, 1200);
+      });
+
+      document.getElementById('designer-apply').addEventListener('click', async () => {
+        if (!validatedPlan || !validatedHash) return;
+        
+        if (!(await panelConfirm('Se ejecutará la creación de la tabla dinámica en el servidor real. Esta operación es irreversible.', 'Ejecutar cambio estructural', {danger:true, confirmText:'Aplicar en Servidor'}))) return;
+        
+        const message = document.getElementById('designer-message'); 
+        message.style.color = '#0c4a6e';
+        message.textContent = 'Enviando estructura al servidor de DBGS...';
+        
+        const applyBtn = document.getElementById('designer-apply');
+        applyBtn.disabled = true;
+        applyBtn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Ejecutando...';
+
+        // 1. MAPEAMOS TUS DATOS VISUALES AL JSON EXACTO QUE PIDE LUCHO
+        const payloadLucho = {
+            // VACUNA: Forzamos el nombre de la tabla a minúsculas
+            nombre: validatedPlan.table.name.trim().toLowerCase(),
+            descripcion: validatedPlan.table.description || "Tabla generada desde Diseñador Visual",
+            campos: validatedPlan.table.columns.map(col => {
+                let tipoLucho = "STRING";
+                let tipoLower = col.type.toLowerCase();
+                if (tipoLower.includes('int') || tipoLower.includes('numeric')) tipoLucho = "INTEGER";
+                if (tipoLower.includes('bool')) tipoLucho = "BOOLEAN";
+                if (tipoLower.includes('date') || tipoLower.includes('time')) tipoLucho = "DATE";
+
+                return {
+                    nombre: col.name.trim().toLowerCase(),
+                    tipo: tipoLucho,
+                    nulo: !col.not_null, 
+                    unico: col.unique || false,
+                    descripcion: "Columna " + col.name
+                };
+            }),
+            // --- CORRECCIÓN: Rescatamos las relaciones e índices del validatedPlan ---
+            relaciones: (validatedPlan.table.foreign_keys || []).map(fk => ({
+                columna_local: fk.column,
+                esquema_destino: fk.ref_schema,
+                tabla_destino: fk.ref_table,
+                columna_destino: fk.ref_column,
+                on_delete: fk.on_delete
+            })),
+            indices: (validatedPlan.table.indexes || []).map(idx => ({
+                nombre: idx.name,
+                columnas: idx.columns,
+                unico: idx.unique
+            }))
+            // -------------------------------------------------------------------------
+        };
+
+        try {
+            // 2. RECUPERAMOS TU TOKEN DE SEGURIDAD
+            const token = getToken();
+
+            // 3. HACEMOS LA LLAMADA REAL AL BACKEND DE LUCHO
+            const response = await fetch('http://localhost:8080/v1/colecciones', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify(payloadLucho)
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                throw new Error(data.message || data.error || 'Error del servidor al crear la tabla.');
+            }
+
+            // 4. SI TODO SALE BIEN
+            message.style.color = '#10b981';
+            message.textContent = '¡Estructura creada exitosamente en la base de datos real!';
+            applyBtn.innerHTML = 'Aplicar plan validado';
+            applyBtn.classList.add('hidden');
+            
+            validatedPlan = null; 
+            validatedHash = '';
+            
+            // Ocultamos y limpiamos después de 2.5 segundos
+            setTimeout(() => {
+                resetDesigner();
+                message.style.color = '';
+                message.textContent = 'Diseño restablecido para una nueva estructura.';
+            }, 2500);
+
+        } catch (error) {
+            // 5. SI ALGO FALLA (Error de conexión o validación del backend)
+            message.style.color = '#ef4444';
+            message.textContent = 'Fallo al aplicar: ' + error.message;
+            applyBtn.disabled = false;
+            applyBtn.innerHTML = 'Reintentar Aplicar';
+        }
+      });
+      document.getElementById('conn-engine').addEventListener('change', e => document.getElementById('conn-port').value = e.target.value === 'mysql' ? '3306' : '5432');
+      document.getElementById('test-connection').addEventListener('click', async () => {
+        const message = document.getElementById('connection-message'); message.textContent='Probando…';
+        try { await apiFetch('/connections/test', {method:'POST', body:JSON.stringify(connectionProfile())}); message.textContent='Conexión correcta.'; } catch(e) { message.textContent=e.message; }
+      });
+      document.getElementById('connection-form').addEventListener('submit', async e => {
+        e.preventDefault(); const message=document.getElementById('connection-message'); message.textContent='Guardando…';
+        try { await apiFetch('/connections', {method:'POST', body:JSON.stringify(connectionProfile())}); document.getElementById('conn-password').value=''; message.textContent='Conexión registrada.'; loadConnections(); } catch(err){ message.textContent=err.message; }
+      });
+
+      try {
+        profile = await requireSession();
+        if (profile.role === 'SERVICE_ACCOUNT') {
+          clearSession();
+          await panelAlert('Las cuentas de servicio no tienen acceso a la interfaz administrativa. Usa la credencial técnica en los endpoints autorizados.', 'Acceso de cuenta de servicio', 'warning');
+          return window.location.replace('/');
+        }
+        renderProfile();
+        document.getElementById('connection-admin-card').classList.toggle('hidden', !hasPermission(profile,'conexiones:administrar'));
+        document.getElementById('network-url').textContent = `${location.hostname}:${location.port || '80'}`;
+        refreshHealth();
+
+        /* --- LEER LA URL Y ABRIR PESTAÑA --- */
+        const urlParams = new URLSearchParams(window.location.search);
+        const vistaSolicitada = urlParams.get('view');
+        if (vistaSolicitada && document.getElementById(`view-${vistaSolicitada}`)) {
+          openView(vistaSolicitada);
+        }
+
+      } catch (error) {
+        console.error(error);
+      }
+    });
+
+  // =========================================================================
+    // 7. BUSCADOR EN TIEMPO REAL PARA EL ÁRBOL DE TABLAS
+    // =========================================================================
+    const searchInputArbol = document.querySelector('aside input[placeholder="Buscar tabla..."]');
+    
+    if (searchInputArbol) {
+        searchInputArbol.addEventListener('input', function(e) {
+            const term = e.target.value.toLowerCase().trim();
+            const treeContainer = document.getElementById('db-tree-container');
+            if (!treeContainer) return;
+            
+            const tableDetails = treeContainer.querySelectorAll('details > details > details');
+            
+            tableDetails.forEach(details => {
+                const summary = details.querySelector('summary');
+                if (!summary) return;
+                
+                const tableName = summary.textContent.toLowerCase();
+                
+                if (tableName.includes(term)) {
+                    details.style.display = '';
+                    if (term !== '') {
+                        let parent = details.parentElement;
+                        while(parent && parent.tagName.toLowerCase() === 'details') {
+                            parent.open = true;
+                            parent = parent.parentElement;
+                        }
+                    }
+                } else {
+                    details.style.display = 'none';
+                }
+            });
+        });
+    }
+
+    // =========================================================================
+    // 8. FILTROS EN TIEMPO REAL PARA DATOS Y BOTÓN REFRESCAR
+    // =========================================================================
+    
+    // Darle vida al botón de Refrescar (↻)
+    document.getElementById('btn-refresh-data')?.addEventListener('click', () => {
+        loadExternalRowsFromTree(false); 
+    });
+
+    // Mostrar u Ocultar la caja de filtros al darle clic al botón "Filtros"
+    document.getElementById('btn-toggle-filters')?.addEventListener('click', () => {
+        const filterInput = document.getElementById('input-data-filter');
+        filterInput.classList.toggle('hidden');
+        
+        if (!filterInput.classList.contains('hidden')) {
+            filterInput.focus();
+        } else {
+            // Si la ocultamos, borramos el texto y mostramos todas las filas de nuevo
+            filterInput.value = '';
+            filterInput.dispatchEvent(new Event('input'));
+        }
+    });
+
+    // Filtrar visualmente la tabla mientras el usuario escribe
+    document.getElementById('input-data-filter')?.addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase().trim();
+        const body = document.getElementById('db-data-body');
+        const rows = body.querySelectorAll('tr:not(.empty-search-row)');
+        
+        // Eliminamos el mensaje de "sin resultados" si existía de una búsqueda anterior
+        const oldEmptyRow = body.querySelector('.empty-search-row');
+        if (oldEmptyRow) oldEmptyRow.remove();
+
+        let visibleCount = 0;
+        
+        rows.forEach(row => {
+            // Evitamos ocultar el mensaje principal de "La tabla está vacía en PostgreSQL"
+            if (row.querySelector('.panel-empty') && !row.classList.contains('empty-search-row')) {
+                visibleCount++; 
+                return;
+            }
+            
+            const rowText = row.textContent.toLowerCase();
+            if (rowText.includes(term)) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Si no hay filas visibles y el usuario escribió algo, dibujamos el Empty State
+        if (visibleCount === 0 && term !== '') {
+            const columnsCount = document.getElementById('db-data-head').querySelectorAll('th').length || 100;
+            const emptyRow = document.createElement('tr');
+            emptyRow.className = 'empty-search-row'; // Le ponemos una clase para poder borrarla luego
+            emptyRow.innerHTML = `<td class="panel-empty" colspan="${columnsCount}">
+                <div style="padding: 30px 0; color: #64748b;">
+                    <span style="font-size: 28px; display: block; margin-bottom: 12px; opacity: 0.7;">🕵️‍♂️</span>
+                    <strong style="color: #334155; font-size: 14px;">Sin coincidencias</strong><br>
+                    No se encontraron registros que contengan "<em>${escapeText(term)}</em>".
+                </div>
+            </td>`;
+            body.appendChild(emptyRow);
+        }
+    });
+
+    // --- LÓGICA DEL NUEVO EXPLORADOR (Árbol y Pestañas) ---
+      const treeItems = document.querySelectorAll('.tree-item');
+      const breadcrumb = document.getElementById('breadcrumb-table');
+      
+      // 1. Efecto negrita en el árbol y actualizar ruta
+      treeItems.forEach(item => {
+        item.addEventListener('click', () => {
+          treeItems.forEach(i => i.classList.remove('active-tree-item'));
+          item.classList.add('active-tree-item');
+          breadcrumb.textContent = item.dataset.table;
+        });
+      });
+
+      // 2. Lógica para cambiar de pestañas (DDL, Datos, ERD)
+      const dbTabs = document.querySelectorAll('.db-tab');
+      const tabContents = document.querySelectorAll('.tab-content');
+
+      dbTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          // Quitar clases activas de todas las pestañas
+          dbTabs.forEach(t => t.classList.remove('active-tab'));
+          // Ocultar todos los contenidos
+          tabContents.forEach(c => c.classList.add('hidden'));
+          
+          // Activar la pestaña clickeada
+          tab.classList.add('active-tab');
+          // Mostrar el contenido correspondiente
+          const targetId = tab.dataset.target;
+          document.getElementById(targetId).classList.remove('hidden');
+        });
+      });
+
+      // =========================================================================
+    // 9. MOTOR DE RESPALDOS Y RESTAURACIÓN (BACKUPS)
+    // =========================================================================
+    async function loadBackups() {
+        const body = document.getElementById('backups-body');
+        body.innerHTML = '<tr><td colspan="6" class="panel-empty"><span class="loading loading-spinner loading-sm"></span> Consultando con el servidor...</td></tr>';
+        
+        try {
+            const data = await apiFetch('/backups');
+            const respaldos = data.respaldos || data.Respaldos || [];
+            
+            if (respaldos.length === 0) {
+                body.innerHTML = '<tr><td colspan="6" class="panel-empty">No hay respaldos generados en el sistema.</td></tr>';
+                return;
+            }
+            
+            body.innerHTML = respaldos.map((b, i) => {
+                const bg = i % 2 === 0 ? '#ffffff' : '#f8fafc';
+                let fecha = b.fecha_creacion || b.fechaCreacion || '';
+                try { const d = new Date(fecha); if(!isNaN(d)) fecha = d.toLocaleString('es-ES'); } catch(e){}
+                
+                // Calculamos el peso en MB
+                const bytes = b.tamano_bytes || b.tamanoBytes || 0;
+                const sizeMB = bytes > 0 ? (bytes / (1024 * 1024)).toFixed(2) + ' MB' : '-';
+                
+                let badge = `<span class="badge badge-tech" style="font-size:10px;">${escapeText(b.estado || '')}</span>`;
+                if (b.estado === 'COMPLETADO') badge = `<span class="badge badge-ok" style="font-size:10px;">COMPLETADO</span>`;
+                if (b.estado === 'FALLIDO') badge = `<span class="badge badge-off" style="font-size:10px;">FALLIDO</span>`;
+                if (b.estado === 'EN_PROGRESO') badge = `<span class="badge" style="background:#fef3c7;color:#d97706;padding:4px 8px;border-radius:12px;font-size:10px;font-weight:bold;">PROCESANDO...</span>`;
+
+                // Botones destructivos
+                let acciones = '';
+                if (b.estado === 'COMPLETADO') {
+                    acciones = `
+                        <button class="btn btn-ghost btn-sm" onclick="downloadBackup('${b.id}', '${b.fecha_creacion || ''}')" title="Descargar archivo .dump">⬇️ Descargar</button>
+                        <button class="btn btn-ghost btn-sm" onclick="restoreBackup('${b.id}')" title="Restaurar base de datos" style="color: #ef4444; font-weight: bold;">⚠️ Restaurar</button>
+                    `;
+                }
+
+                return `<tr style="background: ${bg}; transition: background 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='${bg}'">
+                    <td style="padding: 12px 16px; font-size: 13px; font-weight:600; color:#1e293b;">${escapeText(fecha)}</td>
+                    <td style="padding: 12px 16px; font-size: 12px; color:#64748b;">${escapeText(b.tipo || 'FULL')}</td>
+                    <td style="padding: 12px 16px; font-size: 13px; color:#475569;">${escapeText(b.detalles || '-')}</td>
+                    <td style="padding: 12px 16px; font-size: 13px; color:#64748b; font-family:monospace;">${sizeMB}</td>
+                    <td style="padding: 12px 16px;">${badge}</td>
+                    <td style="padding: 12px 16px; text-align:right;">${acciones}</td>
+                </tr>`;
+            }).join('');
+        } catch (error) {
+            body.innerHTML = `<tr><td colspan="6" class="panel-empty" style="color: #ef4444;">Error de red: ${escapeText(error.message)}</td></tr>`;
+        }
+    }
+
+    // =========================================================================
+    // 10. DESTRUIR TABLA COMPLETA (DROP TABLE DINÁMICO)
+    // =========================================================================
+    document.getElementById('btn-delete-table')?.addEventListener('click', async () => {
+        const table = document.getElementById('current-tree-table').value.toLowerCase();
+        const schema = document.getElementById('current-tree-schema').value;
+        
+        if (!table || schema === 'dbgs_schema') return;
+
+        // Doble alerta de seguridad (como lo exige Lucho en el backend)
+        const confirmado = await panelConfirm(
+            `Estás a punto de DESTRUIR la tabla '${table}' por completo. Se borrará su estructura y TODOS los registros que contiene. Esta operación es catastrófica y no se puede deshacer.`, 
+            '⚠️ DESTRUCCIÓN DE TABLA', 
+            { danger: true, confirmText: 'SÍ, DESTRUIR TABLA COMPLETAMENTE' }
+        );
+        
+        if (!confirmado) return;
+
+        const btn = document.getElementById('btn-delete-table');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Destruyendo...';
+
+        try {
+            // Invocamos el nuevo endpoint de Lucho con el ?confirmar=true obligatorio
+            await apiFetch(`/colecciones/${table}?confirmar=true`, {
+                method: 'DELETE'
+            });
+            
+            alert(`La tabla '${table}' ha sido eliminada del sistema con éxito.`);
+            
+            // Refrescamos el árbol lateral para que desaparezca
+            renderDbTree();
+            
+            // Limpiamos la pantalla principal
+            document.getElementById('db-data-body').innerHTML = '<tr><td class="panel-empty" colspan="100%">Tabla eliminada. Selecciona otra tabla en el menú izquierdo.</td></tr>';
+            document.getElementById('db-data-head').innerHTML = '<tr><th style="padding: 14px 16px; font-size: 11px; color: #64748b; background: #f8fafc;">ESTRUCTURA DE LA TABLA</th></tr>';
+            document.getElementById('db-row-count').textContent = '0 filas';
+            document.getElementById('breadcrumb-table').textContent = '...';
+            btn.style.display = 'none';
+
+        } catch(error) {
+            alert('Error al destruir la tabla: ' + error.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '🗑️ Eliminar Tabla';
+        }
+    });
+
+    // =========================================================================
+    // 9. FILTRO Y EXPORTACIÓN DE AUDITORÍA
+    // =========================================================================
+    
+    // Filtrar visualmente la auditoría mientras el usuario escribe
+    document.getElementById('input-audit-filter')?.addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase().trim();
+        const rows = document.querySelectorAll('#audit-body tr');
+        let visibleCount = 0;
+        
+        rows.forEach(row => {
+            if (row.querySelector('.panel-empty')) return; // Ignorar si está vacío
+            
+            const rowText = row.textContent.toLowerCase();
+            if (rowText.includes(term)) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        // Actualizamos el contador visualmente
+        const totalRows = rows.length === 1 && rows[0].querySelector('.panel-empty') ? 0 : rows.length;
+        document.getElementById('audit-count').textContent = term === '' 
+            ? `${totalRows} eventos registrados` 
+            : `${visibleCount} coincidencias`;
+    });
+
+    // Exportar la tabla de Auditoría a CSV
+    document.getElementById('export-audit-csv')?.addEventListener('click', () => {
+        const rows = Array.from(document.querySelectorAll('#audit-body tr')).filter(r => r.style.display !== 'none' && !r.querySelector('.panel-empty'));
+        const headers = Array.from(document.querySelectorAll('#audit-head th')).map(th => th.textContent.trim());
+        
+        if (rows.length === 0) {
+            alert("No hay datos visibles para exportar.");
+            return;
+        }
+
+        const q = value => `"${String(value ?? '').replaceAll('"','""')}"`;
+        
+        const csvContent = [
+            headers.map(q).join(','), // Fila de cabeceras
+            ...rows.map(row => {
+                const cells = Array.from(row.querySelectorAll('td'));
+                return cells.map(cell => q(cell.textContent.trim())).join(',');
+            })
+        ].join('\n');
+
+        const blob = new Blob(['\uFEFF' + csvContent], {type: 'text/csv;charset=utf-8'});
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        
+        const dateStr = new Date().toISOString().split('T')[0];
+        link.download = `auditoria_dbgs_${dateStr}.csv`;
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+
+    // Botón de Actualizar
+    document.getElementById('btn-refresh-backups')?.addEventListener('click', loadBackups);
+
+    // Orquestar Creación de Backup
+    document.getElementById('backup-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const msg = document.getElementById('backup-message');
+        const btn = document.getElementById('btn-create-backup');
+        
+        const retentionInput = document.getElementById('backup-retention');
+        const retentionDays = Number(retentionInput.value);
+
+        // --- BLINDAJE DE SEGURIDAD (Validación Estricta) ---
+        if (!Number.isInteger(retentionDays) || retentionDays < 1 || retentionDays > 365) {
+            msg.style.color = '#ef4444';
+            msg.textContent = 'Error: Los días de retención deben ser un número entero entre 1 y 365.';
+            
+            // Animación de agitación (shake) para llamar la atención del usuario
+            retentionInput.style.transition = 'transform 0.1s';
+            retentionInput.style.transform = 'translateX(5px)';
+            setTimeout(() => retentionInput.style.transform = 'translateX(-5px)', 100);
+            setTimeout(() => retentionInput.style.transform = 'translateX(5px)', 200);
+            setTimeout(() => retentionInput.style.transform = 'translateX(0)', 300);
+            
+            retentionInput.focus();
+            return; // Cortamos la función aquí, no viaja nada al servidor
+        }
+        // ---------------------------------------------------
+        
+        btn.disabled = true;
+        btn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Ejecutando pg_dump...';
+        msg.style.color = '#0c4a6e';
+        msg.textContent = 'Orquestando volcado físico en el servidor...';
+        
+        const payload = {
+            tipo: document.getElementById('backup-type').value,
+            retencion_dias: retentionDays,
+            detalles: document.getElementById('backup-details').value.trim()
+        };
+        
+        try {
+            await apiFetch('/backups', {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+            msg.style.color = '#10b981';
+            msg.textContent = '¡Respaldo físico completado con éxito!';
+            document.getElementById('backup-form').reset();
+            document.getElementById('backup-retention').value = '30'; // Devolvemos el valor por defecto
+            loadBackups();
+        } catch (error) {
+            msg.style.color = '#ef4444';
+            msg.textContent = 'Fallo al respaldar: ' + error.message;
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Ejecutar Respaldo';
+            setTimeout(() => msg.textContent = '', 5000);
+        }
+    });
+
+    // Descargar Binario Base64 a .dump
+    window.downloadBackup = async function(id, fechaRaw) {
+        try {
+            const data = await apiFetch(`/backups/${id}/contenido`);
+            if(!data.contenido) throw new Error("El archivo .dump vino vacío desde el servidor.");
+            
+            // Reconstruimos el archivo binario desde la cadena Base64
+            const link = document.createElement("a");
+            link.href = "data:application/octet-stream;base64," + data.contenido;
+            link.download = `dbgs_backup_${fechaRaw.split('T')[0] || id}.dump`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch(error) {
+            alert("No se pudo descargar el respaldo: " + error.message);
+        }
+    };
+
+    // Alerta Destructiva de Restauración
+    window.restoreBackup = async function(id) {
+        const confirmado = await panelConfirm(
+            '¡ADVERTENCIA CRÍTICA! Esta operación destruirá la base de datos actual (DROP CASCADE) y la reemplazará por el respaldo seleccionado. Todos los datos insertados después de ese respaldo se perderán para siempre.', 
+            '⚠️ Restaurar Base de Datos', 
+            { danger: true, confirmText: 'SÍ, DESTRUIR Y SOBRESCRIBIR LA BASE DE DATOS' }
+        );
+        if(!confirmado) return;
+        
+        try {
+            await apiFetch(`/backups/${id}/restaurar`, {
+                method: 'POST',
+                body: JSON.stringify({ backup_id: id, confirmar: true })
+            });
+            alert("¡Restauración completada con éxito! El sistema se reiniciará para aplicar los cambios en memoria.");
+            window.location.reload();
+        } catch(error) {
+            alert("Error catastrófico durante la restauración: " + error.message);
+        }
+    };
+  </script>
+</body>
+</html>
