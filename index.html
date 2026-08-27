@@ -137,7 +137,7 @@
       // ==========================================
       window.addEventListener('DOMContentLoaded', async () => {
           try {
-              const res = await fetch('http://localhost:8080/v1/auth/setup-status');
+              const res = await fetch(`${API_BASE}/auth/setup-status`);
               const data = await res.json().catch(() => ({}));
               
               if (data.Inicializado === false || data.inicializado === false || data.is_setup === false || res.status === 404) {
@@ -168,14 +168,8 @@
         message.classList.add('hidden');
 
         try {
-          // ==========================================
-          // MOCK DE DEMOSTRACIÓN (Para no depender del backend caído)
-          // Si la clave tiene 10 caracteres o más, deja entrar directamente
-          // ==========================================
-          
-
-          // Código original de la petición (si la clave tiene menos de 10 letras, saltará error)
-          const response = await fetch('http://localhost:8080/v1/seguridad/login', {
+          // Autenticación real contra el backend (POST /seguridad/login)
+          const response = await fetch(`${API_BASE}/seguridad/login`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({

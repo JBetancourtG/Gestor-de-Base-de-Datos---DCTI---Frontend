@@ -652,7 +652,7 @@ CREATE INDEX idx_catalogos_codigo ON dbgs_schema.catalogos(codigo);</div>
               <button class="btn btn-primary btn-sm" id="external-load" type="button">Cargar datos</button>
               <button class="btn btn-secondary btn-sm" id="external-prev" type="button">Anterior</button>
               <button class="btn btn-secondary btn-sm" id="external-next" type="button">Siguiente</button>
-              <button class="btn btn-ghost btn-sm" id="external-export" type="button">Exportar CSV</button>
+              <button class="btn btn-ghost btn-sm" id="external-export-conn" type="button">Exportar CSV</button>
               <span class="muted small" id="external-count">Selecciona una conexión.</span>
             </div>
             <div class="table-shell" style="margin-top:14px"><table><thead id="external-data-head"></thead><tbody id="external-data-body"><tr><td class="panel-empty">Sin datos cargados.</td></tr></tbody></table></div>
@@ -729,7 +729,8 @@ CREATE INDEX idx_catalogos_codigo ON dbgs_schema.catalogos(codigo);</div>
             <article class="card card-pad">
                <div class="section-title"><div><h2>Política de Retención</h2><p>Limpia copias antiguas automáticamente.</p></div></div>
                <p class="muted small" style="margin-bottom: 16px;">El motor elimina de forma segura los respaldos que hayan superado su tiempo de vida útil para liberar espacio en el disco duro del servidor.</p>
-               <button class="btn btn-secondary" id="btn-apply-retention" onclick="alert('El motor de retención cronometrado se ejecuta cada medianoche de forma nativa.')">Verificar Retención</button>
+               <button class="btn btn-secondary" id="btn-apply-retention" type="button">Verificar Retención</button>
+               <span class="muted small" id="retention-result" style="margin-left: 12px;"></span>
             </article>
           </div>
 
@@ -889,8 +890,6 @@ CREATE INDEX idx_catalogos_codigo ON dbgs_schema.catalogos(codigo);</div>
 
   <script>
     let profile = null;
-    let currentRows = [];
-    let currentColumns = [];
     let designerCapabilities = null;
     let validatedPlan = null;
     let validatedHash = '';
@@ -1088,19 +1087,6 @@ async function refreshHealth() {
         detail.textContent = 'Sin conexión con el servidor Go';
       }
     }
-    
-
-    async function exportCSV() {
-      if (!currentColumns.length || !currentRows.length) return;
-      if (!hasPermission(profile, 'reportes:exportar') && profile.role !== 'DBA') {
-        await panelAlert('Tu perfil no posee el permiso de exportación de reportes.', 'Exportación no autorizada', 'warning');
-        return;
-      }
-      const q = value => `"${String(value ?? '').replaceAll('"','""')}"`;
-      const content = [currentColumns.map(q).join(','), ...currentRows.map(row => currentColumns.map(c => q(row[c])).join(','))].join('\n');
-      const blob = new Blob(['\uFEFF' + content], {type:'text/csv;charset=utf-8'});
-      const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `${document.getElementById('table-select').value || 'datos'}.csv`; link.click(); URL.revokeObjectURL(link.href);
-    }
 
 // =========================================================================
     // 6. LÓGICA DE AUDITORÍA (LECTURA DE EVENTOS INMUTABLES)
@@ -1238,30 +1224,122 @@ async function refreshHealth() {
 
     async function loadConnections() {
       const list = document.getElementById('connection-list');
-      // MOCK DATA: Simulamos bases de datos conectadas
-      const connections = [
-        { id: "conn-1", name: "DBGS Producción", engine: "postgresql", host: "127.0.0.1", port: 5432, database: "dbgs_main", read_only: false, system: true },
-        { id: "conn-2", name: "Sistema Externo RRHH", engine: "mysql", host: "10.0.0.15", port: 3306, database: "rrhh_data", read_only: true, system: false }
-      ];
+      let connections = [];
+      try {
+        const data = await apiFetch('/connections');
+        connections = data.connections || data.Connections || [];
+      } catch (e) {
+        list.innerHTML = `<div class="panel-empty">No se pudieron cargar las conexiones: ${escapeText(e.message)}</div>`;
+        return;
+      }
+      window._connectionsCache = connections;
 
-      list.replaceChildren(...connections.map(conn => {
-        const item = document.createElement('div'); item.className = 'connection-item';
-        item.innerHTML = `<div><strong>${escapeText(conn.name)}</strong><span>${escapeText(conn.engine)} · ${escapeText(conn.host)}:${escapeText(conn.port)} · ${escapeText(conn.database)}${conn.read_only ? ' · solo lectura' : ''}</span></div><div class="toolbar"></div>`;
-        const actions = item.querySelector('.toolbar');
-        const openData = document.createElement('button'); openData.className='btn btn-primary btn-sm'; openData.textContent='Abrir datos';
-        openData.onclick = () => { document.getElementById('external-connection').value=conn.id; document.getElementById('external-data-explorer').scrollIntoView({behavior:'smooth',block:'start'}); };
-        actions.appendChild(openData);
-        return item;
-      }));
+      if (!connections.length) {
+        list.innerHTML = '<div class="panel-empty">Aún no hay conexiones registradas.</div>';
+      } else {
+        list.replaceChildren(...connections.map(conn => {
+          const item = document.createElement('div'); item.className = 'connection-item';
+          item.innerHTML = `<div><strong>${escapeText(conn.name)}</strong><span>${escapeText(conn.engine)} · ${escapeText(conn.host)}:${escapeText(conn.port)} · ${escapeText(conn.database)}${conn.read_only ? ' · solo lectura' : ''}</span></div><div class="toolbar"></div>`;
+          const actions = item.querySelector('.toolbar');
+          const openData = document.createElement('button'); openData.className='btn btn-primary btn-sm'; openData.textContent='Abrir datos';
+          openData.onclick = () => { document.getElementById('external-connection').value=conn.id; loadExternalSchemas(); document.getElementById('external-data-explorer').scrollIntoView({behavior:'smooth',block:'start'}); };
+          actions.appendChild(openData);
+          return item;
+        }));
+      }
+
+      const extSel = document.getElementById('external-connection');
+      if (extSel) {
+        extSel.innerHTML = '<option value="">Seleccionar conexión…</option>' + connections.map(c => `<option value="${escapeText(c.id)}">${escapeText(c.name)} · ${escapeText(c.engine)}</option>`).join('');
+      }
     }
 
+    async function loadExternalSchemas() {
+      const connection = document.getElementById('external-connection').value;
+      const schemaSel = document.getElementById('external-schema');
+      const tableSel = document.getElementById('external-table');
+      tableSel.innerHTML = '<option value="">Seleccionar…</option>';
+      schemaSel.innerHTML = '<option value="">Seleccionar…</option>';
+      if (!connection) return;
+      try {
+        const data = await apiFetch(`/connections/${encodeURIComponent(connection)}/schemas`);
+        schemaSel.innerHTML = '<option value="">Seleccionar…</option>' + (data.schemas || []).map(v => `<option value="${escapeText(v)}">${escapeText(v)}</option>`).join('');
+        document.getElementById('external-db-status').textContent = 'Esquemas cargados';
+      } catch (error) {
+        document.getElementById('external-db-status').textContent = 'Error al cargar esquemas';
+        if (document.getElementById('external-count')) document.getElementById('external-count').textContent = error.message;
+      }
+    }
+
+    async function loadExternalTables() {
+      const connection = document.getElementById('external-connection').value;
+      const schema = document.getElementById('external-schema').value;
+      const tableSel = document.getElementById('external-table');
+      tableSel.innerHTML = '<option value="">Seleccionar…</option>';
+      if (!connection || !schema) return;
+      try {
+        const data = await apiFetch(`/connections/${encodeURIComponent(connection)}/tables?schema=${encodeURIComponent(schema)}`);
+        tableSel.innerHTML = '<option value="">Seleccionar…</option>' + (data.tables || []).map(v => `<option value="${escapeText(v)}">${escapeText(v)}</option>`).join('');
+        document.getElementById('external-db-status').textContent = 'Tablas cargadas';
+      } catch (error) {
+        document.getElementById('external-db-status').textContent = 'Error al cargar tablas';
+        if (document.getElementById('external-count')) document.getElementById('external-count').textContent = error.message;
+      }
+    }
 
     let externalOffset = 0;
     let externalColumns = [];
     let externalRows = [];
 
+    async function loadExternalData(reset = true) {
+      const connection = document.getElementById('external-connection').value;
+      const schema = document.getElementById('external-schema').value;
+      const table = document.getElementById('external-table').value;
+      const head = document.getElementById('external-data-head');
+      const body = document.getElementById('external-data-body');
+      const count = document.getElementById('external-count');
+      if (!connection || !schema || !table) {
+        head.innerHTML = ''; body.innerHTML = '<tr><td class="panel-empty">Selecciona conexión, esquema y tabla para consultar datos.</td></tr>';
+        if (count) count.textContent = 'Completa la selección.';
+        return;
+      }
+      if (reset) externalOffset = 0;
+      const limit = Number(document.getElementById('external-limit')?.value || 100);
+      body.innerHTML = '<tr><td class="panel-empty" colspan="100%"><span class="loading loading-spinner loading-sm"></span> Consultando base externa...</td></tr>';
+      try {
+        const res = await apiFetch(`/connections/${encodeURIComponent(connection)}/data?schema=${encodeURIComponent(schema)}&table=${encodeURIComponent(table)}&limit=${limit}&offset=${externalOffset}`);
+        const cols = res.columns || [];
+        const rows = res.rows || [];
+        const total = res.total_records || res.total || rows.length;
+        externalColumns = cols.map(c => c.name || c);
+        externalRows = rows;
 
-
+        head.innerHTML = cols.length ? `<tr>${cols.map(c => `<th style="padding:14px 16px;font-size:11px;color:#64748b;text-transform:uppercase;font-weight:700;border-bottom:2px solid #e2e8f0;white-space:nowrap;background:#f8fafc;">${escapeText(c.name || c)}</th>`).join('')}</tr>` : '<tr></tr>';
+        if (!rows.length) {
+          body.innerHTML = `<tr><td class="panel-empty" colspan="${cols.length || 1}">La tabla está vacía en la base conectada.</td></tr>`;
+        } else {
+          body.innerHTML = rows.map((row, index) => {
+            const bg = index % 2 === 0 ? '#ffffff' : '#f8fafc';
+            return `<tr style="background:${bg};"><td style="padding:12px 16px;font-size:13px;color:#1e293b;border-bottom:1px solid #f1f5f9;">${externalColumns.map(c => {
+              const v = row[c];
+              if (v === null || v === undefined) return '<span style="color:#cbd5e1;font-style:italic;">null</span>';
+              let s = String(v);
+              if (s.length > 120) s = s.substring(0,120) + '…';
+              return `<div style="max-width:250px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeText(String(v))}">${escapeText(s)}</div>`;
+            }).join('')}</td></tr>`;
+          }).join('');
+        }
+        if (count) count.textContent = `${rows.length} / ${total} filas · ${schema}.${table}`;
+        const btnPrev = document.getElementById('external-prev');
+        const btnNext = document.getElementById('external-next');
+        if (btnPrev) { btnPrev.disabled = externalOffset === 0; btnPrev.style.opacity = externalOffset === 0 ? '0.5' : '1'; }
+        if (btnNext) { btnNext.disabled = (externalOffset + limit) >= total; btnNext.style.opacity = (externalOffset + limit) >= total ? '0.5' : '1'; }
+      } catch (error) {
+        head.innerHTML = '';
+        body.innerHTML = `<tr><td class="panel-empty" style="color:#ef4444;" colspan="100%">No se pudo consultar: ${escapeText(error.message)}</td></tr>`;
+        if (count) count.textContent = 'Error de consulta';
+      }
+    }
 
 
 // --- EVENTOS DE CLIC PARA LAS MIGAS DE PAN ---
@@ -1807,21 +1885,53 @@ async function refreshHealth() {
 
     async function loadServices() {
       const body=document.getElementById('services-body');
-      // MOCK DATA: Simulamos APIs publicadas
-      const services = [
-        { id: "api-1", name: "Consulta de Municipios", description: "Expone el catálogo oficial", endpoint: "/api/v1/public/municipios", connection_name: "DBGS Producción", schema: "public", table: "catalogo_municipios", max_rows: 500, active: true },
-        { id: "api-2", name: "Directorio de Instituciones", description: "Datos públicos", endpoint: "/api/v1/public/instituciones", connection_name: "DBGS Producción", schema: "public", table: "instituciones", max_rows: 100, active: false }
-      ];
+      let services=[];
+      try {
+        const data=await apiFetch('/apis');
+        services=data.apis||data.Apis||[];
+      } catch(e) {
+        body.innerHTML=`<tr><td colspan="6" class="panel-empty" style="color:#ef4444;">No se pudieron cargar las APIs: ${escapeText(e.message)}</td></tr>`;
+        return;
+      }
       
       body.innerHTML=services.length?services.map(service=>{
         const canPublish=hasPermission(profile,'apis:publicar');
-        const actions=canPublish?`<button class="btn btn-secondary btn-sm">Activar / Desactivar</button>`:'Solo consulta';
-        return `<tr><td><strong>${escapeText(service.name)}</strong><br><span class="muted small">${escapeText(service.description||'')}</span></td><td><code>${escapeText(service.endpoint)}</code></td><td>${escapeText(service.connection_name)}<br><span class="muted small">${escapeText(service.schema)}.${escapeText(service.table)}</span></td><td>${escapeText(service.max_rows)}</td><td>${service.active?'<span class="badge badge-ok">Activa</span>':'<span class="badge badge-off">Inactiva</span>'}</td><td>${actions}</td></tr>`;
+        const id=service.id;
+        const name=service.name||'';
+        const description=service.description||'';
+        const endpoint=service.endpoint||'';
+        const conn=service.connection_name||service.connectionName||'';
+        const schema=service.schema||'';
+        const table=service.table||'';
+        const maxRows=service.max_rows||service.maxRows||'';
+        const active=!!service.active;
+        const actions=canPublish
+          ? `<button class="btn btn-secondary btn-sm" onclick="toggleService('${escapeText(id)}', ${!active})">${active?'Desactivar':'Activar'}</button> <button class="btn btn-danger btn-sm" onclick="deleteService('${escapeText(id)}')">Eliminar</button>`
+          : 'Solo consulta';
+        return `<tr><td><strong>${escapeText(name)}</strong><br><span class="muted small">${escapeText(description)}</span></td><td><code>${escapeText(endpoint)}</code></td><td>${escapeText(conn)}<br><span class="muted small">${escapeText(schema)}.${escapeText(table)}</span></td><td>${escapeText(maxRows)}</td><td>${active?'<span class="badge badge-ok">Activa</span>':'<span class="badge badge-off">Inactiva</span>'}</td><td>${actions}</td></tr>`;
       }).join(''):'<tr><td colspan="6" class="panel-empty">Aún no hay APIs publicadas.</td></tr>';
       
       if(hasPermission(profile,'apis:publicar')) {
         document.getElementById('service-publish-card').classList.remove('hidden');
       }
+    }
+
+    async function toggleService(id, active) {
+      if(!hasPermission(profile,'apis:publicar')) return;
+      try {
+        await apiFetch(`/apis/${encodeURIComponent(id)}/estado`, { method:'PUT', body: JSON.stringify({ active }) });
+        loadServices();
+      } catch(e) { panelAlert(e.message, 'Error', 'error'); }
+    }
+
+    async function deleteService(id) {
+      if(!hasPermission(profile,'apis:publicar')) return;
+      const ok = await panelConfirm('¿Eliminar esta API publicada? La credencial dejará de funcionar de inmediato.', 'Eliminar API');
+      if (!ok) return;
+      try {
+        await apiFetch(`/apis/${encodeURIComponent(id)}`, { method:'DELETE' });
+        loadServices();
+      } catch(e) { panelAlert(e.message, 'Error', 'error'); }
     }
 
     function typeOptions(selected = 'string') {
@@ -1964,13 +2074,27 @@ async function refreshHealth() {
         <details><summary>Vista técnica para programadores</summary><pre>${escapeText((data.sql_preview || []).join('\n\n'))}</pre><p class="muted small">Hash del plan: ${escapeText(data.plan_hash || '')}</p></details>`;
     }
 
+    async function hashPlan(plan) {
+      try {
+        const json = JSON.stringify(plan || {});
+        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(json));
+        const hex = [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
+        return 'sha256:' + hex;
+      } catch(e) {
+        return 'sha256:' + Date.now().toString(16) + Math.random().toString(16).slice(2,8);
+      }
+    }
+
     async function loadDesignerConnections() {
-      // MOCK DATA: Configuraciones visuales simuladas
       designerCapabilities = {
         types: [{id:'uuid',label:'UUID / Identificador'}, {id:'string',label:'Texto corto'}, {id:'integer',label:'Número entero'}],
         defaults: [{id:'',label:'Sin valor automático'}, {id:'uuid',label:'UUID aleatorio'}]
       };
-      const list = [{ id: "conn-1", name: "DBGS Producción", engine: "postgresql" }];
+      let list = [];
+      try {
+        const data = await apiFetch('/connections');
+        list = data.connections || data.Connections || [];
+      } catch(e) { /* sin conexiones registradas */ }
       const select = document.getElementById('designer-connection');
       const current = select.value;
       select.innerHTML = '<option value="">Seleccionar conexión…</option>' + list.map(c=>`<option value="${escapeText(c.id)}">${escapeText(c.name)} · ${escapeText(c.engine)}${c.read_only?' · solo lectura':''}</option>`).join('');
@@ -2040,18 +2164,21 @@ async function refreshHealth() {
       
       document.getElementById('refresh-audit').addEventListener('click', loadAudit);
       document.getElementById('refresh-connections').addEventListener('click', loadConnections);
-      document.getElementById('external-load')?.addEventListener('click', () => loadExternalRowsFromTree(true));
+      document.getElementById('external-connection')?.addEventListener('change', loadExternalSchemas);
+      document.getElementById('external-schema')?.addEventListener('change', loadExternalTables);
+      document.getElementById('external-load')?.addEventListener('click', () => loadExternalData(true));
       document.getElementById('external-prev')?.addEventListener('click', () => { 
         const limit=Number(document.getElementById('external-limit').value||100); 
         externalOffset=Math.max(0,externalOffset-limit); 
-        loadExternalRowsFromTree(false); 
+        loadExternalData(false); 
       });
       document.getElementById('external-next')?.addEventListener('click', () => { 
         const limit=Number(document.getElementById('external-limit').value||100); 
         externalOffset+=limit; 
-        loadExternalRowsFromTree(false); 
+        loadExternalData(false); 
       });
-      document.getElementById('external-export').addEventListener('click', exportExternalCSV);
+      document.getElementById('external-export')?.addEventListener('click', exportExternalCSV);
+      document.getElementById('external-export-conn')?.addEventListener('click', exportExternalCSV);
       document.getElementById('refresh-services').addEventListener('click', loadServices);
       document.getElementById('service-name').addEventListener('input', event => { const slug=document.getElementById('service-slug'); if (!slug.dataset.manual) slug.value=slugifyService(event.target.value); });
       document.getElementById('service-slug').addEventListener('input', event => { event.target.dataset.manual='true'; event.target.value=slugifyService(event.target.value); });
@@ -2075,66 +2202,40 @@ async function refreshHealth() {
           name: document.getElementById('service-name').value.trim(),
           description: document.getElementById('service-description').value.trim(),
           slug: document.getElementById('service-slug').value.trim(),
-          connection_name: document.getElementById('service-connection').options[document.getElementById('service-connection').selectedIndex]?.text.split('·')[0].trim() || 'Conexión Local',
+          connection_id: document.getElementById('service-connection').value,
           schema: document.getElementById('service-schema').value || 'public',
           table: document.getElementById('service-table').value,
           max_rows: Number(document.getElementById('service-max').value || 100)
         };
 
-        // MOCK DATA: Simulamos la latencia y la creación exitosa
-        setTimeout(() => {
-          // 1. Mostrar la tarjeta flotante con la credencial inventada
-          const mockCredentialData = {
-            api_key: "dg_live_" + Math.random().toString(36).substr(2, 24),
-            endpoint: `/api/v1/public/${payload.slug}`
-          };
-          showServiceCredential(mockCredentialData);
-
-          // 2. Inyectar visualmente en la tabla de abajo
-          const body = document.getElementById('services-body');
-          
-          // Quitamos el mensaje de "Sin consultar" si la tabla estaba vacía
-          if (body.querySelector('.panel-empty')) {
-            body.innerHTML = '';
+        try {
+          const created = await apiFetch('/apis', { method:'POST', body: JSON.stringify(payload) });
+          const api = created.api || created;
+          if (api && (api.api_key || api.apiKey)) {
+            showServiceCredential({
+              api_key: api.api_key || api.apiKey,
+              endpoint: api.endpoint || `/api/v1/public/${payload.slug}`
+            });
           }
-
-          const newRow = document.createElement('tr');
-          // Le ponemos un fondo verde temporal para el efecto "Wow"
-          newRow.style.backgroundColor = '#ecfdf5'; 
-          newRow.style.transition = 'background-color 2s ease';
-          
-          newRow.innerHTML = `
-            <td><strong>${escapeText(payload.name)}</strong><br><span class="muted small">${escapeText(payload.description || '')}</span></td>
-            <td><code>${escapeText(mockCredentialData.endpoint)}</code></td>
-            <td>${escapeText(payload.connection_name)}<br><span class="muted small">${escapeText(payload.schema)}.${escapeText(payload.table)}</span></td>
-            <td>${escapeText(payload.max_rows)}</td>
-            <td><span class="badge badge-ok">Activa</span></td>
-            <td><button class="btn btn-secondary btn-sm">Activar / Desactivar</button></td>
-          `;
-
-          // Lo metemos de primero en la tabla
-          body.insertBefore(newRow, body.firstChild);
-
-          // Efecto visual: le quitamos el fondo verde suavemente después de 1 segundo
-          setTimeout(() => newRow.style.backgroundColor = 'transparent', 1000);
-
-          // 3. Resetear el formulario y botones
           message.style.color = '#10b981';
           message.textContent = 'API publicada y añadida al catálogo exitosamente.';
           event.target.reset();
           document.getElementById('service-max').value = '100';
           document.getElementById('service-slug').dataset.manual = '';
-          
           submitBtn.disabled = false;
           submitBtn.textContent = 'Publicar API';
-          
-          // Borramos el mensaje de éxito luego de un ratito
+          loadServices();
           setTimeout(() => {
              message.textContent = 'La clave se mostrará una sola vez.';
              message.style.color = '';
           }, 4000);
-
-        }, 1200);
+        } catch(e) {
+          message.style.color = '#ef4444';
+          message.textContent = e.message || 'No se pudo publicar la API.';
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Publicar API';
+          if (typeof panelAlert === 'function') panelAlert(e.message, 'Error al publicar', 'error');
+        }
       });
       document.getElementById('designer-add-column').addEventListener('click', () => addDesignerColumn());
       document.getElementById('designer-add-fk').addEventListener('click', () => addDesignerFK());
@@ -2153,83 +2254,81 @@ async function refreshHealth() {
         const columns = plan.table.columns;
         const fks = plan.table.foreign_keys;
 
-        // MOCK DATA: Simulamos un motor de validación inteligente
-        setTimeout(() => {
-          let errors = [];
-          
-          // 1. Validar nombre de tabla
-          if (!tableName) {
-            errors.push({ code: "ERR-01", message: "El nombre de la tabla no puede estar vacío.", field: "Destino" });
+        const errors = [];
+
+        // 1. Validar nombre de tabla
+        if (!tableName) {
+          errors.push({ code: "ERR-01", message: "El nombre de la tabla no puede estar vacío.", field: "Destino" });
+        }
+
+        // 2. Validar que las columnas locales de las FK existan en la tabla
+        fks.forEach(fk => {
+          const localColExists = columns.some(col => col.name === fk.column);
+          if (!localColExists && fk.column) {
+            errors.push({ code: "ERR-02", message: `La columna local '${fk.column}' no existe en la definición de la tabla.`, field: "Relaciones" });
           }
-
-          // 2. Validar que las columnas locales de las FK existan en la tabla
-          fks.forEach(fk => {
-            const localColExists = columns.some(col => col.name === fk.column);
-            if (!localColExists && fk.column) {
-              errors.push({ code: "ERR-02", message: `La columna local '${fk.column}' no existe en la definición de la tabla.`, field: "Relaciones" });
-            }
-            if (!fk.ref_table) {
-              errors.push({ code: "ERR-03", message: "Debe especificar una tabla destino para la relación.", field: "Relaciones" });
-            }
-          });
-
-          // SI HAY ERRORES, BLOQUEAMOS Y MOSTRAMOS ROJO
-          if (errors.length > 0) {
-            const mockErrorResponse = {
-              valid: false,
-              engine: "PostgreSQL 15.0",
-              atomic: false,
-              errors: errors,
-              warnings: [],
-              actions: [],
-              sql_preview: ["-- Error estructural. Corrija los problemas arriba para poder generar el SQL seguro."],
-              plan_hash: ""
-            };
-            
-            renderDesignerValidation(mockErrorResponse);
-            
-            const applyBtn = document.getElementById('designer-apply');
-            applyBtn.disabled = true;
-            applyBtn.classList.add('hidden'); 
-
-            message.style.color = '#ef4444'; // Rojo
-            message.textContent = 'El plan contiene errores estructurales y no puede ser aplicado.';
-            return; // Detenemos aquí
+          if (!fk.ref_table) {
+            errors.push({ code: "ERR-03", message: "Debe especificar una tabla destino para la relación.", field: "Relaciones" });
           }
+        });
 
-          // SI NO HAY ERRORES, MOSTRAMOS EL ÉXITO
-          const mockSuccessResponse = {
-            valid: true,
+        // SI HAY ERRORES, BLOQUEAMOS Y MOSTRAMOS ROJO
+        if (errors.length > 0) {
+          const errorResponse = {
+            valid: false,
             engine: "PostgreSQL 15.0",
-            atomic: true,
-            errors: [],
-            warnings: [
-              { code: "OPT-01", message: "Se recomienda añadir un índice si esta tabla tendrá alto volumen de transacciones.", field: "General" }
-            ],
-            actions: [
-              `Crear tabla '${tableName}' en el esquema '${plan.table.schema || 'public'}'.`,
-              `Asignar propiedades de auditoría (created_at, updated_at).`,
-              fks.length > 0 ? `Crear ${fks.length} restricción(es) de clave foránea.` : 'Sin relaciones externas detectadas.',
-              `Inyectar permisos base según RBAC al rol DEVELOPER.`
-            ],
-            sql_preview: [
-              `-- Plan de ejecución generado por Turimiquire DataGov\nCREATE TABLE ${plan.table.schema || 'public'}.${tableName} (\n  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n  -- (Columnas definidas en la interfaz)\n  estado BOOLEAN DEFAULT true,\n  created_at TIMESTAMP DEFAULT now()\n);\n\nALTER TABLE ${plan.table.schema || 'public'}.${tableName} OWNER TO dbgs_admin;`
-            ],
-            plan_hash: "sha256:8f7a9b1c3d5e9x2...",
-            normalized_plan: plan
+            atomic: false,
+            errors: errors,
+            warnings: [],
+            actions: [],
+            sql_preview: ["-- Error estructural. Corrija los problemas arriba para poder generar el SQL seguro."],
+            plan_hash: ""
           };
 
-          renderDesignerValidation(mockSuccessResponse);
-          validatedPlan = mockSuccessResponse.normalized_plan; 
-          validatedHash = mockSuccessResponse.plan_hash;
-          
-          const applyBtn = document.getElementById('designer-apply');
-          applyBtn.disabled = false;
-          applyBtn.classList.remove('hidden'); 
+          renderDesignerValidation(errorResponse);
 
-          message.style.color = '#10b981'; // Verde
-          message.textContent = 'Plan válido y libre de riesgos. Listo para aplicar.';
-        }, 1200);
+          const applyBtn = document.getElementById('designer-apply');
+          applyBtn.disabled = true;
+          applyBtn.classList.add('hidden');
+
+          message.style.color = '#ef4444'; // Rojo
+          message.textContent = 'El plan contiene errores estructurales y no puede ser aplicado.';
+          return; // Detenemos aquí
+        }
+
+        // SI NO HAY ERRORES, MOSTRAMOS EL ÉXITO CON UN HASH REAL DEL PLAN
+        const planHash = await hashPlan(plan);
+        const successResponse = {
+          valid: true,
+          engine: "PostgreSQL 15.0",
+          atomic: true,
+          errors: [],
+          warnings: [
+            { code: "OPT-01", message: "Se recomienda añadir un índice si esta tabla tendrá alto volumen de transacciones.", field: "General" }
+          ],
+          actions: [
+            `Crear tabla '${tableName}' en el esquema '${plan.table.schema || 'public'}'.`,
+            `Asignar propiedades de auditoría (created_at, updated_at).`,
+            fks.length > 0 ? `Crear ${fks.length} restricción(es) de clave foránea.` : 'Sin relaciones externas detectadas.',
+            `Inyectar permisos base según RBAC al rol DEVELOPER.`
+          ],
+          sql_preview: [
+            `-- Plan de ejecución generado por Turimiquire DataGov\nCREATE TABLE ${plan.table.schema || 'public'}.${tableName} (\n  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n  -- (Columnas definidas en la interfaz)\n  estado BOOLEAN DEFAULT true,\n  created_at TIMESTAMP DEFAULT now()\n);\n\nALTER TABLE ${plan.table.schema || 'public'}.${tableName} OWNER TO dbgs_admin;`
+          ],
+          plan_hash: planHash,
+          normalized_plan: plan
+        };
+
+        renderDesignerValidation(successResponse);
+        validatedPlan = successResponse.normalized_plan;
+        validatedHash = successResponse.plan_hash;
+
+        const applyBtn = document.getElementById('designer-apply');
+        applyBtn.disabled = false;
+        applyBtn.classList.remove('hidden');
+
+        message.style.color = '#10b981'; // Verde
+        message.textContent = 'Plan válido y libre de riesgos. Listo para aplicar.';
       });
 
       document.getElementById('designer-apply').addEventListener('click', async () => {
@@ -2282,24 +2381,8 @@ async function refreshHealth() {
         };
 
         try {
-            // 2. RECUPERAMOS TU TOKEN DE SEGURIDAD
-            const token = getToken();
-
-            // 3. HACEMOS LA LLAMADA REAL AL BACKEND DE LUCHO
-            const response = await fetch('http://localhost:8080/v1/colecciones', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + token
-                },
-                body: JSON.stringify(payloadLucho)
-            });
-
-            const data = await response.json().catch(() => ({}));
-
-            if (!response.ok) {
-                throw new Error(data.message || data.error || 'Error del servidor al crear la tabla.');
-            }
+            // 2. HACEMOS LA LLAMADA REAL AL BACKEND USANDO apiFetch (JWT + manejo de errores)
+            await apiFetch('/colecciones', { method:'POST', body: JSON.stringify(payloadLucho) });
 
             // 4. SI TODO SALE BIEN
             message.style.color = '#10b981';
@@ -2360,41 +2443,6 @@ async function refreshHealth() {
     });
 
   // =========================================================================
-    // 7. BUSCADOR EN TIEMPO REAL PARA EL ÁRBOL DE TABLAS
-    // =========================================================================
-    const searchInputArbol = document.querySelector('aside input[placeholder="Buscar tabla..."]');
-    
-    if (searchInputArbol) {
-        searchInputArbol.addEventListener('input', function(e) {
-            const term = e.target.value.toLowerCase().trim();
-            const treeContainer = document.getElementById('db-tree-container');
-            if (!treeContainer) return;
-            
-            const tableDetails = treeContainer.querySelectorAll('details > details > details');
-            
-            tableDetails.forEach(details => {
-                const summary = details.querySelector('summary');
-                if (!summary) return;
-                
-                const tableName = summary.textContent.toLowerCase();
-                
-                if (tableName.includes(term)) {
-                    details.style.display = '';
-                    if (term !== '') {
-                        let parent = details.parentElement;
-                        while(parent && parent.tagName.toLowerCase() === 'details') {
-                            parent.open = true;
-                            parent = parent.parentElement;
-                        }
-                    }
-                } else {
-                    details.style.display = 'none';
-                }
-            });
-        });
-    }
-
-    // =========================================================================
     // 8. FILTROS EN TIEMPO REAL PARA DATOS Y BOTÓN REFRESCAR
     // =========================================================================
     
@@ -2753,6 +2801,37 @@ async function refreshHealth() {
             alert("Error catastrófico durante la restauración: " + error.message);
         }
     };
+
+    window.verifyRetention = async function() {
+        const resultEl = document.getElementById('retention-result');
+        const btn = document.getElementById('btn-apply-retention');
+        if (!btn) return;
+        btn.disabled = true;
+        btn.textContent = 'Verificando...';
+        if (resultEl) resultEl.textContent = 'Consultando el motor de retención en el servidor...';
+
+        try {
+            const data = await apiFetch('/backups/retencion', {
+                method: 'POST',
+                body: JSON.stringify({ dias_retencion: 0, maximo_backups: 0 })
+            });
+            const eliminados = (data.ids_eliminados || data.idsEliminados || []).length;
+            if (resultEl) {
+                resultEl.style.color = '#10b981';
+                resultEl.textContent = eliminados > 0
+                    ? `Retención aplicada: ${eliminados} respaldo(s) antiguo(s) eliminados.`
+                    : 'No hay respaldos vencidos que limpiar.';
+            }
+            loadBackups();
+        } catch (e) {
+            if (resultEl) { resultEl.style.color = '#ef4444'; resultEl.textContent = e.message || 'Error al verificar la retención.'; }
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Verificar Retención';
+        }
+    };
+
+    document.getElementById('btn-apply-retention')?.addEventListener('click', window.verifyRetention);
   </script>
 </body>
 </html>

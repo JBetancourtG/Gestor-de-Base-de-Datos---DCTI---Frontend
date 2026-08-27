@@ -211,6 +211,7 @@
   </div>
 
   <script>
+    const API_BASE = 'http://localhost:8080/v1';
     const passInput = document.getElementById('admin-pass');
     const confirmInput = document.getElementById('admin-pass-confirm');
     const meterContainer = document.getElementById('meter-container');
@@ -304,7 +305,7 @@
       };
 
       try {
-        const response = await fetch('http://localhost:8080/v1/auth/setup', {
+        const response = await fetch(`${API_BASE}/auth/setup`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
