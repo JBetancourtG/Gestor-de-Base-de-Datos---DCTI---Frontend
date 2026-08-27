@@ -76,12 +76,33 @@ async function requireSession() {
     }
 
     // CORRECCIÓN: Mapeamos el Rol a Permisos visuales para encender los botones de la UI
+ // CORRECCIÓN: Matriz oficial de RBAC dictada por el diseño del Backend
+ // CORRECCIÓN: Fusión de la Matriz de Lucho (Backend) + Permisos Visuales (Frontend)
     const permissionMap = {
-      'ADMIN_PLATFORM': ['catalogos:leer', 'auditoria:leer', 'conexiones:leer', 'conexiones:administrar', 'bases:crear', 'designer:validar', 'designer:aplicar', 'apis:consultar', 'apis:publicar', 'usuarios:directorio'],
-      'DBA': ['catalogos:leer', 'conexiones:leer', 'designer:validar', 'designer:aplicar', 'apis:consultar'],
-      'DEVELOPER': ['catalogos:leer', 'datasets:leer', 'conexiones:leer', 'designer:validar', 'apis:consultar'],
-      'AUDITOR': ['auditoria:leer', 'catalogos:leer', 'apis:consultar'],
-      'ANALYST': ['catalogos:leer', 'datasets:leer']
+      'ADMIN_PLATFORM': [
+          // Poderes reales del servidor (Lucho)
+          'catalogos:escribir', 'catalogos:leer', 'datasets:leer', 'colecciones:crear', 'colecciones:leer', 'colecciones:actualizar', 'colecciones:eliminar', 'auditoria:leer', 'respaldo:ejecutar', 'restauracion:ejecutar', 'usuarios:leer', 'usuarios:admin',
+          // Poderes visuales de la interfaz (Nuestro Frontend)
+          'conexiones:leer', 'conexiones:administrar', 'designer:validar', 'designer:aplicar', 'apis:consultar', 'apis:publicar', 'usuarios:directorio'
+      ],
+      'DBA': [
+          'respaldo:ejecutar', 'restauracion:ejecutar', 'usuarios:leer', 'auditoria:leer',
+          'conexiones:leer', 'designer:validar', 'designer:aplicar', 'apis:consultar'
+      ],
+      'DEVELOPER': [
+          'catalogos:leer', 'catalogos:escribir', 'datasets:leer', 'colecciones:crear', 'colecciones:leer', 'colecciones:actualizar',
+          'conexiones:leer', 'designer:validar', 'apis:consultar'
+      ],
+      'AUDITOR': [
+          'auditoria:leer', 'catalogos:leer',
+          'apis:consultar'
+      ],
+      'ANALYST': [
+          'catalogos:leer', 'datasets:leer', 'colecciones:leer'
+      ],
+      'SERVICE_ACCOUNT': [
+          'catalogos:leer', 'datasets:leer'
+      ]
     };
 
     return {

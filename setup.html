@@ -310,17 +310,23 @@
             body: JSON.stringify(payload)
         });
 
+        const data = await response.json(); // Leemos la respuesta del servidor
+
         if (!response.ok) {
-            const errData = await response.json().catch(()=>({}));
-            throw new Error(errData.message || errData.error || 'Error al crear el superusuario.');
+            throw new Error(data.message || data.error || 'Error al crear el superusuario.');
         }
 
         submitBtn.style.backgroundColor = '#10b981'; // Verde de éxito
         submitBtn.textContent = '¡Instalación Completada!';
         
-        // Redirigir al nuevo y hermoso Login después de 1.5 segundos
+        // MAGIA: Guardamos el token que nos devolvió el setup para iniciar sesión automáticamente
+        if (data.access_token) {
+            sessionStorage.setItem('turimiquire_token', data.access_token);
+        }
+        
+        // Redirigir directo al Dashboard (saltándose el index.html)
         setTimeout(() => {
-          window.location.replace('./index.html');
+          window.location.replace('/dashboard.html');
         }, 1500);
 
       } catch (error) {

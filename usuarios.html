@@ -582,37 +582,64 @@
       document.getElementById('count-roles').textContent = String(roles.length);
     }
 
-    async function loadDirectory() {
+async function loadDirectory() {
       const body = document.getElementById('users-body');
-      body.innerHTML = '<tr><td colspan="7" class="panel-empty">Consultando directorio…</td></tr>';
+      body.innerHTML = '<tr><td colspan="7" class="panel-empty"><span class="loading loading-spinner loading-sm"></span> Consultando directorio en el servidor...</td></tr>';
+      
       try {
-        // MOCK DATA
-        const directory = {
-          summary: { total: 3, active: 3, inactive: 0 },
-          users: [
-            { id: "1", username: "superadmin", email: "admin@datagov.ve", role: "ADMIN_PLATFORM", is_technical: false, active: true, created_at: new Date().toISOString() },
-            { id: "2", username: "dba", email: "dba@datagov.ve", role: "DBA", is_technical: false, active: true, created_at: new Date().toISOString() },
-            { id: "3", username: "servicio_api", email: "api@datagov.ve", role: "SERVICE_ACCOUNT", is_technical: true, active: true, created_at: new Date().toISOString() }
-          ]
-        };
-        
-        const roleData = {
-          roles: [
-            { name: "ADMIN_PLATFORM", description: "Administrador de plataforma", user_count: 1 },
-            { name: "DBA", description: "Administrador de base de datos", user_count: 1 },
-            { name: "DEVELOPER", description: "Desarrollador institucional", user_count: 0 },
-            { name: "AUDITOR", description: "Auditor de seguridad", user_count: 0 },
-            { name: "SERVICE_ACCOUNT", description: "Cuenta técnica para integraciones", user_count: 1 }
-          ]
-        };
+        // 1. OBTENEMOS LOS ROLES REALES DEL BACKEND
+        let rolesReales = [];
+        try {
+            const resRoles = await apiFetch('/seguridad/roles');
+            rolesReales = resRoles.roles || resRoles.Roles || []; 
+        } catch (e) {
+            console.warn("No se pudieron cargar los roles.", e);
+        }
 
-        users = directory.users || [];
-        roles = roleData.roles || [];
+        // 2. OBTENEMOS LOS USUARIOS REALES DEL BACKEND
+        try {
+            const resUsuarios = await apiFetch('/seguridad/usuarios');
+            let rawUsers = resUsuarios.usuarios || resUsuarios.Usuarios || [];
+            
+            // Adaptamos el formato del backend a lo que espera nuestra tabla visual
+            users = rawUsers.map(u => {
+                // Buscamos el ID del rol que manda el backend
+                const rolId = u.rol_id || u.RolId || u.rolId;
+                
+                // Hacemos el "match" con la lista de roles reales (del Paso 1)
+                const rolEncontrado = rolesReales.find(r => (r.id || r.ID) === rolId);
+                
+                return {
+                    id: u.id || u.ID || u.Id,
+                    username: u.username || u.Username,
+                    email: u.email || u.Email,
+                    // Si encontramos el rol, usamos su nombre. Si no, ponemos 'Sin Rol'
+                    role: rolEncontrado ? rolEncontrado.nombre : (u.rol_nombre || u.RolNombre || u.rol || 'Sin Rol'),
+                    is_technical: u.es_tecnico || u.EsTecnico || false,
+                    active: u.estado !== false && u.Estado !== false,
+                    created_at: u.fecha_creacion || u.FechaCreacion || u.created_at || new Date().toISOString()
+                };
+            });
+        } catch (e) {
+            console.error("Error cargando usuarios:", e);
+            users = [];
+            throw new Error("No se pudo conectar con la base de datos de usuarios.");
+        }
         
-        document.getElementById('count-total').textContent = directory.summary?.total ?? users.length;
-        document.getElementById('count-active').textContent = directory.summary?.active ?? users.filter(u => u.active).length;
-        document.getElementById('count-inactive').textContent = directory.summary?.inactive ?? users.filter(u => !u.active).length;
+        // 3. MAPEAMOS LOS ROLES REALES PARA LA INTERFAZ
+        roles = rolesReales.map(r => ({
+            name: r.nombre,
+            description: r.descripcion,
+            // Contamos cuántos usuarios reales tienen este rol
+            user_count: users.filter(u => u.role === r.nombre).length 
+        }));
         
+        // 4. ACTUALIZAMOS LOS CONTADORES DE LA INTERFAZ
+        document.getElementById('count-total').textContent = users.length;
+        document.getElementById('count-active').textContent = users.filter(u => u.active).length;
+        document.getElementById('count-inactive').textContent = users.filter(u => !u.active).length;
+        
+        // 5. LLENAMOS LOS MENÚS DESPLEGABLES (Filtros y Creación)
         const select = document.getElementById('filter-role');
         const current = select.value;
         select.innerHTML = '<option value="">Todos los roles</option>' + roles.map(r => `<option value="${escapeText(r.name)}">${escapeText(roleLabel(r.name))}</option>`).join('');
@@ -621,14 +648,17 @@
         const createRole = document.getElementById('new-role');
         if (createRole) {
           const selected = createRole.value;
-          createRole.innerHTML = '<option value="">Seleccionar rol…</option>' + roles.map(r => `<option value="${escapeText(r.name)}">${escapeText(roleLabel(r.name))}</option>`).join('');
-          if (roles.some(r => r.name === selected)) createRole.value = selected;
+          // Aquí guardamos el ID del rol como value, y mostramos el nombre, porque el backend pide el UUID
+          createRole.innerHTML = '<option value="">Seleccionar rol…</option>' + rolesReales.map(r => `<option value="${escapeText(r.id || r.ID)}">${escapeText(roleLabel(r.nombre))}</option>`).join('');
+          // Intentamos mantener la selección si aún existe
+          if (rolesReales.some(r => (r.id || r.ID) === selected)) createRole.value = selected;
         }
         
+        // 6. DIBUJAMOS LA TABLA
         renderUsers();
         renderRoleSummary();
       } catch (error) {
-        body.innerHTML = `<tr><td colspan="7" class="panel-empty">${escapeText(error.message)}</td></tr>`;
+        body.innerHTML = `<tr><td colspan="7" class="panel-empty" style="color:#ef4444;">${escapeText(error.message)}</td></tr>`;
       }
     }
 
@@ -665,60 +695,57 @@
         if (event.target.value === 'SERVICE_ACCOUNT') document.getElementById('new-technical').checked = true;
       });
       
+      // CONEXIÓN REAL AL BACKEND: Formulario de creación de usuarios
       document.getElementById('create-user-form')?.addEventListener('submit', async event => {
         event.preventDefault();
         const message = document.getElementById('create-user-message');
         const submitBtn = event.target.querySelector('button[type="submit"]');
         
+        // 1. Armamos el paquete de datos exactamente como lo pide Lucho
         const payload = {
-          id: "temp-" + Date.now(), // ID temporal para la simulación
           username: document.getElementById('new-username').value.trim(),
           email: document.getElementById('new-email').value.trim(),
-          role: document.getElementById('new-role').value,
-          is_technical: document.getElementById('new-technical').checked,
-          active: document.getElementById('new-active').checked,
-          created_at: new Date().toISOString()
+          password: document.getElementById('new-password').value,
+          rol_id: document.getElementById('new-role').value, // UUID real del rol
+          es_tecnico: document.getElementById('new-technical').checked
         };
         
         message.style.color = '#0c4a6e';
-        message.textContent = 'Validando y creando usuario...';
+        message.textContent = 'Validando y creando usuario en el servidor...';
         submitBtn.disabled = true;
         submitBtn.innerHTML = 'Creando...';
         
-        // MOCK DATA: Simulamos la latencia de red y creación exitosa
-        setTimeout(() => {
-          // 1. Inyectamos el nuevo usuario en nuestra lista de memoria
-          users.unshift(payload); // Lo ponemos de primero en la lista
-          
-          // 2. Sumamos 1 al contador del rol correspondiente
-          const roleObj = roles.find(r => r.name === payload.role);
-          if (roleObj) roleObj.user_count++;
-          
-          // 3. Actualizamos los contadores de arriba
-          document.getElementById('count-total').textContent = users.length;
-          document.getElementById('count-active').textContent = users.filter(u => u.active).length;
-          document.getElementById('count-inactive').textContent = users.filter(u => !u.active).length;
-          
-          // 4. Redibujamos la tabla y las tarjetas de roles
-          renderUsers();
-          renderRoleSummary();
+        try {
+          // 2. Disparamos la petición real a la base de datos
+          await apiFetch('/seguridad/usuarios', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
 
-          // 5. Damos feedback de éxito
+          // 3. Si todo sale bien, damos feedback visual
           message.style.color = '#10b981'; // Verde éxito
-          message.textContent = `¡Usuario ${payload.username} creado con éxito!`;
+          message.textContent = `¡Usuario ${payload.username} creado con éxito en PostgreSQL!`;
           event.target.reset();
           document.getElementById('new-active').checked = true;
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = 'Crear usuario';
+          
+          // 4. Actualizamos la tabla para que el nuevo usuario aparezca instantáneamente
+          await loadDirectory();
 
-          // 6. Magia: Lo devolvemos automáticamente a la pestaña del Directorio después de 1.5s
+          // 5. Lo regresamos automáticamente al directorio después de 1.5 segundos
           setTimeout(() => {
             openUserTab('directory');
-            message.style.color = ''; // Resetear color original
+            message.style.color = ''; // Resetear color
             message.textContent = 'La contraseña debe tener al menos 10 caracteres.';
           }, 1500);
 
-        }, 800);
+        } catch (error) {
+          // Si el usuario ya existe o Lucho nos rebota por algo, lo mostramos en rojo
+          message.style.color = '#ef4444'; 
+          message.textContent = 'Error: ' + error.message;
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = 'Crear usuario';
+        }
       });
     });
   </script>
