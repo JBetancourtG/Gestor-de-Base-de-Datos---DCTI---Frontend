@@ -32,7 +32,7 @@ async function apiFetch(path, options = {}) {
   }
   
   if (!response.ok) {
-    if (response.status === 401 || response.status === 403) clearSession();
+    if (response.status === 401) clearSession();
     
     // --- NUEVO SÚPER DETECTOR DE ERRORES ---
     let message = `Error HTTP ${response.status}`;
@@ -117,6 +117,7 @@ async function requireSession() {
     throw error;
   }
 }
+
 
 function logout() {
   clearSession();
