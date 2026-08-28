@@ -83,11 +83,11 @@ async function requireSession() {
           // Poderes reales del servidor (Lucho)
           'catalogos:escribir', 'catalogos:leer', 'datasets:leer', 'colecciones:crear', 'colecciones:leer', 'colecciones:actualizar', 'colecciones:eliminar', 'auditoria:leer', 'respaldo:ejecutar', 'restauracion:ejecutar', 'usuarios:leer', 'usuarios:admin',
           // Poderes visuales de la interfaz (Nuestro Frontend)
-          'conexiones:leer', 'conexiones:administrar', 'designer:validar', 'designer:aplicar', 'apis:consultar', 'apis:publicar', 'usuarios:directorio'
+          'conexiones:leer', 'conexiones:administrar', 'designer:validar', 'designer:aplicar', 'apis:consultar', 'apis:publicar', 'usuarios:directorio', 'reportes:exportar'
       ],
       'DBA': [
           'respaldo:ejecutar', 'restauracion:ejecutar', 'usuarios:leer', 'auditoria:leer',
-          'conexiones:leer', 'designer:validar', 'designer:aplicar', 'apis:consultar'
+          'conexiones:leer', 'designer:validar', 'designer:aplicar', 'apis:consultar', 'reportes:exportar'
       ],
       'DEVELOPER': [
           'catalogos:leer', 'catalogos:escribir', 'datasets:leer', 'colecciones:crear', 'colecciones:leer', 'colecciones:actualizar',

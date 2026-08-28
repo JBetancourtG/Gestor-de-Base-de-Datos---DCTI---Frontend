@@ -563,9 +563,9 @@
         try {
           if (active) {
             if (!(await panelConfirm('El usuario no podrá iniciar nuevas sesiones hasta que sea reactivado.', 'Desactivar usuario', {danger:true, confirmText:'Desactivar'}))) return;
-            await apiFetch(`/admin/users/${encodeURIComponent(id)}`, {method:'DELETE'});
+            await apiFetch(`/seguridad/usuarios/${encodeURIComponent(id)}`, {method:'PUT', body:JSON.stringify({estado:false})});
           } else {
-            await apiFetch(`/admin/users/${encodeURIComponent(id)}`, {method:'PATCH', body:JSON.stringify({active:true})});
+            await apiFetch(`/seguridad/usuarios/${encodeURIComponent(id)}`, {method:'PUT', body:JSON.stringify({estado:true})});
           }
           await loadDirectory();
         } catch (error) { await panelAlert(error.message, 'No se pudo actualizar el usuario', 'error'); }
@@ -628,10 +628,10 @@ async function loadDirectory() {
         
         // 3. MAPEAMOS LOS ROLES REALES PARA LA INTERFAZ
         roles = rolesReales.map(r => ({
-            name: r.nombre,
-            description: r.descripcion,
+            name: r.nombre || r.name,
+            description: r.descripcion || r.description || 'Perfil registrado',
             // Contamos cuántos usuarios reales tienen este rol
-            user_count: users.filter(u => u.role === r.nombre).length 
+            user_count: users.filter(u => u.role === (r.nombre || r.name)).length 
         }));
         
         // 4. ACTUALIZAMOS LOS CONTADORES DE LA INTERFAZ
@@ -681,9 +681,11 @@ async function loadDirectory() {
 
         document.getElementById('viewer-role').textContent = roleLabel(viewer.role);
         
-        // Simulación temporal para ver la pantalla completa sin permisos reales del backend aún
-        document.getElementById('create-user-card').classList.remove('hidden');
-        document.getElementById('tab-create-user').classList.remove('hidden');
+        // Solo los administradores de plataforma pueden crear usuarios (RBAC)
+        if (hasPermission(viewer,'usuarios:admin')) {
+          document.getElementById('create-user-card').classList.remove('hidden');
+          document.getElementById('tab-create-user').classList.remove('hidden');
+        }
         
         await loadDirectory();
       } catch (error) { console.error(error); }
