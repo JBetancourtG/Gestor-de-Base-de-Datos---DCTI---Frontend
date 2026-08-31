@@ -1248,7 +1248,6 @@ CREATE INDEX idx_catalogos_codigo ON dbgs_schema.catalogos(codigo);</div>
 
     async function loadConnections() {
       const list = document.getElementById('connection-list');
-<<<<<<< HEAD
       list.innerHTML = '<div class="panel-empty"><span class="loading loading-spinner loading-sm"></span> Consultando conexiones al servidor...</div>';
       try {
         const data = await apiFetch('/connections'); // RUTA CORREGIDA A INGLÉS
@@ -1324,39 +1323,6 @@ CREATE INDEX idx_catalogos_codigo ON dbgs_schema.catalogos(codigo);</div>
       }
     }
 
-
-
-=======
-      let connections = [];
-      try {
-        const data = await apiFetch('/connections');
-        connections = data.connections || data.Connections || [];
-      } catch (e) {
-        list.innerHTML = `<div class="panel-empty">No se pudieron cargar las conexiones: ${escapeText(e.message)}</div>`;
-        return;
-      }
-      window._connectionsCache = connections;
-
-      if (!connections.length) {
-        list.innerHTML = '<div class="panel-empty">Aún no hay conexiones registradas.</div>';
-      } else {
-        list.replaceChildren(...connections.map(conn => {
-          const item = document.createElement('div'); item.className = 'connection-item';
-          item.innerHTML = `<div><strong>${escapeText(conn.name)}</strong><span>${escapeText(conn.engine)} · ${escapeText(conn.host)}:${escapeText(conn.port)} · ${escapeText(conn.database)}${conn.read_only ? ' · solo lectura' : ''}</span></div><div class="toolbar"></div>`;
-          const actions = item.querySelector('.toolbar');
-          const openData = document.createElement('button'); openData.className='btn btn-primary btn-sm'; openData.textContent='Abrir datos';
-          openData.onclick = () => { document.getElementById('external-connection').value=conn.id; loadExternalSchemas(); document.getElementById('external-data-explorer').scrollIntoView({behavior:'smooth',block:'start'}); };
-          actions.appendChild(openData);
-          return item;
-        }));
-      }
-
-      const extSel = document.getElementById('external-connection');
-      if (extSel) {
-        extSel.innerHTML = '<option value="">Seleccionar conexión…</option>' + connections.map(c => `<option value="${escapeText(c.id)}">${escapeText(c.name)} · ${escapeText(c.engine)}</option>`).join('');
-      }
-    }
-
     async function loadExternalSchemas() {
       const connection = document.getElementById('external-connection').value;
       const schemaSel = document.getElementById('external-schema');
@@ -1389,7 +1355,6 @@ CREATE INDEX idx_catalogos_codigo ON dbgs_schema.catalogos(codigo);</div>
         if (document.getElementById('external-count')) document.getElementById('external-count').textContent = error.message;
       }
     }
->>>>>>> 97142ec167e1f1a214df4c4ac055a99a2aff181e
 
     let externalOffset = 0;
     let externalColumns = [];
@@ -1963,7 +1928,6 @@ CREATE INDEX idx_catalogos_codigo ON dbgs_schema.catalogos(codigo);</div>
     // MÓDULO DE APIs REALES
     // =========================================================================
     async function loadServices() {
-<<<<<<< HEAD
       const body = document.getElementById('services-body');
       body.innerHTML = '<tr><td colspan="6" class="panel-empty"><span class="loading loading-spinner loading-sm"></span> Cargando catálogo de APIs...</td></tr>';
       
@@ -2035,121 +1999,6 @@ CREATE INDEX idx_catalogos_codigo ON dbgs_schema.catalogos(codigo);</div>
             alert("Error al eliminar API: " + error.message);
         }
     };
-
-    // Crear la API en la base de datos real
-    document.getElementById('service-form').addEventListener('submit', async event => {
-        event.preventDefault(); 
-        if(!hasPermission(profile,'apis:publicar')) return;
-        
-        const message = document.getElementById('service-message'); 
-        const submitBtn = event.target.querySelector('button[type="submit"]');
-
-        message.style.color = '#0c4a6e';
-        message.textContent = 'Registrando servicio y generando clave...';
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Publicando...';
-
-        const payload = {
-          name: document.getElementById('service-name').value.trim(),
-          description: document.getElementById('service-description').value.trim(),
-          slug: document.getElementById('service-slug').value.trim(),
-          connection_id: document.getElementById('service-connection').value, // Enviamos el ID de conexión, no el nombre
-          schema: document.getElementById('service-schema').value || 'public',
-          table: document.getElementById('service-table').value,
-          max_rows: Number(document.getElementById('service-max').value || 100)
-        };
-
-        try {
-            // Llamada POST oficial
-            const response = await apiFetch('/apis', {
-                method: 'POST',
-                body: JSON.stringify(payload)
-            });
-
-            // Lucho devuelve ApiResponse { api: ApiPublicada }
-            const apiData = response.api || response.Api || {};
-
-            // 1. Mostrar la tarjeta flotante con la credencial generada por Go
-            showServiceCredential({
-                api_key: apiData.api_key || apiData.apiKey,
-                endpoint: apiData.endpoint
-            });
-
-            // 2. Limpiar formulario
-            message.style.color = '#10b981';
-            message.textContent = 'API publicada y añadida al catálogo exitosamente.';
-            event.target.reset();
-            document.getElementById('service-max').value = '100';
-            document.getElementById('service-slug').dataset.manual = '';
-            
-            // 3. Recargar la tabla con la nueva API
-            loadServices();
-
-        } catch (error) {
-            message.style.color = '#ef4444';
-            message.textContent = 'Fallo al publicar: ' + error.message;
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Publicar API';
-            setTimeout(() => {
-                if (message.style.color === 'rgb(16, 185, 129)') { // Si es verde, lo reseteamos al texto normal
-                    message.style.color = '';
-                    message.textContent = 'La clave se mostrará una sola vez.';
-                }
-            }, 5000);
-        }
-    });
-=======
-      const body=document.getElementById('services-body');
-      let services=[];
-      try {
-        const data=await apiFetch('/apis');
-        services=data.apis||data.Apis||[];
-      } catch(e) {
-        body.innerHTML=`<tr><td colspan="6" class="panel-empty" style="color:#ef4444;">No se pudieron cargar las APIs: ${escapeText(e.message)}</td></tr>`;
-        return;
-      }
-      
-      body.innerHTML=services.length?services.map(service=>{
-        const canPublish=hasPermission(profile,'apis:publicar');
-        const id=service.id;
-        const name=service.name||'';
-        const description=service.description||'';
-        const endpoint=service.endpoint||'';
-        const conn=service.connection_name||service.connectionName||'';
-        const schema=service.schema||'';
-        const table=service.table||'';
-        const maxRows=service.max_rows||service.maxRows||'';
-        const active=!!service.active;
-        const actions=canPublish
-          ? `<button class="btn btn-secondary btn-sm" onclick="toggleService('${escapeText(id)}', ${!active})">${active?'Desactivar':'Activar'}</button> <button class="btn btn-danger btn-sm" onclick="deleteService('${escapeText(id)}')">Eliminar</button>`
-          : 'Solo consulta';
-        return `<tr><td><strong>${escapeText(name)}</strong><br><span class="muted small">${escapeText(description)}</span></td><td><code>${escapeText(endpoint)}</code></td><td>${escapeText(conn)}<br><span class="muted small">${escapeText(schema)}.${escapeText(table)}</span></td><td>${escapeText(maxRows)}</td><td>${active?'<span class="badge badge-ok">Activa</span>':'<span class="badge badge-off">Inactiva</span>'}</td><td>${actions}</td></tr>`;
-      }).join(''):'<tr><td colspan="6" class="panel-empty">Aún no hay APIs publicadas.</td></tr>';
-      
-      if(hasPermission(profile,'apis:publicar')) {
-        document.getElementById('service-publish-card').classList.remove('hidden');
-      }
-    }
-
-    async function toggleService(id, active) {
-      if(!hasPermission(profile,'apis:publicar')) return;
-      try {
-        await apiFetch(`/apis/${encodeURIComponent(id)}/estado`, { method:'PUT', body: JSON.stringify({ active }) });
-        loadServices();
-      } catch(e) { panelAlert(e.message, 'Error', 'error'); }
-    }
-
-    async function deleteService(id) {
-      if(!hasPermission(profile,'apis:publicar')) return;
-      const ok = await panelConfirm('¿Eliminar esta API publicada? La credencial dejará de funcionar de inmediato.', 'Eliminar API');
-      if (!ok) return;
-      try {
-        await apiFetch(`/apis/${encodeURIComponent(id)}`, { method:'DELETE' });
-        loadServices();
-      } catch(e) { panelAlert(e.message, 'Error', 'error'); }
-    }
->>>>>>> 97142ec167e1f1a214df4c4ac055a99a2aff181e
 
     function typeOptions(selected = 'string') {
       const types = designerCapabilities?.types || [
