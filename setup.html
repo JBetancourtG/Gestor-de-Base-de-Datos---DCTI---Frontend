@@ -1,343 +1,873 @@
-<!doctype html>
-<html lang="es">
+<!DOCTYPE html>
+<html class="h-full bg-slate-100" lang="es" style="">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0b2748">
-  <title>Instalación · Turimiquire DataGov</title>
-  <link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png">
-  <link rel="apple-touch-icon" href="/assets/favicon.png">
-  <link rel="stylesheet" href="/assets/app.css">
-
-  <style>
-    /* Diseño exclusivo para la pantalla de instalación anclada al centro */
-    body {
-      background-color: #f1f5f9;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      margin: 0;
-      font-family: system-ui, -apple-system, sans-serif;
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#0F2A1E">
+<title>Turimiquire DataGov - Configuración Inicial de Superadministrador</title>
+<!-- Google Fonts & Material Symbols -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS CDN with Forms and Container Queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Rutas relativas para tus assets -->
+<link rel="icon" type="image/png" sizes="64x64" href="./assets/favicon-64.png">
+<link rel="apple-touch-icon" href="./assets/favicon.png">
+<!-- Tailwind Configuration conforming to Turimiquire DataGov theme -->
+<script id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#E8F5ED',
+              100: '#C7E7D4',
+              200: '#96F7B8',
+              500: '#48A870',
+              600: '#3B915F',
+              700: '#2C6E49',
+              800: '#1B3B2B',
+              900: '#0F2A1E',
+            },
+            primary: {
+              DEFAULT: '#006D3E',
+              container: '#48A870',
+              2: '#3B915F',
+              3: '#6FC792',
+              glow: 'rgba(72,168,112,.32)',
+              soft: '#E8F5ED'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            heading: ['Inter', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+<!-- Custom Styles: Turimiquire Deep Forest Palette & Interactions -->
+<style data-purpose="custom-decorations">
+    .turimiquire-forest-mesh {
+      background: #0F2A1E;
+      background-image: 
+        radial-gradient(at 15% 15%, rgba(72, 168, 112, 0.40) 0px, transparent 55%),
+        radial-gradient(at 85% 85%, rgba(44, 110, 73, 0.45) 0px, transparent 60%),
+        radial-gradient(at 50% 50%, rgba(27, 59, 43, 0.95) 0px, transparent 80%);
+      position: relative;
     }
 
-    .setup-container {
-      background: #ffffff;
-      width: 100%;
-      max-width: 440px;
-      border-radius: 16px;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-      padding: 40px;
-      box-sizing: border-box;
-      border: 1px solid #e2e8f0;
+    .glass-card-turimiquire {
+      background: rgba(15, 42, 30, 0.65);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 20px 40px -15px rgba(15, 42, 30, 0.5);
     }
 
-    .setup-header {
-      text-align: center;
-      margin-bottom: 32px;
+    .subtle-grid {
+      background-size: 32px 32px;
+      background-image: linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
     }
 
-    .setup-header img {
-      width: 64px;
-      height: 64px;
-      margin-bottom: 16px;
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn {
+      animation: fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    .setup-header h1 {
-      font-size: 24px;
-      color: #0b2748;
-      margin: 0 0 8px 0;
-      font-weight: 800;
-      letter-spacing: -0.5px;
+    /* Turimiquire Input Base & Focus Behavior */
+    .input-base {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 10px;
+    }
+    .input-default {
+      background-color: #ffffff;
+      border: 1px solid #CBD5E1;
+      color: #0F172A;
+    }
+    /* Strictly neutral slate gray on focus - NO blue or premature green rings */
+    .input-default:focus {
+      background-color: #ffffff;
+      border-color: #64748B !important;
+      box-shadow: 0 0 0 3.5px rgba(100, 116, 139, 0.18) !important;
+      outline: none !important;
+    }
+    .input-error {
+      background-color: #FEF2F2 !important;
+      border-color: #EF4444 !important;
+      color: #991B1B !important;
+    }
+    .input-error:focus {
+      border-color: #EF4444 !important;
+      box-shadow: 0 0 0 3.5px rgba(239, 68, 68, 0.18) !important;
+      outline: none !important;
+    }
+    .input-success {
+      background-color: #ffffff !important;
+      border-color: #48A870 !important;
+    }
+    .input-success:focus {
+      border-color: #48A870 !important;
+      box-shadow: 0 0 0 3.5px rgba(72, 168, 112, 0.22) !important;
+      outline: none !important;
     }
 
-    .setup-header p {
-      color: #64748b;
-      margin: 0;
-      font-size: 15px;
+    /* Primary CTA Button gradient and hover */
+    .btn-turimiquire-primary {
+      background: linear-gradient(180deg, #48A870 0%, #3B915F 100%);
+      box-shadow: 0 4px 14px rgba(72, 168, 112, 0.35);
+      transition: all 0.2s ease;
     }
-
-    .form-group {
-      margin-bottom: 20px;
+    .btn-turimiquire-primary:hover {
+      background: linear-gradient(180deg, #52bd7e 0%, #348455 100%);
+      box-shadow: 0 6px 20px rgba(72, 168, 112, 0.45);
+      transform: translateY(-1px);
     }
-
-    .form-group label {
-      display: block;
-      font-size: 13px;
-      font-weight: 600;
-      color: #334155;
-      margin-bottom: 6px;
-    }
-
-    .setup-input {
-      width: 100%;
-      padding: 12px 14px;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      font-size: 15px;
-      color: #1e293b;
-      transition: all 0.2s;
-      box-sizing: border-box;
-      background: #f8fafc;
-    }
-
-    .setup-input:focus {
-      outline: none;
-      border-color: #0ea5e9;
-      background: #ffffff;
-      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
-    }
-
-    /* Medidor de contraseña */
-    .password-meter {
-      display: flex;
-      gap: 4px;
-      margin-top: 8px;
-      height: 4px;
-    }
-
-    .meter-segment {
-      flex: 1;
-      background-color: #e2e8f0;
-      border-radius: 2px;
-      transition: background-color 0.3s;
-    }
-
-    .meter-text {
-      font-size: 12px;
-      color: #64748b;
-      margin-top: 6px;
-      display: block;
-      text-align: right;
-      font-weight: 500;
-    }
-
-    /* Colores del medidor */
-    .strength-1 .seg-1 { background-color: #ef4444; } /* Rojo */
-    .strength-2 .seg-1, .strength-2 .seg-2 { background-color: #f59e0b; } /* Amarillo */
-    .strength-3 .meter-segment { background-color: #10b981; } /* Verde */
-
-    .setup-btn {
-      width: 100%;
-      background-color: #0b2748;
-      color: white;
-      border: none;
-      padding: 14px;
-      border-radius: 8px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 12px;
-      transition: background-color 0.2s;
-    }
-
-    .setup-btn:hover {
-      background-color: #1e3a8a;
-    }
-
-    .setup-btn:disabled {
-      background-color: #94a3b8;
-      cursor: not-allowed;
-    }
-
-    .notice-box {
-      background-color: #f0fdf4;
-      border-left: 4px solid #0284c7;
-      padding: 12px 16px;
-      border-radius: 4px;
-      margin-bottom: 24px;
-    }
-    
-    .notice-box p {
-      margin: 0;
-      font-size: 13px;
-      color: #0c4a6e;
-      line-height: 1.5;
-    }
-
-    .error-msg {
-      color: #ef4444;
-      font-size: 13px;
-      margin-top: 4px;
-      display: none;
-      font-weight: 500;
+    .btn-turimiquire-primary:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(72, 168, 112, 0.3);
     }
   </style>
 </head>
-<body>
+<body class="font-sans antialiased text-slate-800 bg-[#F4F6F8] min-h-screen w-full flex flex-col m-0 p-0 overflow-x-hidden">
+<!-- BEGIN: MainContainer -->
+<main class="w-full min-h-screen flex-1 bg-white overflow-x-hidden flex flex-col lg:flex-row lg:min-h-screen" data-purpose="superadmin-split-container">
+<!-- Left Panel: Turimiquire DataGov Forest with Particles Canvas -->
+<section class="w-full lg:w-1/2 min-h-[280px] sm:min-h-[320px] lg:min-h-screen turimiquire-forest-mesh text-white flex flex-col justify-center items-center py-8 sm:py-12 lg:py-12 xl:py-16 px-4 sm:px-8 lg:px-12 xl:px-16 relative overflow-hidden select-none shrink-0 self-stretch" data-purpose="brand-presentation-panel" id="hero-panel">
+<!-- Subtle Grid Texture -->
+<div aria-hidden="true" class="absolute inset-0 subtle-grid pointer-events-none z-0"></div>
+<!-- Interactive Particles Canvas (Framer ParticlesBackground style) -->
+<canvas class="absolute inset-0 w-full h-full pointer-events-none z-[1]" id="particles-canvas" width="640" height="683"></canvas>
+<!-- Ambient Glow Blobs -->
+<div class="absolute -top-24 -left-24 w-96 h-96 bg-[#48A870]/20 rounded-full blur-3xl pointer-events-none z-0"></div>
+<div class="absolute -bottom-24 -right-24 w-96 h-96 bg-[#2C6E49]/30 rounded-full blur-3xl pointer-events-none z-0"></div>
+<!-- Hero Content -->
+<div class="relative z-10 my-auto flex flex-col items-center justify-center text-center max-w-md mx-auto w-full py-4">
+<div class="mb-3 sm:mb-5 lg:mb-6 flex items-center justify-center">
+<img alt="Sistema Turimiquire DataGov" class="w-52 h-52 sm:w-64 sm:h-64 lg:w-72 lg:h-72 xl:w-80 xl:h-80 object-contain drop-shadow-[0_25px_45px_rgba(0,0,0,0.55)] transition-transform duration-300 hover:scale-105 filter drop-shadow-[0_0_24px_rgba(72,168,112,0.22)]" src="./assets/logo-turimiquire.png">
+</div>
+<h1 class="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-black text-white tracking-tight leading-tight mb-2 sm:mb-3">Configuración inicial<br class="hidden sm:inline"> de Turimiquire DataGov.</h1>
+<p class="text-emerald-100/75 text-xs sm:text-sm lg:text-base font-normal max-w-sm leading-relaxed text-center px-2">Primer despliegue y aprovisionamiento seguro de la plataforma maestra.</p>
+</div>
+</section>
+<!-- Right Panel -->
+<section class="w-full lg:w-1/2 min-h-screen flex flex-col justify-between py-6 sm:py-8 lg:py-8 xl:py-10 px-4 sm:px-8 lg:px-10 xl:px-16 overflow-y-auto bg-white self-stretch" data-purpose="superadmin-form-panel">
+<div class="w-full max-w-md xl:max-w-lg mx-auto my-auto py-2">
+<!-- Header & Logo -->
+<div class="flex items-center justify-between mb-5 sm:mb-6 lg:mb-6" data-purpose="app-logo"><div class="flex items-center gap-2.5"><div class="w-10 h-10 rounded-xl bg-emerald-100/80 border border-emerald-200 flex items-center justify-center text-[#48A870] shadow-sm transition-all duration-200 hover:scale-105"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M13 2L3 14h7v8l10-12h-7z"></path></svg></div><span class="text-base font-extrabold text-slate-800 tracking-tight">Turimiquire DataGov</span></div><a class="text-xs font-semibold text-slate-500 hover:text-emerald-700 transition-colors inline-flex items-center gap-1.5" href="#"><span class="">Ayuda</span><span class="material-symbols-outlined text-[13px]">open_in_new</span></a></div>
+<!-- Form Heading -->
+<div class="mb-4 sm:mb-5 lg:mb-5"><h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mb-1 sm:mb-1.5">Configurar superadministrador</h2><p class="text-xs sm:text-sm text-slate-500 font-normal">Ingresa los datos para configurar la cuenta maestra del sistema.</p></div>
+<!-- Global Notification Container -->
+<div class="hidden mb-4 p-3.5 rounded-xl text-xs font-medium transition-all duration-300 animate-fadeIn" id="auth-notification" role="alert"></div>
+<form class="space-y-4" data-purpose="setup-form" id="superadmin-form" novalidate="">
+<!-- First & Last Name Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<div>
+<label class="block text-xs font-bold text-slate-700 tracking-normal mb-1.5" for="first-name">Nombre <span class="text-rose-500 font-bold ml-0.5">*</span></label>
+<div class="relative">
+<input aria-describedby="first-name-error" autocomplete="given-name" class="w-full px-4 py-3 rounded-xl input-base input-default text-sm placeholder:text-slate-400 border border-slate-300" id="first-name" name="first-name" placeholder="Ej. Carlos" type="text" style="padding-right: 2.75rem;">
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none opacity-0 transition-opacity duration-200" id="first-name-icon">
+<span class="material-symbols-outlined text-[#48A870] text-[18px]">check_circle</span>
+</div>
+</div>
+<p class="hidden text-xs text-rose-600 font-medium flex items-center gap-1.5 mt-1 animate-fadeIn" id="first-name-error">
+<span class="material-symbols-outlined text-[14px]">error</span>
+<span class="">El nombre es obligatorio (mínimo 2 letras).</span>
+</p>
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-700 tracking-normal mb-1.5" for="last-name">Apellido <span class="text-rose-500 font-bold ml-0.5">*</span></label>
+<div class="relative">
+<input aria-describedby="last-name-error" autocomplete="family-name" class="w-full px-4 py-3 rounded-xl input-base input-default text-sm placeholder:text-slate-400 border border-slate-300" id="last-name" name="last-name" placeholder="Ej. Mendoza" type="text" style="padding-right: 2.75rem;">
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none opacity-0 transition-opacity duration-200" id="last-name-icon">
+<span class="material-symbols-outlined text-[#48A870] text-[18px]">check_circle</span>
+</div>
+</div>
+<p class="hidden text-xs text-rose-600 font-medium flex items-center gap-1.5 mt-1 animate-fadeIn" id="last-name-error">
+<span class="material-symbols-outlined text-[14px]">error</span>
+<span class="">El apellido es obligatorio (mínimo 2 letras).</span>
+</p>
+</div>
+</div>
+<!-- Corporate Email -->
+<div>
+<label class="block text-xs font-bold text-slate-700 tracking-normal mb-1.5" for="corporate-email">Correo electrónico <span class="text-rose-500 font-bold ml-0.5">*</span></label>
+<div class="relative">
+<input aria-describedby="email-error" aria-invalid="false" autocomplete="email" class="w-full pl-4 pr-10 py-3 rounded-xl input-base text-sm placeholder:text-slate-400 border border-slate-300 input-default" id="corporate-email" name="corporate-email" placeholder="usuario@gmail.com" type="email" style="padding-right: 2.75rem;">
+<div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none transition-opacity duration-200 opacity-0" id="email-valid-icon">
+<span class="material-symbols-outlined text-[#48A870] text-[19px]">check_circle</span>
+</div>
+</div>
+<p class="text-xs text-rose-600 font-medium flex items-center gap-1.5 mt-1 animate-fadeIn hidden" id="email-error">
+<span class="material-symbols-outlined text-[14px]">error</span>
+<span class="" id="email-error-text">El correo corporativo es obligatorio.</span>
+</p>
+</div>
+<!-- Master Password -->
+<div>
+<label class="block text-xs font-bold text-slate-700 tracking-normal mb-1.5" for="master-password">Contraseña maestra <span class="text-rose-500 font-bold ml-0.5">*</span></label>
+<div class="relative rounded-xl">
+<input aria-describedby="password-rules-container password-error" autocomplete="new-password" class="w-full pl-4 pr-11 py-3 rounded-xl input-base text-sm placeholder:text-slate-400 border border-slate-300 input-default" id="master-password" name="master-password" placeholder="Contraseña maestra segura" type="password" style="padding-right: 3.25rem;">
+<button aria-label="Mostrar u ocultar contraseña" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors focus:outline-none" id="toggle-master-password" type="button">
+<span class="material-symbols-outlined text-[19px]" id="toggle-master-password-icon">visibility</span>
+</button>
+</div>
+<!-- Dynamic Password Requirements List -->
+<div class="space-y-2 transition-all duration-300 overflow-hidden max-h-0 opacity-0 pointer-events-none" id="password-rules-container"><div class="pt-1"><div class="flex items-center justify-between mb-1.5" id="pwd-seg-1"><span class="text-[11px] font-medium text-slate-500">Fortaleza de contraseña</span><span class="text-[11px] font-semibold text-slate-500 flex items-center gap-1" id="strength-label-wrap"><span class="w-1.5 h-1.5 rounded-full bg-slate-300 transition-colors duration-200" id="strength-dot"></span><span class="" id="strength-text">Requerida</span></span></div><div class="grid grid-cols-3 gap-1.5 h-1.5" id="pwd-seg-2"><div class="h-full rounded-full bg-slate-200 duration-200 transition-colors" id="strength-bar-1"></div><div class="h-full rounded-full bg-slate-200 duration-200 transition-colors" id="strength-bar-2"></div><div class="h-full rounded-full bg-slate-200 duration-200 transition-colors" id="strength-bar-3"></div></div></div><div class="pt-0.5 flex flex-wrap items-center gap-1.5" id="password-rules-list"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium bg-slate-100 text-slate-500 border border-slate-200 transition-all duration-200" id="rule-length"><span class="material-symbols-outlined text-[13px] text-slate-400 transition-all duration-200" id="rule-length-icon">radio_button_unchecked</span><span class="text-[11px] leading-none text-slate-500 font-medium" id="rule-length-text">Mínimo 8 caracteres</span></span><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium bg-slate-100 text-slate-500 border border-slate-200 transition-all duration-200" id="rule-complexity"><span class="material-symbols-outlined text-[13px] text-slate-400 transition-all duration-200" id="rule-complexity-icon">radio_button_unchecked</span><span class="text-[11px] leading-none text-slate-500 font-medium" id="rule-complexity-text">Mayúsculas, números o símbolos</span></span><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium bg-slate-100 text-slate-500 border border-slate-200 transition-all duration-200" id="rule-robustness"><span class="material-symbols-outlined text-[13px] text-slate-400 transition-all duration-200" id="rule-robustness-icon">radio_button_unchecked</span><span class="text-[11px] leading-none text-slate-500 font-medium" id="rule-robustness-text">Alta robustez requerida</span></span></div></div>
+<p class="text-xs text-rose-600 font-medium flex items-center gap-1.5 mt-1 animate-fadeIn hidden" id="password-error">
+<span class="material-symbols-outlined text-[14px]">error</span>
+<span class="" id="password-error-text">La contraseña maestra es obligatoria.</span>
+</p>
+</div>
+<!-- Confirm Password -->
+<div>
+<label class="block text-xs font-bold text-slate-700 tracking-normal mb-1.5" for="confirm-password">Confirmar contraseña <span class="text-rose-500 font-bold ml-0.5">*</span></label>
+<div class="relative rounded-xl">
+<input aria-describedby="confirm-match-feedback" autocomplete="new-password" class="w-full pl-4 pr-11 py-3 rounded-xl input-base text-sm placeholder:text-slate-400 border border-slate-300 input-default" id="confirm-password" name="confirm-password" placeholder="Confirma tu contraseña" type="password" style="padding-right: 3.25rem;">
+<button aria-label="Mostrar u ocultar confirmación de contraseña" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors focus:outline-none" id="toggle-confirm-password" type="button">
+<span class="material-symbols-outlined text-[19px]" id="toggle-confirm-password-icon">visibility</span>
+</button>
+</div>
+<!-- Contextual match feedback -->
+<div class="hidden items-center gap-1.5 mt-1.5 text-xs transition-all animate-fadeIn" id="confirm-match-feedback">
+<span class="material-symbols-outlined text-sm" id="confirm-match-icon">check_circle</span>
+<span class="text-[11px]" id="confirm-match-text">Las contraseñas coinciden exactamente</span>
+</div>
+</div>
+<!-- Submit Button -->
+<div class="pt-2">
+<button class="w-full py-3.5 px-4 min-h-[44px] btn-turimiquire-primary text-white font-bold tracking-wide rounded-xl text-sm transition-all flex items-center justify-center gap-2 group cursor-pointer focus:outline-none focus:ring-4 focus:ring-[#64748B]/20 disabled:pointer-events-none" id="submit-btn" type="submit"><span class="" id="submit-btn-text">Configurar superadministrador</span><span class="material-symbols-outlined text-base transition-transform group-hover:translate-x-1" id="submit-arrow">arrow_forward</span></button>
+</div>
+</form>
+</div>
+<footer class="text-center pt-6 pb-2" data-purpose="form-footer">
+<p class="text-[11px] text-[#64748B] leading-normal">
+Al completar la configuración, aceptas los <a class="text-slate-700 hover:text-[#48A870] font-medium transition underline underline-offset-2" href="#">Términos</a> y directivas de <a class="text-slate-700 hover:text-[#48A870] font-medium transition underline underline-offset-2" href="#">Seguridad</a>.
+</p>
+</footer>
+</section>
+</main>
+<!-- END: MainContainer -->
+<script src="./assets/auth.js"></script>
+<!-- ParticlesBackground Script (Interactive Emerald & White Constellation Effect) -->
+<script>
+  (function initParticles() {
+    const canvas = document.getElementById('particles-canvas');
+    const heroPanel = document.getElementById('hero-panel');
+    if (!canvas || !heroPanel) return;
 
-  <div class="setup-container">
-    <header class="setup-header">
-      <img src="/assets/favicon.png" alt="Turimiquire Logo">
-      <h1>Bienvenido a Turimiquire</h1>
-      <p>Configuración inicial de la plataforma</p>
-    </header>
+    const ctx = canvas.getContext('2d');
+    let animationFrameId;
+    let width = (canvas.width = heroPanel.offsetWidth);
+    let height = (canvas.height = heroPanel.offsetHeight);
 
-    <div class="notice-box">
-      <p><strong>Primer paso:</strong> Crea la cuenta de Administrador Principal. Esta cuenta tendrá control total sobre la plataforma, roles y parámetros del sistema.</p>
-    </div>
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    <form id="setup-form">
-      <div class="form-group">
-        <label for="admin-user">Usuario maestro</label>
-        <input type="text" id="admin-user" class="setup-input" placeholder="superadmin" value="superadmin" required autocomplete="off">
-      </div>
+    // Mouse tracking relative to the hero section
+    const mouse = {
+      x: null,
+      y: null,
+      radius: 120
+    };
 
-      <div class="form-group">
-        <label for="admin-email">Correo institucional</label>
-        <input type="email" id="admin-email" class="setup-input" placeholder="admin@institucion.gob.ve" required autocomplete="off">
-      </div>
-
-      <div class="form-group">
-        <label for="admin-pass">Contraseña maestra</label>
-        <input type="password" id="admin-pass" class="setup-input" placeholder="Mínimo 10 caracteres" required autocomplete="new-password">
-        
-        <div class="password-meter" id="meter-container">
-          <div class="meter-segment seg-1"></div>
-          <div class="meter-segment seg-2"></div>
-          <div class="meter-segment seg-3"></div>
-        </div>
-        <span class="meter-text" id="meter-text">Seguridad: Ninguna</span>
-      </div>
-
-      <div class="form-group">
-        <label for="admin-pass-confirm">Confirmar contraseña</label>
-        <input type="password" id="admin-pass-confirm" class="setup-input" placeholder="Repite la contraseña" required autocomplete="new-password">
-        <div class="error-msg" id="pass-error">Las contraseñas no coinciden.</div>
-      </div>
-
-      <button type="submit" class="setup-btn" id="submit-btn" disabled>Crear y finalizar instalación</button>
-    </form>
-  </div>
-
-  <script>
-    const API_BASE = 'http://localhost:8080/v1';
-    const passInput = document.getElementById('admin-pass');
-    const confirmInput = document.getElementById('admin-pass-confirm');
-    const meterContainer = document.getElementById('meter-container');
-    const meterText = document.getElementById('meter-text');
-    const submitBtn = document.getElementById('submit-btn');
-    const passError = document.getElementById('pass-error');
-    
-    let isPasswordStrong = false;
-    let isPasswordMatch = false;
-
-    // Lógica para medir la fuerza de la contraseña
-    passInput.addEventListener('input', function() {
-      const val = passInput.value;
-      let strength = 0;
-
-      if (val.length > 0) {
-        if (val.length >= 10) strength += 1; // Mínimo 10 caracteres
-        if (/[A-Z]/.test(val) && /[0-9]/.test(val)) strength += 1; // Mayúsculas y números
-        if (/[^A-Za-z0-9]/.test(val)) strength += 1; // Símbolos especiales
-      }
-
-      // Reiniciar clases
-      meterContainer.className = 'password-meter';
-      
-      if (strength === 0 && val.length > 0) {
-        meterContainer.classList.add('strength-1');
-        meterText.textContent = 'Seguridad: Débil';
-        meterText.style.color = '#ef4444';
-        isPasswordStrong = false;
-      } else if (strength === 1 || strength === 2) {
-        meterContainer.classList.add('strength-2');
-        meterText.textContent = 'Seguridad: Aceptable';
-        meterText.style.color = '#f59e0b';
-        isPasswordStrong = true; // Permitimos a partir de "Aceptable"
-      } else if (strength === 3) {
-        meterContainer.classList.add('strength-3');
-        meterText.textContent = 'Seguridad: Fuerte';
-        meterText.style.color = '#10b981';
-        isPasswordStrong = true;
-      } else {
-        meterText.textContent = 'Seguridad: Ninguna';
-        meterText.style.color = '#64748b';
-        isPasswordStrong = false;
-      }
-
-      validateForm();
+    heroPanel.addEventListener('mousemove', (e) => {
+      const rect = heroPanel.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
     });
 
-    // Validar que las contraseñas coincidan
-    function checkMatch() {
-      if (confirmInput.value.length > 0) {
-        if (passInput.value !== confirmInput.value) {
-          passError.style.display = 'block';
-          isPasswordMatch = false;
-        } else {
-          passError.style.display = 'none';
-          isPasswordMatch = true;
-        }
-      } else {
-        passError.style.display = 'none';
-        isPasswordMatch = false;
-      }
-      validateForm();
-    }
-
-    confirmInput.addEventListener('input', checkMatch);
-    passInput.addEventListener('input', checkMatch); // Volver a chequear si se edita la original
-
-    // Habilitar botón solo si todo es correcto
-    function validateForm() {
-      if (isPasswordStrong && isPasswordMatch) {
-        submitBtn.disabled = false;
-      } else {
-        submitBtn.disabled = true;
-      }
-    }
-
-    // Enviar el formulario al backend real de Luis
-    document.getElementById('setup-form').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Configurando plataforma...';
-      passError.style.display = 'none';
-
-      // Estructura exacta que pide Luis en Postman
-      const payload = {
-        username: document.getElementById('admin-user').value.trim(),
-        email: document.getElementById('admin-email').value.trim(),
-        password: passInput.value
-      };
-
-      try {
-        const response = await fetch(`${API_BASE}/auth/setup`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        const data = await response.json(); // Leemos la respuesta del servidor
-
-        if (!response.ok) {
-            throw new Error(data.message || data.error || 'Error al crear el superusuario.');
-        }
-
-        submitBtn.style.backgroundColor = '#10b981'; // Verde de éxito
-        submitBtn.textContent = '¡Instalación Completada!';
-        
-        // MAGIA: Guardamos el token que nos devolvió el setup para iniciar sesión automáticamente
-        if (data.access_token) {
-            sessionStorage.setItem('turimiquire_token', data.access_token);
-        }
-        
-        // Redirigir directo al Dashboard (saltándose el index.html)
-        setTimeout(() => {
-          window.location.replace('/dashboard.html');
-        }, 1500);
-
-      } catch (error) {
-        passError.textContent = error.message;
-        passError.style.display = 'block';
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Crear y finalizar instalación';
-        submitBtn.style.backgroundColor = '#0b2748';
-      }
+    heroPanel.addEventListener('mouseleave', () => {
+      mouse.x = null;
+      mouse.y = null;
     });
-  </script>
+
+    // Particle Configuration
+    const isMobile = window.innerWidth < 768;
+    const particleCount = isMobile ? 35 : 65;
+    const connectionDistance = isMobile ? 85 : 125;
+    const particles = [];
+
+    // Palette: Emerald, mint, bright glowing white
+    const colorPalette = [
+      { r: 72, g: 168, b: 112, glow: '#48A870' },  // institutional emerald
+      { r: 150, g: 247, b: 184, glow: '#96F7B8' }, // mint glow
+      { r: 255, g: 255, b: 255, glow: '#ffffff' }, // pure white star
+      { r: 110, g: 231, b: 183, glow: '#6EE7B7' }  // teal-emerald
+    ];
+
+    class Particle {
+      constructor() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+        this.radius = Math.random() * 2 + 1; // 1 to 3px
+        const baseSpeed = prefersReducedMotion ? 0.08 : (Math.random() * 0.5 + 0.2);
+        this.vx = (Math.random() - 0.5) * baseSpeed;
+        this.vy = (Math.random() - 0.5) * baseSpeed;
+        this.colorObj = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+        this.alpha = Math.random() * 0.55 + 0.35;
+        this.originalRadius = this.radius;
+      }
+
+      update() {
+        // Move
+        this.x += this.vx;
+        this.y += this.vy;
+
+        // Bounce off canvas boundaries
+        if (this.x < 0) {
+          this.x = 0;
+          this.vx *= -1;
+        } else if (this.x > width) {
+          this.x = width;
+          this.vx *= -1;
+        }
+
+        if (this.y < 0) {
+          this.y = 0;
+          this.vy *= -1;
+        } else if (this.y > height) {
+          this.y = height;
+          this.vy *= -1;
+        }
+
+        // Mouse interaction: Gentle push & expansion (Framer ParticlesBackground physics)
+        if (mouse.x !== null && mouse.y !== null && !prefersReducedMotion) {
+          const dx = mouse.x - this.x;
+          const dy = mouse.y - this.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < mouse.radius) {
+            const force = (mouse.radius - dist) / mouse.radius;
+            const angle = Math.atan2(dy, dx);
+            // Gentle dispersion
+            this.x -= Math.cos(angle) * force * 1.8;
+            this.y -= Math.sin(angle) * force * 1.8;
+            this.radius = this.originalRadius * (1 + force * 0.8);
+          } else {
+            if (this.radius > this.originalRadius) {
+              this.radius -= 0.05;
+            }
+          }
+        }
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${this.colorObj.r}, ${this.colorObj.g}, ${this.colorObj.b}, ${this.alpha})`;
+        ctx.shadowBlur = this.radius * 3.5;
+        ctx.shadowColor = this.colorObj.glow;
+        ctx.fill();
+        ctx.shadowBlur = 0; // reset
+      }
+    }
+
+    function init() {
+      particles.length = 0;
+      for (let i = 0; i < particleCount; i++) {
+        particles.push(new Particle());
+      }
+    }
+
+    function connect() {
+      for (let a = 0; a < particles.length; a++) {
+        for (let b = a + 1; b < particles.length; b++) {
+          const dx = particles[a].x - particles[b].x;
+          const dy = particles[a].y - particles[b].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < connectionDistance) {
+            const opacity = (1 - dist / connectionDistance) * 0.22;
+            ctx.beginPath();
+            ctx.moveTo(particles[a].x, particles[a].y);
+            ctx.lineTo(particles[b].x, particles[b].y);
+            // Emerald to mint gradient line
+            ctx.strokeStyle = `rgba(150, 247, 184, ${opacity})`;
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+          }
+        }
+
+        // Connect with mouse cursor if close
+        if (mouse.x !== null && mouse.y !== null && !prefersReducedMotion) {
+          const mdx = particles[a].x - mouse.x;
+          const mdy = particles[a].y - mouse.y;
+          const mdist = Math.sqrt(mdx * mdx + mdy * mdy);
+          if (mdist < mouse.radius) {
+            const mOpacity = (1 - mdist / mouse.radius) * 0.35;
+            ctx.beginPath();
+            ctx.moveTo(particles[a].x, particles[a].y);
+            ctx.lineTo(mouse.x, mouse.y);
+            ctx.strokeStyle = `rgba(72, 168, 112, ${mOpacity})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+
+      for (let i = 0; i < particles.length; i++) {
+        particles[i].update();
+        particles[i].draw();
+      }
+
+      connect();
+      animationFrameId = requestAnimationFrame(animate);
+    }
+
+    // Resize Handler
+    function handleResize() {
+      width = canvas.width = heroPanel.offsetWidth;
+      height = canvas.height = heroPanel.offsetHeight;
+      init();
+    }
+
+    window.addEventListener('resize', handleResize);
+
+    init();
+    animate();
+  })();
+</script>
+<script>
+  // DOM Elements
+  const form = document.getElementById('superadmin-form');
+  const firstNameInput = document.getElementById('first-name');
+  const firstNameError = document.getElementById('first-name-error');
+  const firstNameIcon = document.getElementById('first-name-icon');
+
+  const lastNameInput = document.getElementById('last-name');
+  const lastNameError = document.getElementById('last-name-error');
+  const lastNameIcon = document.getElementById('last-name-icon');
+
+  const emailInput = document.getElementById('corporate-email');
+  const emailError = document.getElementById('email-error');
+  const emailValidIcon = document.getElementById('email-valid-icon');
+
+  const masterPassword = document.getElementById('master-password');
+  const passwordError = document.getElementById('password-error');
+  const passwordRulesContainer = document.getElementById('password-rules-container');
+
+  // Strength indicator elements
+  const strengthText = document.getElementById('strength-text');
+  const strengthDot = document.getElementById('strength-dot');
+  const strengthBar1 = document.getElementById('strength-bar-1');
+  const strengthBar2 = document.getElementById('strength-bar-2');
+  const strengthBar3 = document.getElementById('strength-bar-3');
+
+  const ruleLength = document.getElementById('rule-length');
+  const ruleLengthIcon = document.getElementById('rule-length-icon');
+  const ruleLengthText = document.getElementById('rule-length-text');
+
+  const ruleComplexity = document.getElementById('rule-complexity');
+  const ruleComplexityIcon = document.getElementById('rule-complexity-icon');
+  const ruleComplexityText = document.getElementById('rule-complexity-text');
+
+  const ruleRobustness = document.getElementById('rule-robustness');
+  const ruleRobustnessIcon = document.getElementById('rule-robustness-icon');
+  const ruleRobustnessText = document.getElementById('rule-robustness-text');
+
+  const confirmPassword = document.getElementById('confirm-password');
+  const confirmFeedback = document.getElementById('confirm-match-feedback');
+  const confirmMatchIcon = document.getElementById('confirm-match-icon');
+  const confirmMatchText = document.getElementById('confirm-match-text');
+
+  const submitBtn = document.getElementById('submit-btn');
+  const submitBtnText = document.getElementById('submit-btn-text');
+  const submitArrow = document.getElementById('submit-arrow');
+  const notificationBox = document.getElementById('auth-notification');
+
+  // Regex Patterns
+  const nameRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]{2,}$/;
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+  // Notification Banner
+  function showNotification(message, type = 'info') {
+    notificationBox.className = 'mb-4 p-3.5 rounded-xl text-xs font-medium transition-all duration-300 flex items-center gap-2 animate-fadeIn';
+    if (type === 'success') {
+      notificationBox.classList.add('bg-emerald-50', 'text-emerald-800', 'border', 'border-emerald-200');
+      notificationBox.innerHTML = `<span class="material-symbols-outlined text-base text-[#48A870] shrink-0">check_circle</span> <div><p class="font-semibold">¡Aprovisionamiento exitoso!</p><p class="text-emerald-700 mt-0.5">${message}</p></div>`;
+    } else if (type === 'error') {
+      notificationBox.classList.add('bg-rose-50', 'text-rose-800', 'border', 'border-rose-200');
+      notificationBox.innerHTML = `<span class="material-symbols-outlined text-base text-rose-600 shrink-0">error</span> <span>${message}</span>`;
+    } else {
+      notificationBox.classList.add('bg-emerald-50/60', 'text-emerald-900', 'border', 'border-emerald-200');
+      notificationBox.innerHTML = `<span class="material-symbols-outlined text-base text-[#48A870] shrink-0">info</span> <span>${message}</span>`;
+    }
+    notificationBox.classList.remove('hidden');
+  }
+
+  function hideNotification() {
+    notificationBox.classList.add('hidden');
+    notificationBox.innerHTML = '';
+  }
+
+  // Field State Management
+  function setFieldState(inputEl, errorEl, isValid, errorMsg = '', successIconEl = null) {
+    if (isValid === null) {
+      inputEl.classList.remove('input-error', 'input-success');
+      inputEl.classList.add('input-default');
+      inputEl.removeAttribute('aria-invalid');
+      if (errorEl) errorEl.classList.add('hidden');
+      if (successIconEl) successIconEl.classList.add('opacity-0');
+      return;
+    }
+
+    if (isValid) {
+      inputEl.classList.remove('input-error', 'input-default');
+      inputEl.classList.add('input-success');
+      inputEl.setAttribute('aria-invalid', 'false');
+      if (errorEl) errorEl.classList.add('hidden');
+      if (successIconEl) successIconEl.classList.remove('opacity-0');
+    } else {
+      inputEl.classList.remove('input-success', 'input-default');
+      inputEl.classList.add('input-error');
+      inputEl.setAttribute('aria-invalid', 'true');
+      if (errorEl) {
+        if (errorMsg) {
+          const span = errorEl.querySelector('span:last-child');
+          if (span) span.textContent = errorMsg;
+        }
+        errorEl.classList.remove('hidden');
+      }
+      if (successIconEl) successIconEl.classList.add('opacity-0');
+    }
+  }
+
+  // Password Visibility Toggle
+  function setupPasswordToggle(buttonId, inputId, iconId) {
+    const btn = document.getElementById(buttonId);
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+
+    if (btn && input && icon) {
+      btn.addEventListener('click', () => {
+        const isPassword = input.getAttribute('type') === 'password';
+        input.setAttribute('type', isPassword ? 'text' : 'password');
+        icon.textContent = isPassword ? 'visibility_off' : 'visibility';
+      });
+    }
+  }
+
+  setupPasswordToggle('toggle-master-password', 'master-password', 'toggle-master-password-icon');
+  setupPasswordToggle('toggle-confirm-password', 'confirm-password', 'toggle-confirm-password-icon');
+
+  // Name Validation
+  function validateName(input, errorEl, iconEl, isBlur = false) {
+    const val = input.value.trim();
+    if (val.length === 0) {
+      if (isBlur) {
+        setFieldState(input, errorEl, false, 'Este campo es obligatorio.', iconEl);
+        return false;
+      }
+      setFieldState(input, errorEl, null, '', iconEl);
+      return false;
+    }
+
+    if (val.length < 2) {
+      setFieldState(input, errorEl, false, 'Debe contener al menos 2 caracteres.', iconEl);
+      return false;
+    }
+
+    if (!nameRegex.test(val)) {
+      setFieldState(input, errorEl, false, 'Solo se permiten letras y espacios.', iconEl);
+      return false;
+    }
+
+    setFieldState(input, errorEl, true, '', iconEl);
+    return true;
+  }
+
+  firstNameInput.addEventListener('input', () => {
+    if (firstNameInput.classList.contains('input-error') || firstNameInput.value.trim().length >= 2) {
+      validateName(firstNameInput, firstNameError, firstNameIcon, false);
+    }
+  });
+  firstNameInput.addEventListener('blur', () => validateName(firstNameInput, firstNameError, firstNameIcon, true));
+
+  lastNameInput.addEventListener('input', () => {
+    if (lastNameInput.classList.contains('input-error') || lastNameInput.value.trim().length >= 2) {
+      validateName(lastNameInput, lastNameError, lastNameIcon, false);
+    }
+  });
+  lastNameInput.addEventListener('blur', () => validateName(lastNameInput, lastNameError, lastNameIcon, true));
+
+  // Email Validation
+  function validateEmailField(input, errorEl, iconEl, isBlur = false) {
+    const val = input.value.trim();
+    if (val.length === 0) {
+      if (isBlur) {
+        setFieldState(input, errorEl, false, 'El correo corporativo es obligatorio.', iconEl);
+        return false;
+      }
+      setFieldState(input, errorEl, null, '', iconEl);
+      return false;
+    }
+
+    if (!emailRegex.test(val)) {
+      setFieldState(input, errorEl, false, 'Introduce un correo corporativo válido (ej. usuario@dominio.com).', iconEl);
+      return false;
+    }
+
+    setFieldState(input, errorEl, true, '', iconEl);
+    return true;
+  }
+
+  emailInput.addEventListener('input', () => {
+    if (emailInput.classList.contains('input-error') || emailRegex.test(emailInput.value.trim())) {
+      validateEmailField(emailInput, emailError, emailValidIcon, false);
+    }
+  });
+  emailInput.addEventListener('blur', () => validateEmailField(emailInput, emailError, emailValidIcon, true));
+
+  // Smooth expansion of requirements panel on focus/blur
+  function showRulesContainer() {
+    if (passwordRulesContainer) {
+      passwordRulesContainer.classList.remove('max-h-0', 'opacity-0', 'pointer-events-none');
+      passwordRulesContainer.classList.add('max-h-36', 'opacity-100', 'pt-2');
+    }
+  }
+
+  function hideRulesContainerIfEmpty() {
+    if (passwordRulesContainer && masterPassword.value.length === 0) {
+      passwordRulesContainer.classList.remove('max-h-36', 'opacity-100', 'pt-2');
+      passwordRulesContainer.classList.add('max-h-0', 'opacity-0', 'pointer-events-none');
+    }
+  }
+
+  masterPassword.addEventListener('focus', showRulesContainer);
+  masterPassword.addEventListener('blur', hideRulesContainerIfEmpty);
+
+  // Helper for micro-badges / requirements
+  function setPillSatisfied(pillEl, iconEl, textEl, satisfied, defaultIcon = 'radio_button_unchecked') {
+    if (satisfied) {
+      pillEl.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-[#E8F5ED] text-[#2C6E49] border border-[#96F7B8] transition-all duration-200';
+      iconEl.textContent = 'check_circle';
+      iconEl.className = 'material-symbols-outlined text-[14px] text-[#48A870] transition-all duration-200';
+      textEl.className = 'text-[11px] leading-none text-[#2C6E49] font-medium';
+    } else {
+      pillEl.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium bg-slate-100 text-slate-500 border border-slate-200 transition-all duration-200';
+      iconEl.textContent = defaultIcon;
+      iconEl.className = 'material-symbols-outlined text-[13px] text-slate-400 transition-all duration-200';
+      textEl.className = 'text-[11px] leading-none text-slate-500 font-medium';
+    }
+  }
+
+  // Real-time Master Password Strength Evaluator
+  function evaluateMasterPassword(showErrorState = false) {
+    const pwd = masterPassword.value;
+
+    // Evaluate conditions
+    const hasLength = pwd.length >= 8;
+    const hasUpper = /[A-Z]/.test(pwd);
+    const hasNumberOrSymbol = /[0-9]/.test(pwd) || /[^A-Za-z0-9]/.test(pwd);
+    const hasComplexity = hasUpper && hasNumberOrSymbol;
+    const hasRobustness = hasLength && hasUpper && /[0-9]/.test(pwd) && (/[^A-Za-z0-9]/.test(pwd) || pwd.length >= 10);
+
+    // Update Pills
+    setPillSatisfied(ruleLength, ruleLengthIcon, ruleLengthText, hasLength);
+    setPillSatisfied(ruleComplexity, ruleComplexityIcon, ruleComplexityText, hasComplexity);
+    setPillSatisfied(ruleRobustness, ruleRobustnessIcon, ruleRobustnessText, hasRobustness, 'radio_button_unchecked');
+
+    // Reset bar segment classes helper
+    function setBars(bar1Color, bar2Color, bar3Color) {
+      strengthBar1.className = `h-full rounded-full duration-200 transition-colors ${bar1Color}`;
+      strengthBar2.className = `h-full rounded-full duration-200 transition-colors ${bar2Color}`;
+      strengthBar3.className = `h-full rounded-full duration-200 transition-colors ${bar3Color}`;
+    }
+
+    if (pwd.length === 0) {
+      strengthText.textContent = 'Requerida';
+      strengthText.className = 'text-slate-500';
+      strengthDot.className = 'w-1.5 h-1.5 rounded-full bg-slate-300';
+      setBars('bg-slate-200', 'bg-slate-200', 'bg-slate-200');
+
+      if (showErrorState) {
+        setFieldState(masterPassword, passwordError, false, 'La contraseña maestra es obligatoria.');
+      } else {
+        setFieldState(masterPassword, passwordError, null);
+      }
+      return false;
+    }
+
+    showRulesContainer();
+
+    if (hasRobustness) {
+      // 3 segments active: Institutional Emerald (#48A870)
+      strengthText.textContent = 'Fuerte';
+      strengthText.className = 'text-[#2C6E49] font-bold';
+      strengthDot.className = 'w-1.5 h-1.5 rounded-full bg-[#22C55E]';
+      setBars('bg-[#48A870]', 'bg-[#48A870]', 'bg-[#48A870]');
+      setFieldState(masterPassword, passwordError, true);
+    } else if (hasLength && (hasUpper || hasNumberOrSymbol)) {
+      // 2 segments active: Media (amber / emerald light)
+      strengthText.textContent = 'Media';
+      strengthText.className = 'text-[#3B915F] font-semibold';
+      strengthDot.className = 'w-1.5 h-1.5 rounded-full bg-[#48A870]';
+      setBars('bg-[#48A870]', 'bg-[#48A870]', 'bg-slate-200');
+
+      if (showErrorState) {
+        setFieldState(masterPassword, passwordError, false, 'Se requiere mayor robustez (incluye mayúsculas, números o símbolos).');
+      } else {
+        masterPassword.classList.remove('input-error');
+        masterPassword.classList.add('input-default');
+        passwordError.classList.add('hidden');
+      }
+    } else if (pwd.length >= 1) {
+      // 1 segment active: Débil (#F59E0B / amber-500)
+      strengthText.textContent = 'Débil';
+      strengthText.className = 'text-amber-600 font-semibold';
+      strengthDot.className = 'w-1.5 h-1.5 rounded-full bg-amber-500';
+      setBars('bg-amber-500', 'bg-slate-200', 'bg-slate-200');
+
+      if (showErrorState) {
+        setFieldState(masterPassword, passwordError, false, 'La contraseña debe tener mínimo 8 caracteres.');
+      } else {
+        masterPassword.classList.remove('input-error');
+        masterPassword.classList.add('input-default');
+        passwordError.classList.add('hidden');
+      }
+    }
+
+    if (confirmPassword.value.length > 0) {
+      validateConfirmPassword(true);
+    }
+
+    return hasRobustness || (hasLength && hasComplexity);
+  }
+
+  masterPassword.addEventListener('input', () => evaluateMasterPassword(false));
+  masterPassword.addEventListener('blur', () => evaluateMasterPassword(true));
+
+  // Confirm Password Validation
+  function validateConfirmPassword(showFeedback = true) {
+    const pwd = masterPassword.value;
+    const confirm = confirmPassword.value;
+
+    if (confirm.length === 0) {
+      confirmFeedback.classList.add('hidden');
+      confirmFeedback.classList.remove('flex');
+      if (showFeedback) {
+        setFieldState(confirmPassword, null, false);
+      } else {
+        setFieldState(confirmPassword, null, null);
+      }
+      return false;
+    }
+
+    if (pwd === confirm && pwd.length >= 8) {
+      confirmFeedback.classList.remove('hidden');
+      confirmFeedback.className = 'flex items-center gap-1.5 mt-1.5 text-xs text-emerald-600 transition-all animate-fadeIn';
+      confirmMatchIcon.textContent = 'check_circle';
+      confirmMatchIcon.className = 'material-symbols-outlined text-sm text-[#48A870]';
+      confirmMatchText.textContent = 'Las contraseñas coinciden exactamente';
+      setFieldState(confirmPassword, null, true);
+      return true;
+    } else {
+      confirmFeedback.classList.remove('hidden');
+      confirmFeedback.className = 'flex items-center gap-1.5 mt-1.5 text-xs text-rose-600 font-medium transition-all animate-fadeIn';
+      confirmMatchIcon.textContent = 'error';
+      confirmMatchIcon.className = 'material-symbols-outlined text-sm text-rose-500';
+      confirmMatchText.textContent = 'Las contraseñas no coinciden';
+      setFieldState(confirmPassword, null, false);
+      return false;
+    }
+  }
+
+  confirmPassword.addEventListener('input', () => validateConfirmPassword(true));
+  confirmPassword.addEventListener('blur', () => validateConfirmPassword(true));
+
+  // Form Submit Handler - Integración real con el backend (POST /auth/setup)
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    hideNotification();
+
+    const isFirstValid = validateName(firstNameInput, firstNameError, firstNameIcon, true);
+    const isLastValid = validateName(lastNameInput, lastNameError, lastNameIcon, true);
+    const isEmailValid = validateEmailField(emailInput, emailError, emailValidIcon, true);
+    const isPassValid = evaluateMasterPassword(true);
+    const isConfirmValid = validateConfirmPassword(true);
+
+    const formFields = [
+      { valid: isFirstValid, el: firstNameInput },
+      { valid: isLastValid, el: lastNameInput },
+      { valid: isEmailValid, el: emailInput },
+      { valid: isPassValid, el: masterPassword },
+      { valid: isConfirmValid, el: confirmPassword }
+    ];
+
+    const firstInvalid = formFields.find(field => !field.valid);
+
+    if (firstInvalid) {
+      firstInvalid.el.focus();
+      showNotification('Por favor revisa y corrige los campos marcados antes de continuar.', 'error');
+      return;
+    }
+
+    // Submit Loading State
+    submitBtn.disabled = true;
+    submitBtn.classList.add('opacity-85', 'cursor-wait');
+    submitBtnText.textContent = 'Configurando superadministrador...';
+    submitArrow.textContent = 'sync';
+    submitArrow.classList.add('animate-spin');
+
+    // El backend pide username, email y password. El username se deriva del correo (antes del @).
+    const email = emailInput.value.trim().toLowerCase();
+    const username = email.split('@')[0] || 'superadmin';
+    const payload = {
+      username: username,
+      email: email,
+      password: masterPassword.value
+    };
+
+    try {
+      const response = await fetch(`${API_BASE}/auth/setup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.message || data.error || 'Error al crear el superusuario.');
+      }
+
+      // Guardamos el token que devuelve el setup para iniciar sesión automáticamente
+      if (typeof storeToken === 'function' && data.access_token) {
+        storeToken(data.access_token, false);
+      }
+
+      submitBtn.disabled = false;
+      submitBtn.classList.remove('cursor-wait', 'opacity-85');
+      submitArrow.classList.remove('animate-spin');
+      submitArrow.textContent = 'check';
+      submitBtnText.textContent = 'Superadministrador configurado';
+
+      showNotification('Cuenta maestra de Superadministrador creada y aprovisionada con éxito. Inicializando entorno de producción...', 'success');
+      notificationBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      // Redirigir directo al Dashboard (saltándose el index)
+      window.setTimeout(() => window.location.replace('./dashboard.html'), 1600);
+    } catch (error) {
+      submitBtn.disabled = false;
+      submitBtn.classList.remove('cursor-wait', 'opacity-85');
+      submitArrow.classList.remove('animate-spin');
+      submitArrow.textContent = 'arrow_forward';
+      submitBtnText.textContent = 'Configurar superadministrador';
+
+      showNotification(error.message || 'No se pudo configurar la plataforma. Verifica la conexión con el servidor.', 'error');
+    }
+  });
+</script>
 </body>
 </html>
