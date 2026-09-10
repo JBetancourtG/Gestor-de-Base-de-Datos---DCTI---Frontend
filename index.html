@@ -1,207 +1,1142 @@
-<!doctype html>
-<html lang="es" data-theme="light">
+<!DOCTYPE html>
+<html class="h-full bg-[#EEF3F8]" lang="es" style="">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light">
-  <meta name="theme-color" content="#0b2748">
-  <title>Sistema Turimiquire DataGov · Acceso</title>
-  
-  <!-- Enlace a DaisyUI y Tailwind CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Reproductor de LottieFiles para las olas -->
-  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
-
-  <!-- Rutas relativas para tus assets -->
-  <link rel="icon" type="image/png" sizes="64x64" href="./assets/favicon-64.png">
-  <link rel="apple-touch-icon" href="./assets/favicon.png">
-
-  <style>
-    body {
-        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-    }
-    
-    body, html {
-        overflow: hidden;
-        margin: 0;
-        padding: 0;
-        height: 100vh;
-        width: 100vw;
-    }
-  </style>
-</head>
-<body class="bg-white flex relative w-full h-full transition-opacity duration-300">
-
-    <!-- ========================================================================= -->
-    <!-- CAPA 1: EL LIENZO DE FONDO GLOBAL (Círculo Azul y Diseños Abstractos)     -->
-    <!-- ========================================================================= -->
-    <div class="absolute inset-0 z-0 pointer-events-none">
-        
-        <div class="absolute top-1/2 left-0 -translate-y-1/2 -translate-x-[18%] h-[140vh] aspect-square bg-[#0b2748] rounded-full overflow-hidden shadow-[inset_0_0_50px_rgba(0,0,0,0.5)]">
-            <!-- OLAS ANIMADAS -->
-            <div class="absolute bottom-0 right-0 w-[80%] opacity-90">
-                <lottie-player 
-                    src="./wave_login_animation.json" 
-                    background="transparent" 
-                    speed="1" 
-                    style="width: 100%; height: auto; transform: scale(1.1) translateY(-30%);" 
-                    loop 
-                    autoplay>
-                </lottie-player>
-            </div>
-        </div>
-
-        <!-- ELEMENTOS GEOMÉTRICOS "MEMPHIS" -->
-        <div class="absolute inset-y-0 right-0 w-1/2 flex justify-end overflow-hidden">
-            <svg class="absolute -top-10 -right-[5%] w-[500px] h-[500px] text-gray-100/80" fill="currentColor" viewBox="0 0 200 200">
-                <path d="M45.7,-76.4C58.8,-69.3,68.9,-54.9,76.5,-40.1C84.1,-25.3,89.3,-10.1,87.6,4.4C85.9,18.9,77.3,32.7,67.2,44.5C57.1,56.3,45.5,66.1,31.7,73.4C17.9,80.7,2,85.5,-12.3,84C-26.6,82.5,-39.3,74.7,-50.2,64.4C-61.1,54.1,-70.2,41.4,-77.3,27.1C-84.4,12.8,-89.5,-3.1,-86.3,-17.1C-83.1,-31.1,-71.6,-43.2,-58.5,-51.7C-45.4,-60.2,-30.7,-65.1,-16.5,-68.8C-2.3,-72.5,11.4,-75,24.8,-75.7C38.2,-76.4,32.6,-83.5,45.7,-76.4Z" transform="translate(100 100)" />
-            </svg>
-        </div>
-    </div>
-
-    <!-- ========================================================================= -->
-    <!-- CAPA 2: CONTENIDO REAL (Textos y Formulario de Inicio)                    -->
-    <!-- ========================================================================= -->
-    <div class="relative z-10 w-full h-full flex">
-        
-        <div class="hidden md:flex w-[45%] h-full flex-col items-center justify-center px-12 lg:px-20 text-white">
-            <div class="w-full max-w-2xl flex flex-col items-center text-center">
-                <img src="./assets/logo-turimiquire.png" alt="Sistema Turimiquire DataGov" class="max-w-[240px] h-auto mb-8 drop-shadow-xl rounded-full">
-                
-                <h1 class="text-3xl lg:text-4xl font-bold leading-tight mb-5 drop-shadow-md">Datos conectados.<br>Decisiones más claras.</h1>
-                <p class="text-sm text-blue-100/90 mb-8 drop-shadow-sm leading-relaxed">Gestiona datos, conexiones y APIs de forma visual y segura, sin necesidad de escribir código.</p>
-                
-            </div>
-            
-            <div class="absolute bottom-6 left-0 w-[45%] text-center">
-                <span class="text-[10px] text-blue-200/50 uppercase tracking-widest">Acceso protegido · Mínimo privilegio · Actividad Trazable</span>
-            </div>
-        </div>
-
-        <div class="w-full md:w-[55%] h-full flex flex-col justify-center items-center px-8 lg:px-16">
-            <div class="w-full max-w-[450px]">
-                <p class="text-blue-600 font-bold text-xs uppercase tracking-widest mb-2">Plataforma Institucional de Datos</p>
-                <h2 class="text-3xl font-bold text-gray-800 mb-2">Bienvenido de nuevo</h2>
-                <p class="text-sm text-gray-500 mb-10 font-medium leading-relaxed">Ingresa tus credenciales. La navegación y herramientas se organizarán automáticamente según tu perfil.</p>
-
-                <form id="login-form">
-                    
-                    <div class="form-control w-full mb-5 shadow-sm">
-                        <label class="label pb-1 px-1"><span class="label-text font-bold text-gray-700">Correo electrónico</span></label>
-                        <label class="input flex items-center gap-3 bg-white border-gray-300 focus-within:border-[#3ecf8e] focus-within:ring-2 focus-within:ring-[#d3f5e5] rounded-lg transition-all h-12">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-5 h-5 text-gray-400"><path d="M2.5 3A1.5 1.5 0 0 0 1 4.5v7A1.5 1.5 0 0 0 2.5 13h11a1.5 1.5 0 0 0 1.5-1.5v-7A1.5 1.5 0 0 0 13.5 3h-11Zm.34 1.09 5.16 4.13 5.16-4.13a.5.5 0 0 1 .34 0V5L8.5 8.87a.5.5 0 0 1-.62 0L2.5 4.5a.5.5 0 0 1 .34-.41ZM14 11.5V8l-2.81-2.25A.5.5 0 0 1 11.85 5A.5.5 0 0 1 12 5.23l2 1.6v4.67a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5V6.83l2.04-1.63a.5.5 0 0 1 .72.1L8.9 8.55a1 1 0 0 0 1.24 0l4.86-3.89a.5.5 0 0 1 .16.34V11.5Z"/></svg>
-                            <input type="email" id="email-input" name="email" class="grow text-sm text-gray-700 font-medium outline-none" placeholder="correo@institucion.gob.ve" required autofocus />
-                        </label>
-                    </div>
-
-                    <div class="form-control w-full mb-4 shadow-sm">
-                        <label class="label pb-1 px-1"><span class="label-text font-bold text-gray-700">Contraseña</span></label>
-                        <label class="input flex items-center gap-3 bg-white border-gray-300 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-200 rounded-lg transition-all h-12">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-5 h-5 text-gray-400"><path fill-rule="evenodd" d="M14 6a4 4 0 0 1-4.899 3.899l-1.955 1.955a.5.5 0 0 1-.353.146H5v1.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-2.293a.5.5 0 0 1 .146-.353l3.955-3.955A4 4 0 1 1 14 6Zm-4-2a.75.75 0 0 0 0 1.5.5.5 0 0 1 .5.5.75.75 0 0 0 1.5 0 2 2 0 0 0-2-2Z" clip-rule="evenodd" /></svg>
-                            <input type="password" id="password" name="password" class="grow text-sm text-gray-700 font-medium outline-none" placeholder="••••••••••" required />
-                            <span id="toggle-password" class="text-[11px] font-bold text-gray-400 cursor-pointer hover:text-blue-600 transition-colors uppercase tracking-wider pr-1">Mostrar</span>
-                        </label>
-                    </div>
-
-                    <div class="flex items-center justify-between mb-8 mt-3 px-1">
-                        <label class="label cursor-pointer gap-2 p-0 justify-start">
-                            <input type="checkbox" id="remember" checked="checked" class="checkbox checkbox-sm checkbox-primary border-gray-400 rounded" />
-                            <span class="label-text text-xs font-bold text-gray-500">Recordarme en este equipo</span> 
-                        </label>
-                        <a href="#" class="text-xs font-bold text-gray-400 hover:text-blue-600 hover:underline transition-colors">¿Olvidaste tu contraseña?</a>
-                    </div>
-
-                    <div id="login-message" class="hidden mb-5 p-3 bg-red-50 text-red-600 text-xs font-bold rounded-lg border border-red-200 text-center"></div>
-
-                    <button type="submit" id="login-button" class="btn bg-[#0b2748] hover:bg-blue-900 border-none text-white w-full rounded-lg shadow-xl mb-6 hover:-translate-y-0.5 transition-transform font-bold tracking-wide h-12">
-                        Iniciar Sesión
-                    </button>
-
-                    <div class="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-200 flex gap-3 items-start shadow-sm">
-                        <div class="w-2 h-2 rounded-full bg-blue-500 mt-1 flex-shrink-0 shadow-[0_0_5px_rgba(59,130,246,0.8)]"></div>
-                        <p class="text-[10px] text-gray-500 font-medium leading-tight">Las cuentas de servicio se autentican por sus endpoints autorizados y no usan esta interfaz humana.</p>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Script de Lógica Javascript aportada por Leonardo -->
-    <script src="./assets/auth.js"></script>
-    <script src="./assets/ui.js"></script>
-    <script>
-        
-      // ==========================================
-      // LA PREGUNTA CERO: Verificación con la API real de Luis
-      // ==========================================
-      window.addEventListener('DOMContentLoaded', async () => {
-          try {
-              const res = await fetch(`${API_BASE}/auth/setup-status`);
-              const data = await res.json().catch(() => ({}));
-              
-              if (data.Inicializado === false || data.inicializado === false || data.is_setup === false || res.status === 404) {
-                  document.body.style.opacity = '0';
-                  window.location.replace('./setup.html');
-              }
-          } catch (e) {
-              console.warn("No se pudo verificar el estado de instalación del servidor.");
-          }
-      });
-
-      const passwordInput = document.getElementById('password');
-      const togglePasswordBtn = document.getElementById('toggle-password');
-
-      togglePasswordBtn.addEventListener('click', () => {
-        const isPassword = passwordInput.type === 'password';
-        passwordInput.type = isPassword ? 'text' : 'password';
-        togglePasswordBtn.textContent = isPassword ? 'OCULTAR' : 'MOSTRAR';
-      });
-
-      document.getElementById('login-form').addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const button = document.getElementById('login-button');
-        const message = document.getElementById('login-message');
-
-        button.disabled = true;
-        button.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Verificando...';
-        message.classList.add('hidden');
-
-        try {
-          // Autenticación real contra el backend (POST /seguridad/login)
-          const response = await fetch(`${API_BASE}/seguridad/login`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-              email: document.getElementById('email-input').value.trim(),
-              password: passwordInput.value
-            })
-          });
-
-          const data = await response.json().catch(() => ({}));
-          console.log("El backend respondio esto! ", data);
-          const tokenFinal = data.token || data.access_Token || data.access_token || data.accessToken || data.Token;
-
-          if (!response.ok || !tokenFinal) {
-            throw new Error(data.message || data.error || 'Usuario o contraseña inválidos.');
-          }
-
-          if(typeof storeToken === 'function') {
-             storeToken(tokenFinal, document.getElementById('remember').checked);
-          }
-
-          button.classList.replace('bg-[#0b2748]', 'bg-green-600');
-          button.textContent = '¡Acceso concedido!';
-
-          window.setTimeout(() => window.location.replace('./dashboard.html'), 800);
-
-        } catch (error) {
-          message.textContent = error.message || 'No se pudo iniciar sesión. Verifica la conexión con el servidor.';
-          message.classList.remove('hidden');
-          button.disabled = false;
-          button.textContent = 'Iniciar Sesión';
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#0F2A1E">
+<title>Sistema Turimiquire DataGov · Acceso</title>
+<!-- Tailwind CSS CDN with plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts & Material Symbols -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Rutas relativas para tus assets -->
+<link rel="icon" type="image/png" sizes="64x64" href="./assets/favicon-64.png">
+<link rel="apple-touch-icon" href="./assets/favicon.png">
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "hero-deep": "#0F2A1E",
+          "hero-mid": "#1B3B2B",
+          "hero-brand": "#2C6E49",
+          "primary": "#48A870",
+          "primary-2": "#3B915F",
+          "primary-3": "#6FC792",
+          "primary-soft": "#E8F5ED",
+          "primary-fixed-dim": "#7ada9d",
+          "border-primary-soft": "#C7E7D4",
+          "accent-violet": "#6C5CE7",
+          "accent-soft": "#F0F0FE",
+          "text-strong": "#0F172A",
+          "text-main": "#1E293B",
+          "muted": "#64748B",
+          "muted-2": "#94A3B8",
+          "muted-3": "#CBD5E1",
+          "line": "#E2E8F0",
+          "surface-bg": "#F4F6F8",
+          "success": "#22C55E",
+          "success-soft": "#ECFDF5",
+          "danger": "#EF4444",
+          "danger-soft": "#FEF2F2"
+        },
+        borderRadius: {
+          "sm": "8px",
+          "xl": "12px",
+          "2xl": "16px",
+          "3xl": "24px"
+        },
+        fontFamily: {
+          sans: ['Inter', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+          heading: ['Inter', 'sans-serif']
         }
+      }
+    }
+  }
+</script>
+<style>
+  /* Global focus override to eliminate any native browser blue ring */
+  input, button, select, textarea {
+    outline: none !important;
+  }
+  input:focus, input:focus-visible {
+    outline: none !important;
+  }
+
+  /* Turimiquire DataGov Institutional Emerald Mesh */
+  .turimiquire-mesh {
+    background: #0F2A1E;
+    background-image: 
+      radial-gradient(at 12% 16%, rgba(72, 168, 112, 0.40) 0px, transparent 55%),
+      radial-gradient(at 88% 85%, rgba(168, 224, 197, 0.22) 0px, transparent 60%),
+      radial-gradient(at 50% 50%, #1B3B2B 0px, #0F2A1E 100%);
+    position: relative;
+  }
+
+  .turimiquire-grid {
+    background-size: 32px 32px;
+    background-image: 
+      linear-gradient(to right, rgba(168, 224, 197, 0.06) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(168, 224, 197, 0.06) 1px, transparent 1px);
+  }
+
+  /* Fluent 2 Glass Panel on Deep Emerald */
+  .glass-card-turimiquire {
+    background: rgba(15, 42, 30, 0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(168, 224, 197, 0.18);
+    box-shadow: 0 20px 40px -15px rgba(5, 20, 14, 0.55);
+  }
+
+  /* Primary Fluent Button with Reveal Highlight & Subtle Glow */
+  .btn-primary-turimiquire {
+    background: #48A870;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 14px -1px rgba(72, 168, 112, 0.35), 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn-primary-turimiquire::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent);
+    pointer-events: none;
+  }
+  .btn-primary-turimiquire:hover {
+    background: #3B915F;
+    box-shadow: 0 6px 20px -2px rgba(72, 168, 112, 0.45);
+    transform: translateY(-0.5px);
+  }
+  .btn-primary-turimiquire:active {
+    background: #2E794E;
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(72, 168, 112, 0.3);
+  }
+
+  /* Multi-layered Fluent 2 Elevation for Main Shell */
+  .fluent-elevation-card {
+    box-shadow: 
+      0 0 1px rgba(15, 32, 49, 0.08),
+      0 4px 8px -2px rgba(15, 32, 49, 0.06),
+      0 24px 48px -12px rgba(15, 32, 49, 0.12);
+  }
+
+  /* Input States - Neutral elegant focus with NO blue or premature green */
+  .input-base {
+    min-height: 42px;
+    border-radius: 12px;
+    font-size: 14px;
+    outline: none !important;
+    transition: border-color 0.18s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.18s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.18s ease;
+  }
+  .input-default {
+    background-color: #FFFFFF;
+    border: 1px solid #CBD5E1;
+    color: #1E293B;
+  }
+  .input-default:focus,
+  .input-default:focus-visible {
+    background-color: #FFFFFF;
+    border-color: #64748B !important;
+    box-shadow: 0 0 0 3px rgba(100, 116, 139, 0.15) !important;
+    outline: none !important;
+  }
+  .input-error {
+    background-color: #FEF2F2 !important;
+    border: 1px solid #EF4444 !important;
+    color: #991B1B !important;
+  }
+  .input-error:focus,
+  .input-error:focus-visible {
+    border-color: #EF4444 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+    outline: none !important;
+  }
+  .input-success {
+    background-color: #FFFFFF !important;
+    border: 1px solid #48A870 !important;
+  }
+  .input-success:focus,
+  .input-success:focus-visible {
+    border-color: #3B915F !important;
+    box-shadow: 0 0 0 3px rgba(72, 168, 112, 0.22) !important;
+    outline: none !important;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fadeIn {
+    animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+</style>
+</head>
+<body class="min-h-screen w-full font-sans antialiased text-[#1E293B] bg-white overflow-x-hidden">
+<!-- BEGIN: MainContainer -->
+<main class="w-full min-h-screen lg:min-h-screen flex flex-col lg:flex-row bg-white overflow-x-hidden" data-purpose="split-auth-container">
+<!-- BEGIN: LeftVisualShowcase (Turimiquire DataGov Deep Emerald Institutional Panel) -->
+<section class="flex flex-1 self-stretch w-full lg:w-1/2 min-h-[260px] sm:min-h-[320px] lg:min-h-screen turimiquire-mesh text-white flex-col justify-center items-center py-8 sm:py-12 lg:py-16 xl:py-20 px-4 sm:px-8 lg:px-12 xl:px-20 relative overflow-hidden select-none" data-purpose="brand-showcase-panel" id="hero-panel">
+<!-- Subtle SVG Grid Lines -->
+<div class="absolute inset-0 turimiquire-grid pointer-events-none z-0"></div>
+<!-- Interactive Framer-style HTML5 Canvas for Particles -->
+<canvas aria-hidden="true" class="absolute inset-0 w-full h-full pointer-events-none z-[1]" id="particles-canvas" width="656" height="1024"></canvas>
+<!-- Ambient Fluid Glowing Emerald Orbs -->
+<div class="absolute -top-24 -left-24 w-96 h-96 bg-[#48A870]/20 rounded-full blur-3xl pointer-events-none z-[2]"></div>
+<div class="absolute -bottom-24 -right-24 w-96 h-96 bg-[#6FC792]/15 rounded-full blur-3xl pointer-events-none z-[2]"></div>
+<!-- Centered Brand Composition Block -->
+<div class="relative z-10 my-auto flex flex-col items-center text-center max-w-md mx-auto">
+<div class="mb-3 sm:mb-5 lg:mb-8 flex items-center justify-center">
+<img alt="Sistema Turimiquire DataGov" class="w-48 h-48 sm:w-64 sm:h-64 lg:w-72 lg:h-72 xl:w-80 xl:h-80 object-contain mix-blend-screen drop-shadow-[0_16px_36px_rgba(0,0,0,0.5)] transition-transform duration-300 hover:scale-105" src="./assets/logo-turimiquire.png" style="max-width: 100%; object-fit: contain;">
+</div>
+<h1 class="font-heading text-2xl sm:text-3xl lg:text-[44px] font-[850] tracking-[-0.04em] text-white leading-[1.15]">
+    Gestión compleja,<br>hecha simple.
+  </h1>
+<p class="text-[#C7D9CC] text-xs sm:text-sm lg:text-[14px] font-normal mt-2 sm:mt-3 lg:mt-4 max-w-xs sm:max-w-sm leading-relaxed">
+    Flujos de trabajo optimizados, automatizaciones fluidas y gobernanza unificada para equipos de alto rendimiento.
+  </p>
+</div></section>
+<!-- END: LeftVisualShowcase -->
+<!-- BEGIN: RightAuthForm (Minimalist Fluent 2 Form Canvas) -->
+<section class="flex-1 self-stretch w-full lg:w-1/2 min-h-screen flex flex-col justify-between px-4 py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-8 xl:px-16 xl:py-10 bg-white overflow-y-auto" data-purpose="authentication-form-panel">
+<!-- Inner Form Wrapper -->
+<div class="w-full max-w-md xl:max-w-lg mx-auto my-auto flex flex-col justify-center">
+<!-- Header with SimpleFlow Brand -->
+<div class="flex items-center justify-between mb-3 sm:mb-5 lg:mb-4 xl:mb-6" data-purpose="app-logo">
+<div class="flex items-center gap-2.5">
+<div class="w-10 h-10 rounded-xl bg-emerald-100/80 border border-emerald-200 flex items-center justify-center text-[#48A870] shadow-sm"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M13 2L3 14h7v8l10-12h-7z"></path></svg></div>
+<span class="text-xl font-heading font-[850] tracking-[-0.03em] text-[#0F172A]">Turimiquire DataGov</span>
+</div>
+<a class="text-xs font-semibold text-[#64748B] hover:text-[#3B915F] transition flex items-center gap-1" href="#">
+        Ayuda <span class="material-symbols-outlined text-[13px]">open_in_new</span>
+</a>
+</div>
+<!-- Turimiquire Segmented Switch (Tabs): Both bold -->
+<div class="p-1 mb-4 sm:mb-5 lg:mb-4 xl:mb-6 bg-[#E8EFEA] rounded-xl flex items-center border border-slate-200/60" data-purpose="auth-mode-switch">
+<button class="flex-1 py-2 text-xs font-bold transition-all focus:outline-none rounded-xl bg-white text-[#3B915F] shadow-sm h-10" id="tab-login" type="button">
+        Iniciar sesión
+      </button>
+<button class="flex-1 py-2 text-xs font-bold transition-all focus:outline-none rounded-xl text-[#64748B] hover:text-[#0F172A] h-10" id="tab-signup" type="button">
+        Crear cuenta
+      </button>
+</div>
+<!-- Notification Alert Container -->
+<div class="hidden mb-4 p-3 rounded-xl text-xs font-medium transition-all" id="auth-notification"></div>
+<!-- Form Heading -->
+<div class="mb-3 sm:mb-4 lg:mb-3 xl:mb-5">
+<h2 class="text-[24px] font-heading font-[850] text-[#0F172A] tracking-[-0.03em]" id="auth-heading-title">Iniciar sesión</h2>
+<p class="text-[13px] text-[#64748B] mt-1" id="auth-heading-desc">Ingresa tus credenciales corporativas para acceder a la plataforma.</p>
+</div>
+<!-- ==================== LOGIN VIEW (Default Active) ==================== -->
+<div class="animate-fadeIn" id="login-view">
+<form class="space-y-4" data-purpose="login-form" id="login-form" novalidate="" onsubmit="handleLoginSubmit(event)">
+<!-- Login Email Field -->
+<div>
+<label class="block text-xs font-semibold text-[#1E293B] mb-1.5" for="login-email">Correo electrónico <span class="text-[#EF4444] font-normal ml-0.5">*</span></label>
+<div class="relative">
+<input aria-describedby="login-email-feedback" autocomplete="email" class="w-full pl-3.5 pr-10 py-2.5 input-base input-default rounded-xl border border-slate-300 focus:outline-none focus:ring-0" id="login-email" name="email" placeholder="usuario@gmail.com" type="email" style="padding-right: 2.75rem;">
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none opacity-0 transition-opacity duration-200" id="login-email-valid-icon">
+<span class="material-symbols-outlined text-[#48A870] text-[18px]">check_circle</span>
+</div>
+</div>
+<p class="hidden text-xs text-[#EF4444] font-medium flex items-center gap-1 mt-1 animate-fadeIn" id="login-email-feedback">
+<span class="material-symbols-outlined text-[13px]">error</span>
+<span class="">Ingresa un correo corporativo válido.</span>
+</p>
+</div>
+<!-- Login Password Field -->
+<div>
+<div class="flex items-center justify-between mb-1.5">
+<label class="block text-xs font-semibold text-[#1E293B] mb-1.5" for="login-password">Contraseña <span class="text-[#EF4444] font-normal ml-0.5">*</span></label>
+<a class="text-xs text-[#3B915F] hover:text-[#2C6E49] font-semibold transition underline-offset-2 hover:underline" href="#" onclick="event.preventDefault(); showNotification('Te hemos enviado un enlace de recuperación al correo registrado.', 'info');">
+              ¿Olvidaste tu contraseña?
+            </a>
+</div>
+<div class="relative">
+<input aria-describedby="login-password-feedback" autocomplete="current-password" class="w-full pl-3.5 pr-10 py-2.5 input-base input-default rounded-xl border border-slate-300 focus:outline-none focus:ring-0" id="login-password" name="password" placeholder="Ingresa tu contraseña" type="password" style="padding-right: 3rem;">
+<button aria-label="Mostrar u ocultar contraseña" class="absolute inset-y-0 right-0 pr-3 flex items-center text-[#94A3B8] hover:text-[#1E293B] transition-colors focus:outline-none" id="toggle-login-password" type="button">
+<span class="material-symbols-outlined text-[19px]" id="toggle-login-password-icon">visibility</span>
+</button>
+</div>
+<p class="hidden text-xs text-[#EF4444] font-medium flex items-center gap-1 mt-1 animate-fadeIn" id="login-password-feedback">
+<span class="material-symbols-outlined text-[13px]">error</span>
+<span class="">La contraseña es obligatoria (mínimo 6 caracteres).</span>
+</p>
+</div>
+<!-- Remember Device Checkbox -->
+<div class="flex items-center pt-1">
+<input class="w-4 h-4 text-[#48A870] rounded border-slate-300 focus:ring-[#48A870] focus:ring-offset-0 transition cursor-pointer" id="remember-me" name="remember-me" type="checkbox" checked="checked">
+<label class="ml-2 block text-xs text-[#64748B] cursor-pointer select-none" for="remember-me">
+            Recordar en este dispositivo corporativo
+          </label>
+</div>
+<!-- Login CTA Button -->
+<div class="pt-2">
+<button class="w-full py-2.5 px-4 btn-primary-turimiquire text-white text-sm flex items-center justify-center gap-2 rounded-xl font-bold" id="login-btn" type="submit">
+<span class="" id="login-btn-text">Iniciar sesión</span>
+<span class="material-symbols-outlined text-base" id="login-btn-icon">arrow_forward</span>
+</button>
+</div>
+</form>
+<!-- Switch to Signup Link -->
+<div class="mt-6 text-center text-xs text-[#64748B]">¿No tienes cuenta? <button class="text-[#3B915F] hover:text-[#2C6E49] font-bold transition ml-0.5 inline-flex items-center underline-offset-2 hover:underline focus:outline-none" id="link-goto-signup" type="button">Crear cuenta</button></div>
+</div>
+<!-- ==================== SIGNUP VIEW ==================== -->
+<div class="animate-fadeIn hidden" id="signup-view">
+<form class="space-y-3.5" data-purpose="signup-form" id="signup-form" novalidate="" onsubmit="handleSignupSubmit(event)">
+<!-- Firstname & Lastname Fields (Horizontal Grid) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<div>
+<label class="block text-xs font-semibold text-[#1E293B] mb-1.5" for="firstname">Nombre <span class="text-[#EF4444] font-normal ml-0.5">*</span></label>
+<div class="relative">
+<input aria-describedby="firstname-error" autocomplete="given-name" class="w-full px-3.5 py-2.5 input-base input-default rounded-xl border border-slate-300 focus:outline-none focus:ring-0" id="firstname" name="firstname" placeholder="Ej. Carlos" type="text" style="padding-right: 2.75rem;">
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none opacity-0 transition-opacity duration-200" id="firstname-status-icon">
+<span class="material-symbols-outlined text-[#48A870] text-[18px]">check_circle</span>
+</div>
+</div>
+<p class="hidden text-xs text-[#EF4444] font-medium flex items-center gap-1 mt-1 animate-fadeIn" id="firstname-error">
+<span class="material-symbols-outlined text-[13px]">error</span>
+<span class="">Mínimo 2 letras.</span>
+</p>
+</div>
+<div>
+<label class="block text-xs font-semibold text-[#1E293B] mb-1.5" for="lastname">Apellido <span class="text-[#EF4444] font-normal ml-0.5">*</span></label>
+<div class="relative">
+<input aria-describedby="lastname-error" autocomplete="family-name" class="w-full px-3.5 py-2.5 input-base input-default rounded-xl border border-slate-300 focus:outline-none focus:ring-0" id="lastname" name="lastname" placeholder="Ej. Mendoza" type="text" style="padding-right: 2.75rem;">
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none opacity-0 transition-opacity duration-200" id="lastname-status-icon">
+<span class="material-symbols-outlined text-[#48A870] text-[18px]">check_circle</span>
+</div>
+</div>
+<p class="hidden text-xs text-[#EF4444] font-medium flex items-center gap-1 mt-1 animate-fadeIn" id="lastname-error">
+<span class="material-symbols-outlined text-[13px]">error</span>
+<span class="">Mínimo 2 letras.</span>
+</p>
+</div>
+</div>
+<!-- Corporate Email Field -->
+<div>
+<label class="block text-xs font-semibold text-[#1E293B] mb-1.5" for="email">Correo electrónico <span class="text-[#EF4444] font-normal ml-0.5">*</span></label>
+<div class="relative">
+<input aria-describedby="email-feedback" autocomplete="email" class="w-full pl-3.5 pr-10 py-2.5 input-base input-default rounded-xl border border-slate-300 focus:outline-none focus:ring-0" id="email" name="email" placeholder="usuario@gmail.com" type="email" style="padding-right: 2.75rem;">
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none opacity-0 transition-opacity duration-200" id="email-valid-icon">
+<span class="material-symbols-outlined text-[#48A870] text-[18px]">check_circle</span>
+</div>
+</div>
+<p class="hidden text-xs text-[#EF4444] font-medium flex items-center gap-1 mt-1 animate-fadeIn" id="email-feedback">
+<span class="material-symbols-outlined text-[13px]">error</span>
+<span class="">Ingresa un correo corporativo válido.</span>
+</p>
+</div>
+<!-- Password Field -->
+<div>
+<label class="block text-xs font-semibold text-[#1E293B] mb-1.5" for="password">Contraseña <span class="text-[#EF4444] font-normal ml-0.5">*</span></label>
+<div class="relative">
+<input aria-describedby="password-feedback" autocomplete="new-password" class="w-full pl-3.5 pr-10 py-2.5 input-base input-default rounded-xl border border-slate-300 focus:outline-none focus:ring-0" id="password" name="password" placeholder="Ingresa tu contraseña" type="password" style="padding-right: 3rem;">
+<button aria-label="Mostrar u ocultar contraseña" class="absolute inset-y-0 right-0 pr-3 flex items-center text-[#94A3B8] hover:text-[#1E293B] transition-colors focus:outline-none" id="toggle-password" type="button">
+<span class="material-symbols-outlined text-[19px]" id="toggle-password-icon">visibility</span>
+</button>
+</div>
+<!-- Password Requirements Indicators -->
+<div class="mt-2 space-y-1.5" id="password-strength-container">
+<div class="w-full h-1 bg-slate-200 rounded-full overflow-hidden flex gap-1">
+<div class="h-full w-1/3 rounded-full bg-slate-200 transition-all duration-300" id="pwd-seg-1"></div>
+<div class="h-full w-1/3 rounded-full bg-slate-200 transition-all duration-300" id="pwd-seg-2"></div>
+<div class="h-full w-1/3 rounded-full bg-slate-200 transition-all duration-300" id="pwd-seg-3"></div>
+</div>
+<div class="flex items-center justify-between text-xs text-[#64748B] pt-0.5">
+<div class="flex items-center gap-1.5 transition-colors duration-200" id="req-length">
+<span class="material-symbols-outlined text-[13px] text-[#94A3B8] transition-all duration-200" id="req-length-icon">radio_button_unchecked</span>
+<span class="text-[11px] leading-none" id="req-length-text">Mínimo 8 caracteres</span>
+</div>
+<div class="flex items-center gap-1.5 transition-colors duration-200" id="req-complexity">
+<span class="material-symbols-outlined text-[13px] text-[#94A3B8] transition-all duration-200" id="req-complexity-icon">radio_button_unchecked</span>
+<span class="text-[11px] leading-none" id="req-complexity-text">Letras y números / símbolos</span>
+</div>
+</div>
+</div>
+<p class="hidden text-xs text-[#EF4444] font-medium flex items-center gap-1 mt-1 animate-fadeIn" id="password-feedback">
+<span class="material-symbols-outlined text-[13px]">error</span>
+<span class="">La contraseña debe cumplir con los requisitos mínimos.</span>
+</p>
+</div>
+<!-- Confirm Password Field -->
+<div>
+<label class="block text-xs font-semibold text-[#1E293B] mb-1.5" for="confirm-password">Confirmar contraseña <span class="text-[#EF4444] font-normal ml-0.5">*</span></label>
+<div class="relative">
+<input aria-describedby="confirm-match-feedback" autocomplete="new-password" class="w-full pl-3.5 pr-10 py-2.5 input-base input-default rounded-xl border border-slate-300 focus:outline-none focus:ring-0" id="confirm-password" name="confirm_password" placeholder="Confirma tu contraseña" type="password" style="padding-right: 3rem;">
+<button aria-label="Mostrar u ocultar confirmación de contraseña" class="absolute inset-y-0 right-0 pr-3 flex items-center text-[#94A3B8] hover:text-[#1E293B] transition-colors focus:outline-none" id="toggle-confirm-password" type="button">
+<span class="material-symbols-outlined text-[19px]" id="toggle-confirm-password-icon">visibility</span>
+</button>
+</div>
+<div class="hidden items-center gap-1.5 mt-1.5 text-xs transition-all animate-fadeIn" id="confirm-match-feedback">
+<span class="material-symbols-outlined text-sm" id="confirm-match-icon">check_circle</span>
+<span class="text-[11px]" id="confirm-match-text">Las contraseñas coinciden</span>
+</div>
+</div>
+<!-- Main CTA Button -->
+<div class="pt-2">
+<button class="w-full py-2.5 px-4 btn-primary-turimiquire text-white text-sm flex items-center justify-center gap-2 rounded-xl font-bold" id="signup-btn" type="submit">
+<span class="" id="signup-btn-text">Crear cuenta</span>
+<span class="material-symbols-outlined text-base" id="signup-btn-icon">arrow_forward</span>
+</button>
+</div>
+</form>
+<!-- Switch Account Link -->
+<div class="mt-6 text-center text-xs text-[#64748B]">
+        ¿Ya tienes cuenta? 
+        <button class="text-[#3B915F] hover:text-[#2C6E49] font-bold transition ml-0.5 inline-flex items-center underline-offset-2 hover:underline focus:outline-none" id="link-goto-login" type="button">Iniciar sesión</button>
+</div>
+</div>
+</div>
+<!-- Condensed Legal Footer -->
+<div class="text-center pt-6 pb-2" data-purpose="terms-and-conditions">
+<p class="text-[11px] text-[#94A3B8] leading-normal">
+      Al registrarte, aceptas nuestros <a class="text-[#64748B] hover:text-[#3B915F] transition underline underline-offset-2" href="#">Términos</a> y <a class="text-[#64748B] hover:text-[#3B915F] transition underline underline-offset-2" href="#">Privacidad</a>.
+    </p>
+</div>
+</section>
+<!-- END: RightAuthForm -->
+</main>
+<!-- END: MainContainer -->
+<script src="./assets/auth.js"></script>
+<script>
+  /* ==========================================================
+     INTERACTIVE FRAMER PARTICLES BACKGROUND (HTML5 CANVAS)
+     - Emerald and luminous white nodes
+     - Constellation / network lines connecting nearby particles
+     - Mouse tracking: dynamic connection, soft spring repulsion
+     - Respects prefers-reduced-motion for accessibility
+  ========================================================== */
+  (function initParticles() {
+    const canvas = document.getElementById('particles-canvas');
+    if (!canvas) return;
+    const hero = document.getElementById('hero-panel');
+    const ctx = canvas.getContext('2d');
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let width = (canvas.width = hero.clientWidth);
+    let height = (canvas.height = hero.clientHeight);
+
+    let mouse = {
+      x: null,
+      y: null,
+      radius: 120
+    };
+
+    function resize() {
+      if (!hero) return;
+      width = canvas.width = hero.clientWidth;
+      height = canvas.height = hero.clientHeight;
+    }
+
+    window.addEventListener('resize', resize);
+
+    hero.addEventListener('mousemove', (e) => {
+      const rect = hero.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
+    });
+
+    hero.addEventListener('mouseleave', () => {
+      mouse.x = null;
+      mouse.y = null;
+    });
+
+    const PARTICLE_COUNT = Math.max(30, Math.min(65, Math.floor((width * height) / 12000)));
+    const CONNECT_DISTANCE = 110;
+    const particles = [];
+
+    // Color palette: Institutional Emerald & subtle luminous highlights
+    const colors = [
+      { r: 72, g: 168, b: 112 },   // #48A870 (Turimiquire primary)
+      { r: 111, g: 199, b: 146 }, // #6FC792 (Light emerald glow)
+      { r: 168, g: 224, b: 197 }, // Mint accent
+      { r: 255, g: 255, b: 255 }  // Pure white spark
+    ];
+
+    class Particle {
+      constructor() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+        const colorObj = colors[Math.floor(Math.random() * colors.length)];
+        this.baseColor = colorObj;
+        this.size = Math.random() * 2.2 + 1.2; // 1.2px - 3.4px
+        this.alpha = Math.random() * 0.5 + 0.35;
+        this.vx = (Math.random() - 0.5) * (prefersReducedMotion ? 0.05 : 0.55);
+        this.vy = (Math.random() - 0.5) * (prefersReducedMotion ? 0.05 : 0.55);
+        this.pulseSpeed = Math.random() * 0.02 + 0.008;
+        this.pulseVal = Math.random() * Math.PI;
+      }
+
+      update() {
+        if (!prefersReducedMotion) {
+          this.pulseVal += this.pulseSpeed;
+          this.x += this.vx;
+          this.y += this.vy;
+
+          if (this.x < 0 || this.x > width) this.vx *= -1;
+          if (this.y < 0 || this.y > height) this.vy *= -1;
+        }
+
+        // Mouse interaction (soft spring repulsion)
+        if (mouse.x !== null && mouse.y !== null) {
+          const dx = this.x - mouse.x;
+          const dy = this.y - mouse.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < mouse.radius) {
+            const force = (mouse.radius - dist) / mouse.radius;
+            const angle = Math.atan2(dy, dx);
+            this.x += Math.cos(angle) * force * 2.2;
+            this.y += Math.sin(angle) * force * 2.2;
+          }
+        }
+      }
+
+      draw() {
+        const dynamicAlpha = Math.min(1, Math.max(0.15, this.alpha + Math.sin(this.pulseVal) * 0.2));
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${this.baseColor.r}, ${this.baseColor.g}, ${this.baseColor.b}, ${dynamicAlpha})`;
+        ctx.shadowColor = `rgba(${this.baseColor.r}, ${this.baseColor.g}, ${this.baseColor.b}, 0.6)`;
+        ctx.shadowBlur = this.size * 2.5;
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      particles.push(new Particle());
+    }
+
+    let animationFrameId;
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+
+      // Draw constellation network lines between nearby particles
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < CONNECT_DISTANCE) {
+            const opacity = (1 - dist / CONNECT_DISTANCE) * 0.22;
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = `rgba(168, 224, 197, ${opacity})`;
+            ctx.lineWidth = 0.85;
+            ctx.stroke();
+          }
+        }
+
+        // Connect particle to mouse if hovering nearby
+        if (mouse.x !== null && mouse.y !== null) {
+          const dx = particles[i].x - mouse.x;
+          const dy = particles[i].y - mouse.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < mouse.radius) {
+            const opacity = (1 - dist / mouse.radius) * 0.38;
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(mouse.x, mouse.y);
+            ctx.strokeStyle = `rgba(111, 199, 146, ${opacity})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+        }
+      }
+
+      // Update and draw each particle
+      for (let i = 0; i < particles.length; i++) {
+        particles[i].update();
+        particles[i].draw();
+      }
+
+      animationFrameId = requestAnimationFrame(animate);
+    }
+
+    animate();
+  })();
+
+  /* ==========================================================
+     AUTHENTICATION LOGIC & FORM VALIDATION
+  ========================================================== */
+  let currentTab = 'login';
+
+  const tabSignupBtn = document.getElementById('tab-signup');
+  const tabLoginBtn = document.getElementById('tab-login');
+  const signupView = document.getElementById('signup-view');
+  const loginView = document.getElementById('login-view');
+  const authTitle = document.getElementById('auth-heading-title');
+  const authDesc = document.getElementById('auth-heading-desc');
+  const linkGotoLogin = document.getElementById('link-goto-login');
+  const linkGotoSignup = document.getElementById('link-goto-signup');
+  const notificationBox = document.getElementById('auth-notification');
+
+  const nameRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]{2,}$/;
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+  function showNotification(message, type = 'info') {
+    notificationBox.className = 'mb-4 p-3 rounded-xl text-xs font-medium transition-all flex items-center gap-2 animate-fadeIn';
+    if (type === 'success') {
+      notificationBox.classList.add('bg-[#ECFDF5]', 'text-[#065F46]', 'border', 'border-[#BBF7D0]');
+      notificationBox.innerHTML = `<span class="material-symbols-outlined text-base text-[#22C55E] shrink-0">check_circle</span> <span>${message}</span>`;
+    } else if (type === 'error') {
+      notificationBox.classList.add('bg-[#FEF2F2]', 'text-[#991B1B]', 'border', 'border-[#FECACA]');
+      notificationBox.innerHTML = `<span class="material-symbols-outlined text-base text-[#EF4444] shrink-0">error</span> <span>${message}</span>`;
+    } else {
+      notificationBox.classList.add('bg-[#F0F0FE]', 'text-[#4029ba]', 'border', 'border-[#c6bfff]');
+      notificationBox.innerHTML = `<span class="material-symbols-outlined text-base text-[#6C5CE7] shrink-0">info</span> <span>${message}</span>`;
+    }
+    notificationBox.classList.remove('hidden');
+  }
+
+  function hideNotification() {
+    notificationBox.classList.add('hidden');
+    notificationBox.innerHTML = '';
+  }
+
+  function setFieldState(inputEl, errorEl, isValid, errorMsg = '', successIconEl = null) {
+    if (isValid === null) {
+      inputEl.classList.remove('input-error', 'input-success');
+      inputEl.classList.add('input-default');
+      inputEl.removeAttribute('aria-invalid');
+      if (errorEl) errorEl.classList.add('hidden');
+      if (successIconEl) successIconEl.classList.add('opacity-0');
+      return;
+    }
+
+    if (isValid) {
+      inputEl.classList.remove('input-error', 'input-default');
+      inputEl.classList.add('input-success');
+      inputEl.setAttribute('aria-invalid', 'false');
+      if (errorEl) errorEl.classList.add('hidden');
+      if (successIconEl) successIconEl.classList.remove('opacity-0');
+    } else {
+      inputEl.classList.remove('input-success', 'input-default');
+      inputEl.classList.add('input-error');
+      inputEl.setAttribute('aria-invalid', 'true');
+      if (errorEl) {
+        if (errorMsg) {
+          const span = errorEl.querySelector('span:last-child');
+          if (span) span.textContent = errorMsg;
+        }
+        errorEl.classList.remove('hidden');
+      }
+      if (successIconEl) successIconEl.classList.add('opacity-0');
+    }
+  }
+
+  function switchTab(target) {
+    hideNotification();
+    currentTab = target;
+
+    const activeClasses = ['bg-white', 'text-[#3B915F]', 'shadow-sm'];
+    const inactiveClasses = ['text-[#64748B]', 'hover:text-[#0F172A]'];
+
+    if (target === 'signup') {
+      tabSignupBtn.classList.remove(...inactiveClasses);
+      tabSignupBtn.classList.add(...activeClasses);
+      tabLoginBtn.classList.remove(...activeClasses);
+      tabLoginBtn.classList.add(...inactiveClasses);
+
+      signupView.classList.remove('hidden');
+      loginView.classList.add('hidden');
+
+      authTitle.textContent = 'Crear cuenta';
+      authDesc.textContent = 'Ingresa tus datos corporativos para comenzar con la plataforma.';
+    } else {
+      tabLoginBtn.classList.remove(...inactiveClasses);
+      tabLoginBtn.classList.add(...activeClasses);
+      tabSignupBtn.classList.remove(...activeClasses);
+      tabSignupBtn.classList.add(...inactiveClasses);
+
+      loginView.classList.remove('hidden');
+      signupView.classList.add('hidden');
+
+      authTitle.textContent = 'Iniciar sesión';
+      authDesc.textContent = 'Ingresa tus credenciales para acceder al portal Turimiquire DataGov.';
+    }
+  }
+
+  tabSignupBtn.addEventListener('click', () => switchTab('signup'));
+  tabLoginBtn.addEventListener('click', () => switchTab('login'));
+  linkGotoLogin.addEventListener('click', () => switchTab('login'));
+  linkGotoSignup.addEventListener('click', () => switchTab('signup'));
+
+  function setupPasswordToggle(buttonId, inputId, iconId) {
+    const btn = document.getElementById(buttonId);
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+
+    if (btn && input && icon) {
+      btn.addEventListener('click', () => {
+        const isPassword = input.getAttribute('type') === 'password';
+        input.setAttribute('type', isPassword ? 'text' : 'password');
+        icon.textContent = isPassword ? 'visibility_off' : 'visibility';
       });
-    </script>
+    }
+  }
+
+  setupPasswordToggle('toggle-password', 'password', 'toggle-password-icon');
+  setupPasswordToggle('toggle-confirm-password', 'confirm-password', 'toggle-confirm-password-icon');
+  setupPasswordToggle('toggle-login-password', 'login-password', 'toggle-login-password-icon');
+
+  const firstnameInput = document.getElementById('firstname');
+  const firstnameError = document.getElementById('firstname-error');
+  const firstnameIcon = document.getElementById('firstname-status-icon');
+
+  const lastnameInput = document.getElementById('lastname');
+  const lastnameError = document.getElementById('lastname-error');
+  const lastnameIcon = document.getElementById('lastname-status-icon');
+
+  const emailInput = document.getElementById('email');
+  const emailFeedback = document.getElementById('email-feedback');
+  const emailValidIcon = document.getElementById('email-valid-icon');
+
+  const passwordInput = document.getElementById('password');
+  const passwordFeedback = document.getElementById('password-feedback');
+  const confirmInput = document.getElementById('confirm-password');
+
+  const reqLength = document.getElementById('req-length');
+  const reqLengthIcon = document.getElementById('req-length-icon');
+  const reqLengthText = document.getElementById('req-length-text');
+  const reqComplexity = document.getElementById('req-complexity');
+  const reqComplexityIcon = document.getElementById('req-complexity-icon');
+  const reqComplexityText = document.getElementById('req-complexity-text');
+
+  const seg1 = document.getElementById('pwd-seg-1');
+  const seg2 = document.getElementById('pwd-seg-2');
+  const seg3 = document.getElementById('pwd-seg-3');
+
+  const confirmFeedback = document.getElementById('confirm-match-feedback');
+  const confirmMatchIcon = document.getElementById('confirm-match-icon');
+  const confirmMatchText = document.getElementById('confirm-match-text');
+
+  function validateName(input, errorEl, iconEl, isRequired = true) {
+    const val = input.value.trim();
+    if (val.length === 0) {
+      if (isRequired) {
+        setFieldState(input, errorEl, false, 'Este campo es obligatorio.', iconEl);
+        return false;
+      }
+      setFieldState(input, errorEl, null, '', iconEl);
+      return false;
+    }
+
+    if (val.length < 2) {
+      if (isRequired) {
+        setFieldState(input, errorEl, false, 'Debe contener al menos 2 letras.', iconEl);
+      } else {
+        setFieldState(input, errorEl, null, '', iconEl);
+      }
+      return false;
+    }
+
+    if (!nameRegex.test(val)) {
+      setFieldState(input, errorEl, false, 'Solo se permiten letras y espacios.', iconEl);
+      return false;
+    }
+
+    setFieldState(input, errorEl, true, '', iconEl);
+    return true;
+  }
+
+  function validateEmailField(input, errorEl, iconEl, isRequired = true) {
+    const val = input.value.trim();
+    if (val.length === 0) {
+      if (isRequired) {
+        setFieldState(input, errorEl, false, 'El correo corporativo es obligatorio.', iconEl);
+        return false;
+      }
+      setFieldState(input, errorEl, null, '', iconEl);
+      return false;
+    }
+
+    if (!emailRegex.test(val)) {
+      if (isRequired) {
+        setFieldState(input, errorEl, false, 'Ingresa un correo corporativo válido (ej. usuario@empresa.com).', iconEl);
+      } else {
+        setFieldState(input, errorEl, null, '', iconEl);
+      }
+      return false;
+    }
+
+    setFieldState(input, errorEl, true, '', iconEl);
+    return true;
+  }
+
+  function validatePasswordStrength(showErrorState = false) {
+    const pwd = passwordInput.value;
+    const hasLength = pwd.length >= 8;
+    const hasLetters = /[a-zA-Z]/.test(pwd);
+    const hasNumbersOrSpecial = /[\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pwd);
+    const hasComplexity = hasLetters && hasNumbersOrSpecial;
+
+    if (hasLength) {
+      reqLengthIcon.textContent = 'check_circle';
+      reqLengthIcon.className = 'material-symbols-outlined text-[14px] text-[#22C55E] transition-all duration-200';
+      reqLengthText.className = 'text-[11px] leading-none text-[#2C6E49] font-semibold';
+    } else {
+      reqLengthIcon.textContent = 'radio_button_unchecked';
+      reqLengthIcon.className = 'material-symbols-outlined text-[13px] text-[#94A3B8] transition-all duration-200';
+      reqLengthText.className = 'text-[11px] leading-none text-[#64748B]';
+    }
+
+    if (hasComplexity) {
+      reqComplexityIcon.textContent = 'check_circle';
+      reqComplexityIcon.className = 'material-symbols-outlined text-[14px] text-[#22C55E] transition-all duration-200';
+      reqComplexityText.className = 'text-[11px] leading-none text-[#2C6E49] font-semibold';
+    } else {
+      reqComplexityIcon.textContent = 'radio_button_unchecked';
+      reqComplexityIcon.className = 'material-symbols-outlined text-[13px] text-[#94A3B8] transition-all duration-200';
+      reqComplexityText.className = 'text-[11px] leading-none text-[#64748B]';
+    }
+
+    let score = 0;
+    if (pwd.length > 0) score++;
+    if (hasLength && hasComplexity) score = 2;
+    if (hasLength && hasComplexity && pwd.length >= 10 && /[^a-zA-Z0-9]/.test(pwd)) score = 3;
+
+    if (pwd.length === 0) {
+      seg1.className = 'h-full w-1/3 rounded-full bg-slate-200 transition-all duration-300';
+      seg2.className = 'h-full w-1/3 rounded-full bg-slate-200 transition-all duration-300';
+      seg3.className = 'h-full w-1/3 rounded-full bg-slate-200 transition-all duration-300';
+    } else if (score === 1) {
+      seg1.className = 'h-full w-1/3 rounded-full bg-[#EF4444] transition-all duration-300';
+      seg2.className = 'h-full w-1/3 rounded-full bg-slate-200 transition-all duration-300';
+      seg3.className = 'h-full w-1/3 rounded-full bg-slate-200 transition-all duration-300';
+    } else if (score === 2) {
+      seg1.className = 'h-full w-1/3 rounded-full bg-[#F59E0B] transition-all duration-300';
+      seg2.className = 'h-full w-1/3 rounded-full bg-[#F59E0B] transition-all duration-300';
+      seg3.className = 'h-full w-1/3 rounded-full bg-slate-200 transition-all duration-300';
+    } else {
+      seg1.className = 'h-full w-1/3 rounded-full bg-[#22C55E] transition-all duration-300';
+      seg2.className = 'h-full w-1/3 rounded-full bg-[#22C55E] transition-all duration-300';
+      seg3.className = 'h-full w-1/3 rounded-full bg-[#22C55E] transition-all duration-300';
+    }
+
+    const isValid = hasLength && hasComplexity;
+
+    if (pwd.length === 0) {
+      if (showErrorState) {
+        setFieldState(passwordInput, passwordFeedback, false, 'La contraseña es obligatoria.');
+      } else {
+        setFieldState(passwordInput, passwordFeedback, null);
+      }
+      return false;
+    }
+
+    if (isValid) {
+      setFieldState(passwordInput, passwordFeedback, true);
+    } else if (showErrorState) {
+      setFieldState(passwordInput, passwordFeedback, false, 'Debe cumplir con mínimo 8 caracteres, letras y números/símbolos.');
+    } else {
+      setFieldState(passwordInput, passwordFeedback, null);
+    }
+
+    if (confirmInput.value.length > 0) {
+      validateConfirmPasswordMatch(showErrorState);
+    }
+    return isValid;
+  }
+
+  function validateConfirmPasswordMatch(showFeedback = true) {
+    const pwd = passwordInput.value;
+    const confirmPwd = confirmInput.value;
+
+    if (confirmPwd.length === 0) {
+      confirmFeedback.classList.add('hidden');
+      confirmFeedback.classList.remove('flex');
+      if (showFeedback) {
+        setFieldState(confirmInput, null, false);
+      } else {
+        setFieldState(confirmInput, null, null);
+      }
+      return false;
+    }
+
+    if (pwd === confirmPwd && pwd.length >= 8) {
+      confirmFeedback.classList.remove('hidden');
+      confirmFeedback.className = 'flex items-center gap-1.5 mt-1.5 text-xs text-[#22C55E] transition-all animate-fadeIn';
+      confirmMatchIcon.textContent = 'check_circle';
+      confirmMatchIcon.className = 'material-symbols-outlined text-sm text-[#22C55E]';
+      confirmMatchText.textContent = 'Las contraseñas coinciden exactamente';
+      setFieldState(confirmInput, null, true);
+      return true;
+    } else {
+      if (showFeedback) {
+        confirmFeedback.classList.remove('hidden');
+        confirmFeedback.className = 'flex items-center gap-1.5 mt-1.5 text-xs text-[#EF4444] font-medium transition-all animate-fadeIn';
+        confirmMatchIcon.textContent = 'error';
+        confirmMatchIcon.className = 'material-symbols-outlined text-sm text-[#EF4444]';
+        confirmMatchText.textContent = 'Las contraseñas no coinciden';
+        setFieldState(confirmInput, null, false);
+      } else {
+        setFieldState(confirmInput, null, null);
+        confirmFeedback.classList.add('hidden');
+      }
+      return false;
+    }
+  }
+
+  firstnameInput.addEventListener('input', () => {
+    if (firstnameInput.classList.contains('input-error')) {
+      validateName(firstnameInput, firstnameError, firstnameIcon, true);
+    } else if (firstnameInput.value.trim().length >= 2 && nameRegex.test(firstnameInput.value.trim())) {
+      validateName(firstnameInput, firstnameError, firstnameIcon, false);
+    } else {
+      setFieldState(firstnameInput, firstnameError, null, '', firstnameIcon);
+    }
+  });
+  firstnameInput.addEventListener('blur', () => {
+    if (firstnameInput.value.trim().length > 0) {
+      validateName(firstnameInput, firstnameError, firstnameIcon, true);
+    }
+  });
+
+  lastnameInput.addEventListener('input', () => {
+    if (lastnameInput.classList.contains('input-error')) {
+      validateName(lastnameInput, lastnameError, lastnameIcon, true);
+    } else if (lastnameInput.value.trim().length >= 2 && nameRegex.test(lastnameInput.value.trim())) {
+      validateName(lastnameInput, lastnameError, lastnameIcon, false);
+    } else {
+      setFieldState(lastnameInput, lastnameError, null, '', lastnameIcon);
+    }
+  });
+  lastnameInput.addEventListener('blur', () => {
+    if (lastnameInput.value.trim().length > 0) {
+      validateName(lastnameInput, lastnameError, lastnameIcon, true);
+    }
+  });
+
+  emailInput.addEventListener('input', () => {
+    if (emailInput.classList.contains('input-error')) {
+      validateEmailField(emailInput, emailFeedback, emailValidIcon, true);
+    } else if (emailRegex.test(emailInput.value.trim())) {
+      validateEmailField(emailInput, emailFeedback, emailValidIcon, false);
+    } else {
+      setFieldState(emailInput, emailFeedback, null, '', emailValidIcon);
+    }
+  });
+  emailInput.addEventListener('blur', () => {
+    if (emailInput.value.trim().length > 0) {
+      validateEmailField(emailInput, emailFeedback, emailValidIcon, true);
+    }
+  });
+
+  passwordInput.addEventListener('input', () => validatePasswordStrength(false));
+  passwordInput.addEventListener('blur', () => {
+    if (passwordInput.value.length > 0) {
+      validatePasswordStrength(true);
+    }
+  });
+
+  confirmInput.addEventListener('input', () => {
+    if (confirmInput.value === passwordInput.value && passwordInput.value.length >= 8) {
+      validateConfirmPasswordMatch(true);
+    } else {
+      setFieldState(confirmInput, null, null);
+      confirmFeedback.classList.add('hidden');
+    }
+  });
+  confirmInput.addEventListener('blur', () => {
+    if (confirmInput.value.length > 0) {
+      validateConfirmPasswordMatch(true);
+    }
+  });
+
+  const loginEmail = document.getElementById('login-email');
+  const loginEmailError = document.getElementById('login-email-feedback');
+  const loginEmailValidIcon = document.getElementById('login-email-valid-icon');
+  const loginPassword = document.getElementById('login-password');
+  const loginPasswordError = document.getElementById('login-password-feedback');
+
+  function validateLoginPassword(isRequired = true) {
+    const pwd = loginPassword.value;
+    if (pwd.length === 0) {
+      if (isRequired) {
+        setFieldState(loginPassword, loginPasswordError, false, 'La contraseña es obligatoria.');
+        return false;
+      }
+      setFieldState(loginPassword, loginPasswordError, null);
+      return false;
+    }
+
+    if (pwd.length < 6) {
+      if (isRequired) {
+        setFieldState(loginPassword, loginPasswordError, false, 'La contraseña debe tener mínimo 6 caracteres.');
+      } else {
+        setFieldState(loginPassword, loginPasswordError, null);
+      }
+      return false;
+    }
+
+    setFieldState(loginPassword, loginPasswordError, true);
+    return true;
+  }
+
+  loginEmail.addEventListener('input', () => {
+    if (loginEmail.classList.contains('input-error')) {
+      validateEmailField(loginEmail, loginEmailError, loginEmailValidIcon, true);
+    } else if (emailRegex.test(loginEmail.value.trim())) {
+      validateEmailField(loginEmail, loginEmailError, loginEmailValidIcon, false);
+    } else {
+      setFieldState(loginEmail, loginEmailError, null, '', loginEmailValidIcon);
+    }
+  });
+  loginEmail.addEventListener('blur', () => {
+    if (loginEmail.value.trim().length > 0) {
+      validateEmailField(loginEmail, loginEmailError, loginEmailValidIcon, true);
+    }
+  });
+
+  loginPassword.addEventListener('input', () => {
+    if (loginPassword.classList.contains('input-error')) {
+      validateLoginPassword(true);
+    } else if (loginPassword.value.length >= 6) {
+      validateLoginPassword(false);
+    } else {
+      setFieldState(loginPassword, loginPasswordError, null);
+    }
+  });
+  loginPassword.addEventListener('blur', () => {
+    if (loginPassword.value.length > 0) {
+      validateLoginPassword(true);
+    }
+  });
+
+  function handleSignupSubmit(e) {
+    e.preventDefault();
+    hideNotification();
+
+    const isFirstnameValid = validateName(firstnameInput, firstnameError, firstnameIcon, true);
+    const isLastnameValid = validateName(lastnameInput, lastnameError, lastnameIcon, true);
+    const isEmailValid = validateEmailField(emailInput, emailFeedback, emailValidIcon, true);
+    const isPasswordValid = validatePasswordStrength(true);
+    const isConfirmValid = validateConfirmPasswordMatch(true);
+
+    const formFields = [
+      { valid: isFirstnameValid, el: firstnameInput },
+      { valid: isLastnameValid, el: lastnameInput },
+      { valid: isEmailValid, el: emailInput },
+      { valid: isPasswordValid, el: passwordInput },
+      { valid: isConfirmValid, el: confirmInput }
+    ];
+
+    const firstInvalid = formFields.find(field => !field.valid);
+
+    if (firstInvalid) {
+      firstInvalid.el.focus();
+      showNotification('Por favor revisa y corrige los campos marcados en rojo.', 'error');
+      return;
+    }
+
+    showNotification('La creación de cuentas corporativas es gestionada por el administrador de la plataforma. Contacta al administrador para solicitar tu acceso.', 'info');
+    window.setTimeout(() => switchTab('login'), 2200);
+  }
+
+  function handleLoginSubmit(e) {
+    e.preventDefault();
+    hideNotification();
+
+    const isEmailValid = validateEmailField(loginEmail, loginEmailError, loginEmailValidIcon, true);
+    const isPasswordValid = validateLoginPassword(true);
+
+    if (!isEmailValid) {
+      loginEmail.focus();
+      showNotification('Por favor ingresa un correo corporativo válido.', 'error');
+      return;
+    }
+
+    if (!isPasswordValid) {
+      loginPassword.focus();
+      showNotification('Por favor ingresa tu contraseña correctamente.', 'error');
+      return;
+    }
+
+    const loginBtn = document.getElementById('login-btn');
+    const loginBtnText = document.getElementById('login-btn-text');
+    const loginBtnIcon = document.getElementById('login-btn-icon');
+
+    loginBtn.disabled = true;
+    loginBtn.classList.add('opacity-80', 'cursor-not-allowed');
+    loginBtnText.textContent = 'Verificando sesión...';
+    loginBtnIcon.textContent = 'sync';
+    loginBtnIcon.classList.add('animate-spin');
+
+    // Autenticación real contra el backend (POST /seguridad/login)
+    fetch(`${API_BASE}/seguridad/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: loginEmail.value.trim(),
+        password: loginPassword.value
+      })
+    })
+      .then(async response => {
+        const data = await response.json().catch(() => ({}));
+        const tokenFinal = data.access_token || data.accessToken || data.access_Token || data.token || data.Token;
+
+        if (!response.ok || !tokenFinal) {
+          throw new Error(data.message || data.error || 'Usuario o contraseña inválidos.');
+        }
+
+        if (typeof storeToken === 'function') {
+          const remember = document.getElementById('remember-me').checked;
+          storeToken(tokenFinal, remember);
+        }
+
+        loginBtn.disabled = false;
+        loginBtn.classList.remove('opacity-80', 'cursor-not-allowed');
+        loginBtnText.textContent = '¡Acceso concedido!';
+        loginBtnIcon.textContent = 'check_circle';
+        loginBtnIcon.classList.remove('animate-spin');
+
+        showNotification('¡Autenticación exitosa! Bienvenido de nuevo a Turimiquire DataGov.', 'success');
+        window.setTimeout(() => window.location.replace('./dashboard.html'), 900);
+      })
+      .catch(error => {
+        loginBtn.disabled = false;
+        loginBtn.classList.remove('opacity-80', 'cursor-not-allowed');
+        loginBtnText.textContent = 'Iniciar sesión';
+        loginBtnIcon.textContent = 'arrow_forward';
+        loginBtnIcon.classList.remove('animate-spin');
+
+        showNotification(error.message || 'No se pudo iniciar sesión. Verifica la conexión con el servidor.', 'error');
+      });
+  }
+
+  /* ==========================================================
+     LA PREGUNTA CERO: Verificación con la API real del backend
+  ========================================================== */
+  window.addEventListener('DOMContentLoaded', async () => {
+    try {
+      const res = await fetch(`${API_BASE}/auth/setup-status`);
+      const data = await res.json().catch(() => ({}));
+
+      if (data.Inicializado === false || data.inicializado === false || data.initialized === false || data.is_setup === false || res.status === 404) {
+        document.body.style.opacity = '0';
+        window.location.replace('./setup.html');
+      }
+    } catch (e) {
+      console.warn("No se pudo verificar el estado de instalación del servidor.");
+    }
+  });
+</script>
 </body>
 </html>
