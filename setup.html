@@ -843,8 +843,8 @@ Al completar la configuración, aceptas los <a class="text-slate-700 hover:text-
       }
 
       // Guardamos el token que devuelve el setup para iniciar sesión automáticamente
-      if (typeof storeToken === 'function' && data.access_token) {
-        storeToken(data.access_token, false);
+      if (typeof storeToken === 'function' && (data.access_token || data.accessToken)) {
+        storeToken(data.access_token || data.accessToken, false);
       }
 
       submitBtn.disabled = false;
