@@ -1953,6 +1953,7 @@ CREATE INDEX idx_catalogos_codigo ON dbgs_schema.catalogos(codigo);</div>
                 let actions = 'Solo consulta';
                 if (canPublish) {
                     actions = `
+                        <button class="btn btn-outline btn-sm" onclick="manageApiAccess('${id}')" title="Ver y gestionar las cuentas que pueden consumir esta API">🔐 Accesos</button>
                         <button class="btn btn-secondary btn-sm" onclick="toggleApiState('${id}', ${!isActive})">Alternar Estado</button>
                         <button class="btn btn-ghost btn-sm" onclick="deleteApi('${id}')" style="color: #ef4444;" title="Eliminar API">🗑️</button>
                     `;
@@ -1997,6 +1998,137 @@ CREATE INDEX idx_catalogos_codigo ON dbgs_schema.catalogos(codigo);</div>
             loadServices(); // Refrescamos
         } catch (error) {
             alert("Error al eliminar API: " + error.message);
+        }
+    };
+
+    // =========================================================================
+    // ADMINISTRACIÓN DE ACCESOS POR CUENTA (SERVICE_ACCOUNT) A LAS APIs
+    // =========================================================================
+    let accessModalRef = null;
+    let accessApiId = null;
+
+    window.manageApiAccess = async function(apiId) {
+        accessApiId = apiId;
+        if (!accessModalRef) buildAccessModal();
+        const modal = accessModalRef;
+        modal.querySelector('.access-title').textContent = 'Cargando accesos...';
+        modal.classList.remove('hidden');
+        const listEl = modal.querySelector('.access-list');
+        listEl.innerHTML = '<div class="panel-empty"><span class="loading loading-spinner loading-sm"></span> Cargando asignaciones...</div>';
+        await refreshAccessPanel();
+    };
+
+    function buildAccessModal() {
+        const modal = document.createElement('div');
+        modal.className = 'access-modal-overlay';
+        modal.style.cssText = 'position:fixed;inset:0;background:rgba(15,42,30,.45);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
+        modal.innerHTML = `
+          <div class="card access-modal" style="width:100%;max-width:640px;max-height:88vh;overflow:auto;padding:0;overflow:hidden;">
+            <div class="card-head" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;border-bottom:1px solid #e2e8f0;">
+              <div>
+                <h3 class="access-title" style="font-weight:700;color:#1e293b;margin:0;">Accesos a la API</h3>
+                <p class="muted small" id="access-endpoint" style="margin:0;">—</p>
+              </div>
+              <button class="btn btn-ghost btn-sm" type="button" onclick="closeAccessModal()">✕ Cerrar</button>
+            </div>
+            <div class="access-body" style="padding:20px;">
+              <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><h4 style="margin:0;font-size:14px;">Asignadas a cuentas de servicio</h4><button class="btn btn-secondary btn-sm" type="button" onclick="refreshAccessPanel()">Actualizar</button></div>
+              <div class="table-shell"><table><thead><tr><th>Cuenta</th><th>Correo</th><th style="text-align:right;">Acción</th></tr></thead><tbody class="access-list"><tr><td colspan="3" class="panel-empty">Sin consultar.</td></tr></tbody></table></div>
+              <div style="margin-top:16px;border-top:1px solid #e2e8f0;padding-top:14px;">
+                <p class="muted small" style="margin:0 0 8px;">Conceder acceso a una cuenta de servicio:</p>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                  <select class="select access-select" style="flex:1;min-width:220px;"></select>
+                  <button class="btn btn-primary btn-sm" type="button" onclick="assignApiAccess()">Asignar acceso</button>
+                </div>
+                <p class="muted small" id="access-message" style="margin:8px 0 0;"></p>
+              </div>
+            </div>
+          </div>`;
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeAccessModal(); });
+        document.body.appendChild(modal);
+        accessModalRef = modal;
+    }
+
+    window.closeAccessModal = function() {
+        if (accessModalRef) accessModalRef.classList.add('hidden');
+        accessApiId = null;
+    };
+
+    async function refreshAccessPanel() {
+        if (!accessModalRef || !accessApiId) return;
+        const modal = accessModalRef;
+        try {
+            const asigsRes = await apiFetch(`/apis/${accessApiId}/asignaciones`);
+            const asignaciones = asigsRes.asignaciones || [];
+            const apiRes = await apiFetch(`/apis/${accessApiId}`);
+            const api = apiRes.api || {};
+            modal.querySelector('.access-title').textContent = `Accesos a "${api.name || 'API'}"`;
+            modal.querySelector('#access-endpoint').textContent = api.endpoint || '';
+
+            const usersRes = await apiFetch('/seguridad/usuarios');
+            const usuarios = (usersRes.usuarios || []).filter(u => {
+                const rol = (u.rolNombre || u.rol_nombre || '').toUpperCase();
+                return rol === 'SERVICE_ACCOUNT' && u.estado !== false;
+            });
+            const asignados = new Set(asignaciones.map(a => a.usuarioId));
+            const disponibles = usuarios.filter(u => !asignados.has(u.id));
+
+            const listEl = modal.querySelector('.access-list');
+            if (asignaciones.length === 0) {
+                listEl.innerHTML = '<tr><td colspan="3" class="panel-empty">Ninguna cuenta tiene acceso a esta API.</td></tr>';
+            } else {
+                listEl.innerHTML = asignaciones.map(a => `
+                  <tr>
+                    <td><strong>${escapeText(a.username || '—')}</strong><br><span class="muted small">${escapeText((a.nombre || '') + ' ' + (a.apellido || ''))}</span></td>
+                    <td>${escapeText(a.email || '—')}</td>
+                    <td style="text-align:right;"><button class="btn btn-danger btn-sm" type="button" onclick="revokeApiAccess('${a.usuarioId}')">Revocar</button></td>
+                  </tr>`).join('');
+            }
+
+            const select = modal.querySelector('.access-select');
+            if (disponibles.length === 0) {
+                select.innerHTML = '<option value="">No hay cuentas de servicio libres</option>';
+                select.disabled = true;
+            } else {
+                select.innerHTML = '<option value="">Seleccionar cuenta…</option>' + disponibles.map(u => {
+                    const full = ((u.nombre || '') + ' ' + (u.apellido || '')).trim();
+                    return `<option value="${escapeText(u.id)}">${escapeText(u.username)}${full ? ' — ' + escapeText(full) : ''}</option>`;
+                }).join('');
+                select.disabled = false;
+            }
+            modal.querySelector('#access-message').textContent = '';
+        } catch (error) {
+            modal.querySelector('.access-list').innerHTML = `<tr><td colspan="3" class="panel-empty" style="color:#ef4444;">${escapeText(error.message)}</td></tr>`;
+        }
+    }
+
+    window.assignApiAccess = async function() {
+        if (!accessModalRef || !accessApiId) return;
+        const select = accessModalRef.querySelector('.access-select');
+        const usuarioId = select.value;
+        const msg = accessModalRef.querySelector('#access-message');
+        if (!usuarioId) { msg.textContent = 'Selecciona una cuenta de servicio.'; msg.style.color = '#ef4444'; return; }
+        msg.textContent = 'Asignando...'; msg.style.color = '#0c4a6e';
+        try {
+            await apiFetch(`/apis/${accessApiId}/asignaciones`, { method: 'POST', body: JSON.stringify({ usuarioId }) });
+            msg.textContent = 'Acceso concedido.'; msg.style.color = '#10b981';
+            await refreshAccessPanel();
+        } catch (error) {
+            msg.textContent = error.message; msg.style.color = '#ef4444';
+        }
+    };
+
+    window.revokeApiAccess = async function(usuarioId) {
+        if (!accessApiId) return;
+        if (!(await panelConfirm('¿Revocar el acceso de esta cuenta a la API? Dejará de ser visible en su consola.', 'Revocar acceso', {danger:true, confirmText:'Sí, revocar'}))) return;
+        const msg = accessModalRef ? accessModalRef.querySelector('#access-message') : null;
+        if (msg) { msg.textContent = 'Revocando...'; msg.style.color = '#0c4a6e'; }
+        try {
+            await apiFetch(`/apis/${accessApiId}/asignaciones/${usuarioId}`, { method: 'DELETE' });
+            if (msg) { msg.textContent = 'Acceso revocado.'; msg.style.color = '#10b981'; }
+            await refreshAccessPanel();
+        } catch (error) {
+            if (msg) { msg.textContent = error.message; msg.style.color = '#ef4444'; }
         }
     };
 
@@ -2504,9 +2636,8 @@ CREATE INDEX idx_catalogos_codigo ON dbgs_schema.catalogos(codigo);</div>
       try {
         profile = await requireSession();
         if (profile.role === 'SERVICE_ACCOUNT') {
-          clearSession();
-          await panelAlert('Las cuentas de servicio no tienen acceso a la interfaz administrativa. Usa la credencial técnica en los endpoints autorizados.', 'Acceso de cuenta de servicio', 'warning');
-          return window.location.replace('/');
+          window.location.replace('./servicio.html');
+          return;
         }
         renderProfile();
         document.getElementById('connection-admin-card').classList.toggle('hidden', !hasPermission(profile,'conexiones:administrar'));

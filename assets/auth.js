@@ -15,6 +15,23 @@ function clearSession() {
   localStorage.removeItem('turimiquire_token');
 }
 
+// Decodifica el rol desde el payload del JWT almacenado (sin verificarlo,
+// solo para redirigir la UI; la validación real la hace el backend).
+function getTokenRole() {
+  const token = getToken();
+  if (!token) return '';
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.rol || payload.role || payload.roles || payload.r || '';
+  } catch (e) {
+    return '';
+  }
+}
+
+function loginRedirectPath() {
+  return getTokenRole() === 'SERVICE_ACCOUNT' ? './servicio.html' : './dashboard.html';
+}
+
 async function apiFetch(path, options = {}) {
   const headers = new Headers(options.headers || {});
   const token = getToken();

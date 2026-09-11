@@ -1046,8 +1046,51 @@
       return;
     }
 
-    showNotification('La creación de cuentas corporativas es gestionada por el administrador de la plataforma. Contacta al administrador para solicitar tu acceso.', 'info');
-    window.setTimeout(() => switchTab('login'), 2200);
+    const signupBtn = document.getElementById('signup-btn');
+    const signupBtnText = document.getElementById('signup-btn-text');
+    const signupBtnIcon = document.getElementById('signup-btn-icon');
+
+    signupBtn.disabled = true;
+    signupBtn.classList.add('opacity-80', 'cursor-not-allowed');
+    signupBtnText.textContent = 'Creando cuenta...';
+    signupBtnIcon.textContent = 'sync';
+    signupBtnIcon.classList.add('animate-spin');
+
+    // Registro real del auto-aprovisionamiento: crea una cuenta de servicio
+    // (rol SERVICE_ACCOUNT, es_tecnico) lista para iniciar sesión.
+    fetch(`${API_BASE}/seguridad/registro`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nombre: firstnameInput.value.trim(),
+        apellido: lastnameInput.value.trim(),
+        email: emailInput.value.trim(),
+        password: passwordInput.value
+      })
+    })
+      .then(async response => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(data.message || data.error || 'No se pudo crear la cuenta. Intenta nuevamente.');
+        }
+
+        signupBtn.disabled = false;
+        signupBtn.classList.remove('opacity-80', 'cursor-not-allowed');
+        signupBtnText.textContent = '¡Cuenta creada!';
+        signupBtnIcon.textContent = 'check_circle';
+        signupBtnIcon.classList.remove('animate-spin');
+
+        showNotification(data.mensaje || 'Cuenta de servicio creada. Ya puedes iniciar sesión.', 'success');
+        window.setTimeout(() => switchTab('login'), 1800);
+      })
+      .catch(error => {
+        signupBtn.disabled = false;
+        signupBtn.classList.remove('opacity-80', 'cursor-not-allowed');
+        signupBtnText.textContent = 'Crear cuenta';
+        signupBtnIcon.textContent = 'arrow_forward';
+        signupBtnIcon.classList.remove('animate-spin');
+        showNotification(error.message || 'No se pudo crear la cuenta. Verifica la conexión con el servidor.', 'error');
+      });
   }
 
   function handleLoginSubmit(e) {
@@ -1108,7 +1151,9 @@
         loginBtnIcon.classList.remove('animate-spin');
 
         showNotification('¡Autenticación exitosa! Bienvenido de nuevo a Turimiquire DataGov.', 'success');
-        window.setTimeout(() => window.location.replace('./dashboard.html'), 900);
+
+        const destino = (typeof loginRedirectPath === 'function') ? loginRedirectPath() : './dashboard.html';
+        window.setTimeout(() => window.location.replace(destino), 900);
       })
       .catch(error => {
         loginBtn.disabled = false;

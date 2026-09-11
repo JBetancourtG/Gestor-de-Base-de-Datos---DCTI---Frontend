@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<meta name="color-scheme" content="light">
+<title>Turimiquire DataGov - Cuenta de Servicio</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link rel="icon" type="image/png" sizes="64x64" href="./assets/favicon-64.png">
+<link rel="apple-touch-icon" href="./assets/favicon.png">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          brand: {
+            50: '#E8F5ED', 100: '#C7E7D4', 200: '#96F7B8', 500: '#48A870',
+            600: '#3B915F', 700: '#2C6E49', 800: '#1B3B2B', 900: '#0F2A1E'
+          },
+          primary: { DEFAULT: '#006D3E', container: '#48A870', 2: '#3B915F', 3: '#6FC792', soft: '#E8F5ED' }
+        },
+        fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+      }
+    }
+  }
+</script>
+<style>
+  body { background: #F4F7F5; }
+  .glass-turimiquire {
+    background: rgba(15, 42, 30, 0.9);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  .animate-fadeIn { animation: fadeIn .3s ease both; }
+  .code-key { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+</style>
+</head>
+<body class="min-h-screen">
+<div id="app" class="max-w-6xl mx-auto p-4 sm:p-6 animate-fadeIn hidden">
+  <!-- Header -->
+  <header class="glass-turimiquire rounded-2xl px-5 py-4 flex flex-wrap items-center gap-4 shadow-lg">
+    <div class="flex items-center gap-3 flex-1 min-w-0">
+      <img alt="Turimiquire DataGov" class="h-9 w-9 rounded-full object-cover" src="./assets/favicon.png">
+      <div class="min-w-0">
+        <h1 class="text-white text-lg font-bold leading-tight">Turimiquire DataGov <span class="text-[#48A870] text-sm font-semibold ml-1">Cuenta de servicio</span></h1>
+        <p class="text-[#A7C6B4] text-xs truncate">Consultas a APIs públicas asignadas · <span id="header-user"></span></p>
+      </div>
+    </div>
+    <button onclick="logout()" class="text-white/80 hover:text-white text-sm font-semibold inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition">
+      <span class="material-symbols-outlined text-base">logout</span> Cerrar sesión
+    </button>
+  </header>
+
+  <!-- Estado -->
+  <div id="banner" class="hidden mt-4 rounded-xl border px-4 py-3 text-sm animate-fadeIn" role="status"></div>
+
+  <!-- Lista de APIs -->
+  <section class="mt-5">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-slate-800 font-bold text-base flex items-center gap-2">
+        <span class="material-symbols-outlined text-[#3B915F]">api</span> Mis APIs asignadas
+      </h2>
+      <span id="total-badge" class="text-xs font-semibold bg-brand-soft text-brand-700 border border-brand-100 rounded-full px-3 py-1"></span>
+    </div>
+    <div id="apis-list" class="grid gap-4 md:grid-cols-2"></div>
+    <div id="apis-empty" class="hidden mt-2 rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
+      <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">key_off</span>
+      <p class="text-slate-500 font-medium">Aún no se te ha asignado ninguna API.</p>
+      <p class="text-slate-400 text-sm mt-1">El administrador de la plataforma debe concederte acceso para empezar a consultar datos.</p>
+    </div>
+  </section>
+
+  <!-- Panel de consulta -->
+  <section id="query-panel" class="hidden mt-6 rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden animate-fadeIn">
+    <div class="px-5 py-4 border-b border-slate-100 flex flex-wrap items-center gap-3">
+      <h3 class="font-bold text-slate-800 flex items-center gap-2"><span class="material-symbols-outlined text-[#3B915F]">query_stats</span> Consulta de <span id="query-api-name" class="text-slate-500"></span></h3>
+      <div class="ml-auto flex items-center gap-2 flex-wrap">
+        <select id="query-limit" class="text-sm border border-slate-300 rounded-lg px-2 py-1.5 bg-white focus:outline-none"></select>
+        <button id="query-run-btn" onclick="runQuery()" class="bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold rounded-lg px-4 py-2 inline-flex items-center gap-1.5 transition">
+          <span class="material-symbols-outlined text-base">play_arrow</span> Consultar
+        </button>
+        <button onclick="closeQuery()" class="text-slate-400 hover:text-slate-600 text-sm font-semibold px-2 py-1.5">Cerrar</button>
+      </div>
+    </div>
+    <div class="p-5 code-key text-xs bg-slate-50 border-b border-slate-100 text-slate-600 overflow-x-auto whitespace-nowrap" id="query-url-line"></div>
+    <div id="query-result" class="p-5"></div>
+  </section>
+</div>
+
+<div id="loading" class="min-h-screen grid place-items-center">
+  <div class="text-center">
+    <span class="material-symbols-outlined animate-spin text-4xl text-brand-600 inline-block">autorenew</span>
+    <p class="text-slate-500 text-sm mt-2 font-medium">Verificando sesión...</p>
+  </div>
+</div>
+
+<script src="./assets/auth.js"></script>
+<script>
+  let profile = null;
+  let currentApis = [];
+  let currentApi = null;
+
+  function showBanner(message, type) {
+    const banner = document.getElementById('banner');
+    banner.classList.remove('hidden');
+    banner.className = 'mt-4 rounded-xl border px-4 py-3 text-sm animate-fadeIn flex items-center gap-2';
+    if (type === 'success') {
+      banner.classList.add('bg-[#E8F5ED]', 'border-[#C7E7D4]', 'text-[#2C6E49]');
+    } else {
+      banner.classList.add('bg-red-50', 'border-red-200', 'text-red-700');
+    }
+    banner.innerHTML = '<span class="material-symbols-outlined text-base">' + (type === 'success' ? 'check_circle' : 'error') + '</span><span></span>';
+    banner.querySelector('span:last-child').textContent = message;
+  }
+
+  function hideBanner() {
+    document.getElementById('banner').classList.add('hidden');
+  }
+
+  function keyBadge(api) {
+    const visible = api.apiKey ? api.apiKey : '—';
+    return '<span class="code-key text-[11px] bg-slate-100 border border-slate-200 rounded-md px-2 py-0.5 text-slate-500">' + escapeText(visible) + '</span>';
+  }
+
+  function apiCard(api) {
+    return '<div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col gap-3 animate-fadeIn">' +
+      '<div class="flex items-start justify-between gap-2">' +
+      '<div class="min-w-0">' +
+        '<h3 class="font-bold text-slate-800 truncate">' + escapeText(api.name) + '</h3>' +
+        (api.description ? '<p class="text-xs text-slate-500 mt-0.5 line-clamp-2">' + escapeText(api.description) + '</p>' : '') +
+      '</div>' +
+      '<span class="shrink-0 text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-1 ' + (api.active ? 'bg-[#E8F5ED] text-[#2C6E49]' : 'bg-red-50 text-red-600') + '">' + (api.active ? 'Activa' : 'Inactiva') + '</span>' +
+      '</div>' +
+      '<div class="space-y-1.5 text-xs">' +
+        '<div class="flex justify-between gap-2"><span class="text-slate-400 font-medium">Endpoint</span><span class="code-key text-slate-600 text-right break-all">' + escapeText(api.endpoint) + '</span></div>' +
+        '<div class="flex justify-between gap-2"><span class="text-slate-400 font-medium">Tabla</span><span class="code-key text-slate-600 text-right break-all">' + escapeText(api.schema + '.' + api.table) + '</span></div>' +
+        '<div class="flex justify-between gap-2 items-baseline"><span class="text-slate-400 font-medium shrink-0">API Key</span><span class="text-right break-all">' + keyBadge(api) + '</span></div>' +
+      '</div>' +
+      '<button onclick="openQuery(' + "'" + api.id + "'" + ')" class="mt-auto w-full bg-brand-soft text-brand-700 hover:bg-brand-100 border border-brand-100 font-bold text-sm rounded-xl py-2 inline-flex items-center justify-center gap-1.5 transition">' +
+      '<span class="material-symbols-outlined text-base">play_circle</span> Consultar' +
+      '</button>' +
+      '</div>';
+  }
+
+  async function loadMisApis() {
+    hideBanner();
+    try {
+      currentApis = await apiFetch('/apis/mis-asignadas');
+      const list = Array.isArray(currentApis) ? currentApis : (currentApis.apis || []);
+      const container = document.getElementById('apis-list');
+      const empty = document.getElementById('apis-empty');
+      const badge = document.getElementById('total-badge');
+
+      if (list.length === 0) {
+        container.innerHTML = '';
+        empty.classList.remove('hidden');
+        badge.textContent = '0 APIs';
+      } else {
+        empty.classList.add('hidden');
+        container.innerHTML = list.map(apiCard).join('');
+        badge.textContent = list.length + (list.length === 1 ? ' API' : ' APIs');
+      }
+    } catch (error) {
+      showBanner(error.message || 'No se pudieron cargar las APIs asignadas.', 'error');
+    }
+  }
+
+  function openQuery(id) {
+    const api = currentApis.find(a => a.id === id);
+    if (!api) return;
+    currentApi = api;
+    document.getElementById('query-api-name').textContent = api.name;
+    const url = (API_BASE.replace('/v1', '')) + api.endpoint;
+    document.getElementById('query-url-line').textContent = 'GET ' + url + '   ·   x-api-key: ' + (api.apiKey || '…');
+    const limitSelect = document.getElementById('query-limit');
+    limitSelect.innerHTML = '';
+    [5, 10, 25, 50, 100].forEach(n => {
+      const opt = document.createElement('option');
+      opt.value = n;
+      opt.textContent = 'Máx ' + n + ' filas';
+      opt.selected = n === Math.min(api.maxRows || 10, 10);
+      limitSelect.appendChild(opt);
+    });
+    document.getElementById('query-result').innerHTML = '';
+    document.getElementById('query-panel').classList.remove('hidden');
+    document.getElementById('query-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function closeQuery() {
+    document.getElementById('query-panel').classList.add('hidden');
+    currentApi = null;
+  }
+
+  async function runQuery() {
+    if (!currentApi) return;
+    const btn = document.getElementById('query-run-btn');
+    const original = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="material-symbols-outlined text-base animate-spin">autorenew</span> Consultando';
+    document.getElementById('query-result').innerHTML = '<p class="text-sm text-slate-500">Consultando fuente externa...</p>';
+
+    const limit = document.getElementById('query-limit').value;
+    const base = (API_BASE.replace('/v1', '')) + currentApi.endpoint;
+    const url = base + '?limit=' + limit;
+    try {
+      const data = await fetch(url, { headers: { 'x-api-key': currentApi.apiKey } }).then(async res => {
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(json.message || json.error || 'Error HTTP ' + res.status);
+        return json;
+      });
+      document.getElementById('query-result').innerHTML = renderResult(data);
+    } catch (error) {
+      document.getElementById('query-result').innerHTML = '<div class="rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3">' + escapeText(error.message) + '</div>';
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = original;
+    }
+  }
+
+  function renderResult(data) {
+    const columns = Array.isArray(data.columns) ? data.columns : [];
+    const rows = Array.isArray(data.rows) ? data.rows : [];
+    const total = data.total || rows.length;
+
+    if (columns.length === 0) {
+      return '<div class="rounded-xl bg-slate-50 border border-slate-200 text-slate-500 text-sm px-4 py-3">La fuente no devolvió columnas.</div>';
+    }
+
+    const thead = columns.map(c => '<th class="text-left text-[11px] uppercase tracking-wide font-bold text-slate-500 px-3 py-2 bg-slate-50 border-b border-slate-200 whitespace-nowrap">' + escapeText(c.Name) + '<span class="block font-medium text-[10px] text-slate-400 normal-case">' + escapeText(c.DataType) + '</span></th>').join('');
+    const tbody = rows.length === 0
+      ? '<tr><td colspan="' + columns.length + '" class="px-3 py-6 text-center text-slate-400 text-sm">Sin filas disponibles.</td></tr>'
+      : rows.map(row => '<tr class="hover:bg-slate-50">' + columns.map(c => '<td class="px-3 py-2 border-b border-slate-100 text-sm text-slate-700 align-top break-all">' + escapeText(row[c.Name] === null || row[c.Name] === undefined ? '∅' : String(row[c.Name])) + '</td>').join('') + '</tr>').join('');
+
+    return '<div class="text-xs text-slate-500 mb-2 font-medium">Total de filas devueltas: ' + total + '</div>' +
+      '<div class="overflow-x-auto rounded-xl border border-slate-200"><table class="min-w-full divide-y divide-slate-200">' +
+      '<thead>' + thead + '</thead><tbody>' + tbody + '</tbody></table></div>';
+  }
+
+  (async function init() {
+    try {
+      profile = await requireSession();
+      if (profile.role !== 'SERVICE_ACCOUNT') {
+        window.location.replace('./dashboard.html');
+        return;
+      }
+      document.getElementById('header-user').textContent = profile.username + ' · ' + roleLabel(profile.role);
+      document.getElementById('loading').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+      await loadMisApis();
+    } catch (e) {
+      // requireSession() ya redirige a "/" si no hay sesión válida.
+      console.warn('Sesión no válida:', e.message);
+    }
+  })();
+</script>
+</body>
+</html>
