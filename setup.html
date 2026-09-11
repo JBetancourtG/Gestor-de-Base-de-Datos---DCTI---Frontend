@@ -820,13 +820,15 @@ Al completar la configuración, aceptas los <a class="text-slate-700 hover:text-
     submitArrow.textContent = 'sync';
     submitArrow.classList.add('animate-spin');
 
-    // El backend pide username, email y password. El username se deriva del correo (antes del @).
+    // El backend pide username, email, password, nombre y apellido. El username se deriva del correo (antes del @).
     const email = emailInput.value.trim().toLowerCase();
     const username = email.split('@')[0] || 'superadmin';
     const payload = {
       username: username,
       email: email,
-      password: masterPassword.value
+      password: masterPassword.value,
+      nombre: firstNameInput.value.trim(),
+      apellido: lastNameInput.value.trim()
     };
 
     try {
