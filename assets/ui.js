@@ -5,7 +5,8 @@
     audit: 'Auditoría',
     connections: 'Conexiones y bases',
     designer: 'Diseñador visual',
-    services: 'APIs de servicio'
+    services: 'APIs de servicio',
+    users: 'Usuarios y roles'
   };
 
   function ripple(event) {
@@ -186,4 +187,168 @@
     const observer = new MutationObserver(() => bindRipples());
     observer.observe(document.body, {subtree:true, childList:true});
   });
+})();
+
+// =============================================================================
+// Anti-Clipping & Anti-Jittering Tooltip Engine (mock: #global-tooltip)
+// =============================================================================
+(function initGlobalTooltipEngine() {
+  const tooltipEl = document.getElementById('global-tooltip');
+  const tooltipText = document.getElementById('global-tooltip-text');
+  const tooltipArrow = document.getElementById('global-tooltip-arrow');
+  if (!tooltipEl || !tooltipText || !tooltipArrow) return;
+
+  let currentTarget = null;
+  let rafId = null;
+  const MARGIN = 8;
+  const ARROW_SIZE = 4;
+  const VIEWPORT_PADDING = 8;
+
+  function clamp(val, min, max) {
+    return Math.max(min, Math.min(val, max));
+  }
+
+  function hideTooltip() {
+    currentTarget = null;
+    if (rafId) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
+    tooltipEl.classList.remove('tooltip-visible');
+    tooltipEl.setAttribute('aria-hidden', 'true');
+    tooltipEl.style.display = 'none';
+  }
+
+  function positionTooltip(el) {
+    if (!el || !document.contains(el)) {
+      hideTooltip();
+      return;
+    }
+
+    const text = el.getAttribute('data-tooltip');
+    if (!text || !text.trim()) {
+      hideTooltip();
+      return;
+    }
+
+    tooltipText.textContent = text.trim();
+    tooltipEl.setAttribute('aria-hidden', 'false');
+
+    // Make visible off-screen to measure accurately without flash
+    tooltipEl.className = 'pointer-events-none';
+    tooltipEl.style.top = '-9999px';
+    tooltipEl.style.left = '-9999px';
+    tooltipEl.style.display = 'block';
+
+    const ttWidth = tooltipEl.offsetWidth;
+    const ttHeight = tooltipEl.offsetHeight;
+    const rect = el.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    // Determine preferred position
+    let preferredPos = el.getAttribute('data-tooltip-pos') || 'top';
+
+    // Auto-adjust if element is near viewport edges
+    const isInSidebar = el.closest('#main-sidebar') !== null;
+    if (isInSidebar && vw >= 1025) {
+      preferredPos = 'right';
+    } else if (preferredPos === 'top' && rect.top < ttHeight + MARGIN + VIEWPORT_PADDING) {
+      preferredPos = 'bottom';
+    } else if (preferredPos === 'bottom' && rect.bottom + ttHeight + MARGIN + VIEWPORT_PADDING > vh) {
+      preferredPos = 'top';
+    } else if (preferredPos === 'left' && rect.left < ttWidth + MARGIN + VIEWPORT_PADDING) {
+      preferredPos = rect.top >= ttHeight + MARGIN ? 'top' : 'bottom';
+    } else if (preferredPos === 'right' && rect.right + ttWidth + MARGIN + VIEWPORT_PADDING > vw) {
+      preferredPos = rect.top >= ttHeight + MARGIN ? 'top' : 'bottom';
+    }
+
+    let left = 0;
+    let top = 0;
+    let arrowClass = '';
+    let arrowStyle = {};
+
+    if (preferredPos === 'right') {
+      left = rect.right + MARGIN;
+      top = rect.top + (rect.height - ttHeight) / 2;
+      arrowClass = 'arrow-right';
+      top = clamp(top, VIEWPORT_PADDING, vh - ttHeight - VIEWPORT_PADDING);
+      const arrowTop = clamp(rect.top + rect.height / 2 - top - ARROW_SIZE, 4, ttHeight - ARROW_SIZE * 2 - 4);
+      arrowStyle = { top: `${arrowTop}px`, left: `-${ARROW_SIZE}px`, right: 'auto', bottom: 'auto' };
+    } else if (preferredPos === 'left') {
+      left = rect.left - ttWidth - MARGIN;
+      top = rect.top + (rect.height - ttHeight) / 2;
+      arrowClass = 'arrow-left';
+      top = clamp(top, VIEWPORT_PADDING, vh - ttHeight - VIEWPORT_PADDING);
+      const arrowTop = clamp(rect.top + rect.height / 2 - top - ARROW_SIZE, 4, ttHeight - ARROW_SIZE * 2 - 4);
+      arrowStyle = { top: `${arrowTop}px`, right: `-${ARROW_SIZE}px`, left: 'auto', bottom: 'auto' };
+    } else if (preferredPos === 'bottom') {
+      top = rect.bottom + MARGIN;
+      left = rect.left + (rect.width - ttWidth) / 2;
+      arrowClass = 'arrow-bottom';
+      const clampedLeft = clamp(left, VIEWPORT_PADDING, vw - ttWidth - VIEWPORT_PADDING);
+      const arrowLeft = clamp(rect.left + rect.width / 2 - clampedLeft - ARROW_SIZE, 6, ttWidth - ARROW_SIZE * 2 - 6);
+      left = clampedLeft;
+      arrowStyle = { left: `${arrowLeft}px`, top: `-${ARROW_SIZE}px`, right: 'auto', bottom: 'auto' };
+    } else {
+      // Default: 'top'
+      top = rect.top - ttHeight - MARGIN;
+      left = rect.left + (rect.width - ttWidth) / 2;
+      arrowClass = 'arrow-top';
+      const clampedLeft = clamp(left, VIEWPORT_PADDING, vw - ttWidth - VIEWPORT_PADDING);
+      const arrowLeft = clamp(rect.left + rect.width / 2 - clampedLeft - ARROW_SIZE, 6, ttWidth - ARROW_SIZE * 2 - 6);
+      left = clampedLeft;
+      arrowStyle = { left: `${arrowLeft}px`, bottom: `-${ARROW_SIZE}px`, top: 'auto', right: 'auto' };
+    }
+
+    tooltipEl.style.left = `${Math.round(left)}px`;
+    tooltipEl.style.top = `${Math.round(top)}px`;
+    tooltipEl.className = `${arrowClass} tooltip-visible pointer-events-none`;
+
+    Object.assign(tooltipArrow.style, {
+      left: '',
+      right: '',
+      top: '',
+      bottom: '',
+      ...arrowStyle
+    });
+  }
+
+  function handleTriggerEnter(e) {
+    const target = e.target;
+    if (!(target instanceof Element)) return;
+    const trigger = target.closest('[data-tooltip]');
+    if (!trigger) return;
+    currentTarget = trigger;
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(() => positionTooltip(trigger));
+  }
+
+  function handleTriggerLeave(e) {
+    if (!currentTarget) return;
+    const related = e.relatedTarget;
+    if (related && currentTarget.contains(related)) return;
+    hideTooltip();
+  }
+
+  // Delegated event listeners on document with passive handling
+  document.addEventListener('pointerenter', handleTriggerEnter, true);
+  document.addEventListener('pointerleave', handleTriggerLeave, true);
+  document.addEventListener('focusin', handleTriggerEnter, true);
+  document.addEventListener('focusout', handleTriggerLeave, true);
+
+  // Auto-reposition on scroll or resize if tooltip is visible
+  window.addEventListener('scroll', () => {
+    if (currentTarget) {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => positionTooltip(currentTarget));
+    }
+  }, { passive: true, capture: true });
+
+  window.addEventListener('resize', () => {
+    if (currentTarget) {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => positionTooltip(currentTarget));
+    }
+  }, { passive: true });
 })();

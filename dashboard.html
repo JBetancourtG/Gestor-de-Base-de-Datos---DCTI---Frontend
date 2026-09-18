@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" class="h-full">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,444 +7,362 @@
   <link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png">
   <link rel="apple-touch-icon" href="/assets/favicon.png">
   <link rel="stylesheet" href="/assets/app.css">
-  
-  <style>
 
-    .nav-link-text {
-      white-space: nowrap;
-    }
-    /* ========================================================
-       1. ANIMACIÓN DEL CONTENEDOR PRINCIPAL
-       ======================================================== */
-    .app-shell {
-      display: grid;
-      grid-template-columns: 260px 1fr;
-      transition: grid-template-columns 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-      min-height: 100vh;
-    }
-    .app-shell.sidebar-collapsed {
-      grid-template-columns: 76px 1fr !important;
-    }
+  <!-- Anti-Flash: restaura el estado colapsado de la barra lateral -->
+  <script>
+    (function () {
+      try {
+        if (localStorage.getItem('dtg_sidebar_collapsed') === '1') document.documentElement.classList.add('sidebar-collapsed');
+      } catch (e) {}
+    })();
+  </script>
 
-    /* ========================================================
-       2. BARRA LATERAL (ESTÁTICA Y COLAPSABLE)
-       ======================================================== */
-    .sidebar {
-      width: 100%;
-      position: sticky; 
-      top: 0;           
-      height: 100vh;    
-      overflow: visible; /* Vital para que el botón y la tarjeta salgan de la barra */
-      display: flex;
-      flex-direction: column;
-      z-index: 100;
-      background-color: #0b2748; 
-      box-shadow: 2px 0 15px rgba(0,0,0,0.1);
-    }
-    
-    .sidebar.collapsed .brand-title,
-    .sidebar.collapsed .brand-subtitle,
-    .sidebar.collapsed .nav-section,
-    .sidebar.collapsed .nav-link-text,
-    .sidebar.collapsed .user-menu-name {
-      display: none;
-    }
+  <!-- Google Fonts: Inter + JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..850&family=JetBrains+Mono:wght@300..800&display=swap" rel="stylesheet">
 
-    .nav-link {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 12px 20px;
-      border-radius: 8px;
-      margin: 4px 12px;
-      transition: all 0.2s ease;
-      color: #cbd5e1;
-      border: none;
-      background: transparent;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 500;
-      text-decoration: none;
-      width: calc(100% - 24px); /* Ajuste para mantener el botón dentro de los márgenes */
-      text-align: left;
-    }
-    .nav-link:hover, .nav-link.active {
-      background: rgba(255,255,255,0.1);
-      color: #ffffff;
-    }
-    
-    .nav-icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 24px;
-      height: 24px;
-      flex-shrink: 0;
-    }
+  <!-- Material Symbols Outlined (iconografía variable Fluent) -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
 
-    .sidebar.collapsed .nav-link {
-      padding: 12px 0;
-      width: 48px;
-      height: 48px;
-      margin: 6px auto;
-      justify-content: center;
-    }
-
-    .sidebar.collapsed .brand-lockup {
-      padding-left: 0;
-      justify-content: center;
-    }
-
-    /* ========================================================
-       3. BOTÓN FLOTANTE DE DESLIZAR (PESTAÑA MÁGICA)
-       ======================================================== */
-    .toggle-sidebar-btn {
-      position: absolute;
-      bottom: 85px; /* Altura cómoda sobre el usuario */
-      right: 16px;
-      background: transparent;
-      border: none;
-      color: #94a3b8;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-      z-index: 200;
-    }
-    .toggle-sidebar-btn:hover {
-      background: rgba(255,255,255,0.1);
-      color: white;
-    }
-    
-    /* Magia cuando se esconde la barra */
-    .sidebar.collapsed .toggle-sidebar-btn {
-      transform: rotate(180deg);
-      right: -16px; /* SOBRESALE DE LA BARRA */
-      background-color: #0b2748; 
-      color: white;
-      box-shadow: 4px 0 8px rgba(0,0,0,0.15); 
-      border: 1px solid rgba(255,255,255,0.05);
-    }
-    .sidebar.collapsed .toggle-sidebar-btn:hover {
-      background-color: #1e3a8a;
-    }
-
-    /* ========================================================
-       4. BOTÓN DE USUARIO INFERIOR Y ALINEACIÓN EXACTA
-       ======================================================== */
-    .sidebar-foot {
-      margin-top: auto; 
-      padding: 16px 12px; 
-      display: flex;
-      position: relative;
-      border-top: 1px solid rgba(255,255,255,0.05);
-    }
-    .sidebar.collapsed .sidebar-foot {
-      padding: 16px 0;
-      justify-content: center;
-    }
-
-    .user-menu-btn {
-      background: transparent;
-      border: none;
-      color: #cbd5e1; 
-      cursor: pointer;
-      padding: 8px 10px;
-      border-radius: 8px;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      width: 100%;
-      gap: 14px;
-      text-align: left;
-    }
-    .user-menu-name {
-      font-size: 14px;
-      font-weight: 600;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      flex-grow: 1;
-    }
-    .user-menu-btn:hover {
-      color: #ffffff;
-      background: rgba(255,255,255,0.1);
-    }
-    
-    .sidebar.collapsed .user-menu-btn {
-      width: 48px;
-      height: 48px;
-      padding: 0;
-      justify-content: center;
-    }
-
-    /* ========================================================
-       5. TARJETA DE USUARIO FLOTANTE
-       ======================================================== */
-    .user-dropdown-card {
-      position: absolute;
-      bottom: 70px; 
-      left: 16px;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-      width: 280px;
-      padding: 24px;
-      z-index: 9999;
-      
-      opacity: 0;
-      transform: translateY(15px) scale(0.95);
-      transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      pointer-events: none;
-    }
-    .sidebar.collapsed .user-dropdown-card {
-      left: 70px;
-      bottom: 16px;
-    }
-    .user-dropdown-card.show {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-      pointer-events: auto;
-    }
-
-    .user-card-content {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-    .user-card-avatar {
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      background: #f1f5f9;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-shrink: 0;
-      color: #94a3b8;
-    }
-    .user-card-info {
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      text-align: left;
-    }
-    .user-card-name {
-      font-size: 16px;
-      font-weight: 700;
-      color: #1e293b;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-bottom: 2px;
-    }
-    .user-card-email {
-      font-size: 13px;
-      color: #64748b;
-    }
-    .user-card-role {
-      font-size: 10px;
-      font-weight: 800;
-      color: #0b2748;
-      background: #e0f2fe;
-      padding: 4px 8px;
-      border-radius: 12px;
-      align-self: flex-start;
-      margin-top: 8px;
-      text-transform: uppercase;
-    }
-    .user-card-footer {
-      display: flex;
-      justify-content: center;
-      border-top: 1px solid #f1f5f9;
-      padding-top: 16px;
-    }
-    .logout-link {
-      background: transparent;
-      border: none;
-      color: #ef4444; 
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      text-decoration: none;
-      padding: 10px 16px;
-      border-radius: 8px;
-      transition: background 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      width: 100%;
-      justify-content: center;
-    }
-    .logout-link:hover {
-      background: #fef2f2;
-    }
-
-    /* DISEÑO EXPLORADOR DE BASE DE DATOS (TIPO DBEAVER) */
-    .explorer-grid { display: grid; grid-template-columns: 300px 1fr; gap: 24px; align-items: start; }
-    .db-tree-panel { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px 12px; height: 600px; overflow-y: auto; }
-    .db-data-panel { min-width: 0; }
-    .db-tree details { margin-left: 16px; }
-    .db-tree > details { margin-left: 0; }
-    .db-tree summary { cursor: pointer; padding: 6px 8px; display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: #334155; user-select: none; border-radius: 6px; list-style: none; transition: background 0.2s; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .db-tree summary::-webkit-details-marker { display: none; }
-    .db-tree summary:hover { background: #e2e8f0; }
-    .db-tree summary.active-table { background: #e0f2fe; color: #0369a1; font-weight: 700; }
-    .db-tree .chevron { transition: transform 0.2s ease; width: 14px; height: 14px; color: #94a3b8; flex-shrink: 0; }
-    .db-tree details[open] > summary > .chevron { transform: rotate(90deg); }
-    .tree-icon { width: 16px; height: 16px; flex-shrink: 0; }
-    .icon-conn { color: #0284c7; } .icon-schema { color: #f59e0b; } .icon-table { color: #10b981; }
-    .icon-column { color: #94a3b8; width: 14px; height: 14px; } .icon-pk { color: #eab308; width: 14px; height: 14px; }
-    .tree-leaf { padding: 6px 8px 6px 38px; font-size: 13px; color: #64748b; display: flex; align-items: center; gap: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  </style>
+  <!-- Tailwind CSS (CDN) — config del diseño de referencia -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      important: true,
+      theme: {
+        screens: {
+          'xs': '480px',
+          'sm': '641px',
+          'md': '769px',
+          'lg': '1025px',
+          'xl': '1280px',
+          '2xl': '1367px',
+        },
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+            mono: ['JetBrains Mono', 'ui-monospace', 'Menlo', 'monospace'],
+          },
+          colors: {
+            bg: '#F4F6F8',
+            sidebar: '#0F2A1E',
+            'sidebar-3': '#245236',
+            primary: '#48A870',
+            'primary-2': '#1B3B2B',
+            'primary-3': '#C7E7D4',
+            'primary-soft': '#E8F5ED',
+            'border-primary-soft': '#C7E7D4',
+            line: '#E2E8F0',
+            accent: '#6C5CE7',
+            'accent-soft': '#F0F0FE',
+            success: '#22C55E',
+            'success-soft': '#ECFDF5',
+            warning: '#F59E0B',
+            'warning-soft': '#FFFBEB',
+            danger: '#EF4444',
+            'danger-soft': '#FEF2F2',
+          },
+          boxShadow: {
+            'fluent-sm': '0 1px 2px rgba(15, 42, 30, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03)',
+            'fluent': '0 4px 12px rgba(15, 42, 30, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)',
+            'fluent-hover': '0 6px 18px rgba(15, 42, 30, 0.09), 0 2px 6px rgba(0, 0, 0, 0.04)',
+            'fluent-glow': '0 0 16px rgba(72, 168, 112, 0.35)',
+            'active-nav': '0 0 0 1px rgba(72, 168, 112, 0.4), 0 4px 12px rgba(0, 0, 0, 0.25)',
+          }
+        }
+      }
+    };
+  </script>
 </head>
-<body class="bg-white">
-  <div class="app-shell">
-    
+<body class="h-full font-sans antialiased text-slate-800 bg-bg">
+<div aria-hidden="true" class="pointer-events-none" id="global-tooltip" role="tooltip" style="display: none;"><span id="global-tooltip-text"></span><span id="global-tooltip-arrow"></span></div>
+<div class="app-shell">
+
+    <div class="fixed inset-0 z-[999] lg:hidden opacity-0 pointer-events-none transition-all duration-300" id="sidebar-backdrop"></div>
+
     <!-- BARRA LATERAL -->
-    <aside class="sidebar" id="sidebar">
-      <div class="brand-lockup">
-        <img class="brand-logo-icon brand-logo-sidebar" src="/assets/favicon.png" alt="Logo Turimiquire DataGov">
-        <div>
-          <div class="brand-title">Turimiquire DataGov</div>
-          <div class="brand-subtitle">Gobierno de datos</div>
+    <aside class="fixed lg:static inset-y-0 left-0 -translate-x-full lg:translate-x-0 w-[278px] bg-sidebar text-slate-300 flex flex-col flex-shrink-0 border-r border-[#1B3B2B] select-none z-50 shadow-2xl lg:shadow-none sidebar" id="main-sidebar">
+      <div class="h-16 flex items-center justify-between px-5 border-b border-[#1B3B2B]/90 bg-[#0A1E15]/50 flex-shrink-0 sidebar-brand-container">
+        <div class="flex items-center space-x-3 min-w-0" data-tooltip="Turimiquire DataGov — Sistema oficial de gestión" data-tooltip-pos="right">
+          <button type="button" aria-label="Colapsar o expandir panel lateral" class="flex-shrink-0 pressable rounded-[12px] focus:outline-none focus:ring-2 focus:ring-[#48A870]/60" onclick="toggleSidebarCollapse()">
+            <img class="w-11 h-11 rounded-[12px] border border-[#48A870]/40 object-cover bg-[#0A1E15] flex-shrink-0 block" src="/assets/favicon.png" alt="Turimiquire DataGov">
+          </button>
+          <div class="min-w-0 sidebar-brand-text">
+            <span class="text-sm font-extrabold text-white tracking-wide truncate block">Turimiquire</span>
+            <p class="text-[11px] text-slate-400 font-medium tracking-tight mt-0.5 truncate">Gobierno de Datos · República</p>
+          </div>
+          <button aria-label="Cerrar panel de navegación" class="icon-btn lg:hidden flex w-8 h-8 items-center justify-center text-slate-300 bg-[#0A1E15]/70 border border-[#1B3B2B] rounded-lg hover:bg-[#1B3B2B]/60 hover:text-white pressable flex-shrink-0" data-tooltip="Cerrar panel de navegación" data-tooltip-pos="right" onclick="toggleSidebar(false)" type="button">
+            <span class="material-symbols-outlined !text-[18px]">close</span>
+          </button>
         </div>
       </div>
 
-      <nav class="nav" id="main-nav" style="flex-grow: 1;">
-        <div class="nav-section">Panel</div>
-        <button class="nav-link" data-view="home">
-          <span class="nav-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-          </span>
-          <span class="nav-link-text">Inicio</span>
+      <div class="p-4 border-b border-[#1B3B2B]/70 flex-shrink-0">
+        <button type="button" id="btn-new-record" class="w-full h-10 relative group overflow-hidden flex items-center justify-center bg-gradient-to-b from-[#48A870] to-[#3B915F] hover:from-[#4FB97C] hover:to-[#429E68] text-white font-semibold rounded-[10px] shadow-fluent-glow pressable focus:ring-2 focus:ring-[#C7E7D4] focus:outline-none" onclick="window.openView('connections')" aria-label="Nuevo registro o conexión" data-tooltip="Nuevo registro o conexión" data-tooltip-pos="right">
+          <div class="absolute inset-0 bg-white/15 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+          <span class="material-symbols-outlined !text-[20px] flex-shrink-0">add</span>
         </button>
-        <button class="nav-link hidden" id="nav-data" data-view="data">
-          <span class="nav-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
-          </span>
-          <span class="nav-link-text">Explorador de datos</span>
-        </button>
-        <button class="nav-link hidden" id="nav-audit" data-view="audit">
-          <span class="nav-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M9 12l2 2 4-4"></path></svg>
-          </span>
-          <span class="nav-link-text">Auditoría</span>
-        </button>
-        <button class="nav-link hidden" id="nav-connections" data-view="connections">
-          <span class="nav-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
-          </span>
-          <span class="nav-link-text">Conexiones y bases</span>
-        </button>
-        <button class="nav-link hidden" id="nav-designer" data-view="designer">
-          <span class="nav-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-          </span>
-          <span class="nav-link-text">Diseñador visual</span>
-        </button>
-        <button class="nav-link hidden" id="nav-services" data-view="services">
-          <span class="nav-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
-          </span>
-          <span class="nav-link-text">APIs de servicio</span>
-        </button>
-        <button class="nav-link hidden" id="nav-backups" data-view="backups">
-          <span class="nav-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-          </span>
-          <span class="nav-link-text">Respaldos del Sistema</span>
-        </button>
-        <div class="nav-section">Administración</div>
-        <!-- BOTÓN DE USUARIOS CORREGIDO -->
-        <button class="nav-link hidden" id="nav-users" onclick="window.location.href='/usuarios.html'">
-          <span class="nav-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-          </span>
-          <span class="nav-link-text">Usuarios registrados</span>
-        </button>
+        <div class="mt-3 relative sidebar-search-box" data-tooltip="Buscar esquemas y tablas del repositorio" data-tooltip-pos="right">
+          <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400"><span class="material-symbols-outlined !text-[16px]">search</span></span>
+          <input class="w-full pl-9 pr-3 py-1.5 bg-[#0A1E15]/70 border border-[#1B3B2B] rounded-lg text-xs text-slate-200 placeholder-slate-400/80 focus:outline-none focus:border-[#48A870] focus:ring-1 focus:ring-[#48A870] transition-all" placeholder="Filtrar esquemas..." type="text">
+        </div>
+      </div>
+
+      <nav class="flex-1 overflow-y-auto px-3.5 py-4 space-y-6 text-xs no-scrollbar" id="main-nav">
+        <div>
+          <span class="px-2.5 text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider block mb-2 font-mono sidebar-section-title">Panel</span>
+          <ul class="space-y-1">
+            <li>
+              <button class="sidebar-nav-item nav-link flex items-center justify-between px-3 py-2 text-slate-300 hover:text-white hover:bg-[#1B3B2B]/60 rounded-xl pressable group w-full text-left border border-transparent" data-view="home" data-tooltip="Panel de métricas y resumen operativo" data-tooltip-pos="right">
+                <div class="flex items-center space-x-2.5">
+                  <div class="w-7 h-7 rounded-lg bg-[#1B3B2B]/60 flex items-center justify-center text-slate-400 group-hover:text-white transition-colors flex-shrink-0">
+                    <span class="material-symbols-outlined !text-[18px]">bar_chart</span>
+                  </div>
+                  <span class="text-xs sidebar-item-label">Inicio / Métricas</span>
+                </div>
+              </button>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <span class="px-2.5 text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider block mb-2 font-mono sidebar-section-title">Repositorio Central</span>
+          <ul class="space-y-1">
+            <li>
+              <button class="sidebar-nav-item nav-link flex items-center justify-between px-3 py-2 text-slate-300 hover:text-white hover:bg-[#1B3B2B]/60 rounded-xl pressable group w-full text-left border border-transparent hidden" id="nav-data" data-view="data" data-tooltip="Explorador de datos del catálogo" data-tooltip-pos="right">
+                <div class="flex items-center space-x-2.5">
+                  <div class="w-7 h-7 rounded-lg bg-[#1B3B2B]/60 flex items-center justify-center text-slate-400 group-hover:text-white transition-colors flex-shrink-0">
+                    <span class="material-symbols-outlined !text-[18px]">table_chart</span>
+                  </div>
+                  <span class="text-xs sidebar-item-label">Explorador de datos</span>
+                </div>
+                <span class="dot-ok !w-2 !h-2 sidebar-badge"></span>
+              </button>
+            </li>
+            <li>
+              <button class="sidebar-nav-item nav-link flex items-center justify-between px-3 py-2 text-slate-300 hover:text-white hover:bg-[#1B3B2B]/60 rounded-xl pressable group w-full text-left border border-transparent hidden" id="nav-audit" data-view="audit" data-tooltip="Auditoría y seguridad del sistema" data-tooltip-pos="right">
+                <div class="flex items-center space-x-2.5">
+                  <div class="w-7 h-7 rounded-lg bg-[#1B3B2B]/60 flex items-center justify-center text-slate-400 group-hover:text-white transition-colors flex-shrink-0">
+                    <span class="material-symbols-outlined !text-[18px]">security</span>
+                  </div>
+                  <span class="text-xs sidebar-item-label">Auditoría y Seguridad</span>
+                </div>
+                <span class="sidebar-badge bg-[#FEF2F2]/15 border border-[#EF4444]/40 text-[#EF4444] font-bold px-1.5 py-0.5 rounded-full text-[10px] font-mono tabular-nums">12</span>
+              </button>
+            </li>
+            <li>
+              <button class="sidebar-nav-item nav-link flex items-center justify-between px-3 py-2 text-slate-300 hover:text-white hover:bg-[#1B3B2B]/60 rounded-xl pressable group w-full text-left border border-transparent hidden" id="nav-connections" data-view="connections" data-tooltip="Conexiones y bases de datos configuradas" data-tooltip-pos="right">
+                <div class="flex items-center space-x-2.5">
+                  <div class="w-7 h-7 rounded-lg bg-[#1B3B2B]/60 flex items-center justify-center text-slate-400 group-hover:text-white transition-colors flex-shrink-0">
+                    <span class="material-symbols-outlined !text-[18px]">database</span>
+                  </div>
+                  <span class="text-xs sidebar-item-label">Conexiones y Bases</span>
+                </div>
+                <span class="sidebar-badge text-[10px] text-[#48A870] font-mono font-semibold bg-[#48A870]/15 px-1.5 py-0.5 rounded">6 act.</span>
+              </button>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <span class="px-2.5 text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider block mb-2 font-mono sidebar-section-title">Herramientas DataGov</span>
+          <ul class="space-y-1">
+            <li>
+              <button class="sidebar-nav-item nav-link flex items-center px-3 py-2 text-slate-300 hover:text-white hover:bg-[#1B3B2B]/60 rounded-xl pressable group w-full text-left border border-transparent space-x-2.5 hidden" id="nav-designer" data-view="designer" data-tooltip="Diseñador visual de entidades (ERD)" data-tooltip-pos="right">
+                <div class="w-7 h-7 rounded-lg bg-[#1B3B2B]/60 flex items-center justify-center text-slate-400 group-hover:text-white transition-colors flex-shrink-0">
+                  <span class="material-symbols-outlined !text-[18px]">schema</span>
+                </div>
+                <span class="text-xs sidebar-item-label">Diseñador visual (ERD)</span>
+              </button>
+            </li>
+            <li>
+              <button class="sidebar-nav-item nav-link flex items-center px-3 py-2 text-slate-300 hover:text-white hover:bg-[#1B3B2B]/60 rounded-xl pressable group w-full text-left border border-transparent space-x-2.5 hidden" id="nav-services" data-view="services" data-tooltip="APIs de servicio institucional REST" data-tooltip-pos="right">
+                <div class="w-7 h-7 rounded-lg bg-[#1B3B2B]/60 flex items-center justify-center text-slate-400 group-hover:text-white transition-colors flex-shrink-0">
+                  <span class="material-symbols-outlined !text-[18px]">api</span>
+                </div>
+                <span class="text-xs sidebar-item-label">APIs de servicio REST</span>
+              </button>
+            </li>
+            <li>
+              <button class="sidebar-nav-item nav-link flex items-center px-3 py-2 text-slate-300 hover:text-white hover:bg-[#1B3B2B]/60 rounded-xl pressable group w-full text-left border border-transparent space-x-2.5 hidden" id="nav-backups" data-view="backups" data-tooltip="Gestión de respaldos del sistema" data-tooltip-pos="right">
+                <div class="w-7 h-7 rounded-lg bg-[#1B3B2B]/60 flex items-center justify-center text-slate-400 group-hover:text-white transition-colors flex-shrink-0">
+                  <span class="material-symbols-outlined !text-[18px]">backup</span>
+                </div>
+                <span class="text-xs sidebar-item-label">Respaldos del Sistema</span>
+              </button>
+            </li>
+            <li>
+              <button class="sidebar-nav-item nav-link flex items-center px-3 py-2 text-slate-300 hover:text-white hover:bg-[#1B3B2B]/60 rounded-xl pressable group w-full text-left border border-transparent space-x-2.5 hidden" id="nav-users" data-view="users" data-tooltip="Usuarios, permisos y roles" data-tooltip-pos="right">
+                <div class="w-7 h-7 rounded-lg bg-[#1B3B2B]/60 flex items-center justify-center text-slate-400 group-hover:text-white transition-colors flex-shrink-0">
+                  <span class="material-symbols-outlined !text-[18px]">group</span>
+                </div>
+                <span class="text-xs sidebar-item-label">Usuarios y Roles</span>
+              </button>
+            </li>
+          </ul>
+        </div>
       </nav>
-      
-      <!-- SCRIPT ANTI-PARPADEO PARA LOS BOTONES -->
-      <script>
-        (function() {
-          const params = new URLSearchParams(window.location.search);
-          const view = params.get('view') || 'home';
-          const btn = document.querySelector('.nav-link[data-view="' + view + '"]');
-          if (btn) btn.classList.add('active');
-        })();
-      </script>
-      <!-- ===================================== -->
 
-      <!-- BOTÓN FLOTANTE PARA COLAPSAR -->
-      <button id="toggle-sidebar-btn" class="toggle-sidebar-btn" title="Contraer/Expandir menú">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M15 18l-6-6 6-6"/>
-        </svg>
-      </button>
-
-      <!-- BASE DE LA BARRA: PERFIL DE USUARIO -->
-      <div class="sidebar-foot">
-        <button id="user-menu-btn" class="user-menu-btn" title="Ver mi perfil">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="26" height="26">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
-          </svg>
-          <span id="user-menu-name" class="user-menu-name">Cargando...</span>
-        </button>
-
-        <!-- Tarjeta Flotante Estilo Microsoft -->
-        <div id="user-dropdown" class="user-dropdown-card">
-          <div class="user-card-content">
-            <div class="user-card-avatar">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
-              </svg>
+      <div class="p-3.5 border-t border-[#1B3B2B] bg-[#0A1E15]/70 flex-shrink-0 relative sidebar-user-container">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3 min-w-0 cursor-pointer" id="user-menu-btn" data-tooltip="Cuenta de usuario institucional" data-tooltip-pos="right">
+            <div class="relative flex-shrink-0">
+              <div class="w-9 h-9 rounded-full bg-gradient-to-br from-[#48A870] to-[#245236] text-white font-bold flex items-center justify-center text-xs shadow-sm ring-2 ring-[#48A870]/40 font-mono" id="user-menu-avatar">AP</div>
+              <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#22C55E] border-2 border-[#0F2A1E]"></span>
             </div>
-            <div class="user-card-info">
-              <strong id="user-card-name" class="user-card-name">Cargando...</strong>
-              <span id="sidebar-user" class="user-card-email">usuario@datagov</span>
-              <span id="sidebar-role" class="user-card-role">Perfil</span>
+            <div class="min-w-0 flex-1 sidebar-user-info">
+              <span class="text-xs font-semibold text-white truncate block" id="user-menu-name">Cargando...</span>
+              <p class="text-[11px] text-slate-400 truncate mt-0.5 font-mono" id="sidebar-user">usuario@datagov</p>
             </div>
           </div>
-          <div class="user-card-footer">
-            <button class="logout-link" onclick="logout()">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/>
-                <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
-              </svg>
-              Cerrar sesión
+          <button aria-label="Opciones de cuenta" class="icon-btn text-slate-400 hover:text-white p-1 rounded-lg hover:bg-[#1B3B2B] flex items-center justify-center sidebar-user-info pressable" id="user-account-btn" type="button" data-tooltip="Opciones de cuenta institucional" data-tooltip-pos="right">
+            <span class="material-symbols-outlined !text-[18px]">unfold_more</span>
+          </button>
+        </div>
+        <div class="absolute bottom-full left-3 right-3 mb-2 bg-[#0F2A1E] border border-[#1B3B2B] rounded-xl shadow-2xl p-2 z-50 text-xs text-slate-300 hidden" id="user-account-dropdown" style="animation: 240ms cubic-bezier(0.16, 1, 0.3, 1) forwards popoverIn; transform-origin: center bottom 0px; will-change: transform, opacity;">
+          <div class="px-2.5 py-2 border-b border-[#1B3B2B] mb-1.5">
+            <p class="font-semibold text-white text-xs truncate" id="user-card-name">Cargando...</p>
+            <p class="text-[11px] text-slate-400 font-mono truncate mt-0.5" id="user-card-email">usuario@datagov.ve</p>
+            <span class="inline-flex items-center gap-1 mt-1.5 text-[10px] font-medium text-[#48A870] bg-[#48A870]/15 border border-[#48A870]/30 px-1.5 py-0.5 rounded"><span class="w-1.5 h-1.5 rounded-full bg-[#22C55E]"></span><span id="sidebar-role">Perfil</span></span>
+          </div>
+          <div class="mt-1.5 pt-1.5 border-t border-[#1B3B2B]">
+            <button class="w-full flex items-center space-x-2 px-2.5 py-1.5 rounded-lg text-[#EF4444] hover:text-white hover:bg-[#EF4444]/20 border border-transparent hover:border-[#EF4444]/40 transition-colors pressable text-left" onclick="logout()" type="button">
+              <span class="material-symbols-outlined !text-[16px] text-[#EF4444]">logout</span>
+              <span class="font-medium">Cerrar sesión</span>
             </button>
           </div>
         </div>
       </div>
+
+      <button aria-label="Contraer o expandir panel" onclick="toggleSidebarCollapse()" class="icon-btn hidden lg:flex absolute -right-3.5 z-50 w-7 h-7 rounded-full bg-[#0F2A1E] border border-[#1B3B2B] hover:border-[#48A870]/50 text-slate-300 hover:text-white shadow-fluent items-center justify-center cursor-pointer pressable focus:outline-none focus:ring-2 focus:ring-[#48A870]/60" id="sidebar-desktop-toggle-btn" style="top: 18px;" type="button" data-tooltip="Contraer o expandir panel lateral" data-tooltip-pos="right">
+        <span class="material-symbols-outlined !text-[16px]" id="sidebar-toggle-icon">chevron_left</span>
+      </button>
     </aside>
 
-    <main class="main" style="min-height:100vh">
-
-
-      <div class="content">
-        <!-- VISTA DE INICIO -->
-        <section id="view-home" class="app-view">
-          
-          <div class="grid grid-4" style="margin-top: 10px;">
-            <article class="card card-pad stat"><span>Plataforma</span><strong id="health-status">Verificando…</strong><span id="health-detail">API y base principal</span></article>
-            <article class="card card-pad stat"><span>Rol activo</span><strong id="role-stat">—</strong><span>Funciones filtradas por RBAC</span></article>
-            <article class="card card-pad stat"><span>Permisos efectivos</span><strong id="permission-count">0</strong><span>Aplicados también en backend</span></article>
-            <article class="card card-pad stat"><span>Red local</span><strong id="network-url" style="font-size:1rem">—</strong><span>Interfaz HTTP compartida</span></article>
+    <main class="main flex-1 flex flex-col h-full overflow-hidden bg-bg min-w-0">
+      <header class="topbar min-h-16 bg-white border-b border-line px-3 sm:px-5 lg:px-8 py-2.5 flex flex-wrap items-center justify-between flex-shrink-0 z-20 gap-2.5 sm:gap-3 shadow-fluent-sm animate-view-in" data-purpose="topbar">
+        <div class="flex items-center space-x-2 sm:space-x-2.5 min-w-0 flex-shrink-0">
+          <button aria-label="Abrir navegación" class="icon-btn w-9 h-9 flex lg:hidden items-center justify-center text-slate-700 bg-white border border-line rounded-lg hover:bg-slate-50 hover:border-slate-300 shadow-xs pressable flex-shrink-0" id="mobile-menu-btn" type="button" data-tooltip="Abrir menú de navegación" data-tooltip-pos="bottom">
+            <span class="material-symbols-outlined !text-[18px] text-slate-500">menu</span>
+          </button>
+          <button aria-label="Compartir vista" class="icon-btn w-9 h-9 hidden xs:flex items-center justify-center text-slate-700 bg-white border border-line rounded-lg hover:bg-slate-50 hover:border-slate-300 shadow-xs pressable flex-shrink-0" type="button" data-tooltip="Compartir vista institucional" data-tooltip-pos="bottom">
+            <span class="material-symbols-outlined !text-[18px] text-slate-500">ios_share</span>
+          </button>
+          <nav class="flex items-center space-x-1 sm:space-x-1.5 text-xs text-slate-500 font-medium overflow-x-auto no-scrollbar py-0.5">
+            <span class="hover:text-slate-800 transition-colors hidden md:inline truncate cursor-pointer">Repositorio Central</span>
+            <span class="material-symbols-outlined !text-[14px] text-slate-300 hidden md:inline">chevron_right</span>
+            <span class="hover:text-slate-800 transition-colors hidden sm:inline truncate cursor-pointer" id="topbar-breadcrumb">Panel</span>
+            <span class="material-symbols-outlined !text-[14px] text-slate-300 hidden sm:inline">chevron_right</span>
+            <span class="font-semibold text-primary-2 bg-primary-soft border border-primary-3 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg font-mono text-[10px] sm:text-[11px] inline-flex items-center gap-1.5 flex-shrink-0 pressable cursor-default" data-tooltip="Esquema primario activo" data-tooltip-pos="bottom">
+              <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+              public
+            </span>
+          </nav>
+        </div>
+        <div class="flex items-center gap-2 sm:gap-3 flex-1 justify-end min-w-0">
+          <div class="relative w-full max-w-[480px] min-w-[150px] sm:min-w-[180px] flex-1">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-2.5 sm:pl-3 pointer-events-none text-slate-400">
+              <span class="material-symbols-outlined !text-[16px] sm:!text-[18px]">search</span>
+            </span>
+            <input class="w-full pl-8 sm:pl-9 pr-8 sm:pr-14 py-1.5 text-xs bg-[#F8FAFC] border border-line rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/60 focus:border-primary transition-all" placeholder="Buscar..." type="text">
+            <kbd class="hidden sm:inline-flex items-center justify-center absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-mono font-medium text-slate-400 bg-white border border-line rounded shadow-xs cursor-default pointer-events-none" data-tooltip="Atajo de búsqueda (Ctrl+K)" data-tooltip-pos="bottom">⌘K</kbd>
           </div>
+          <div class="hidden sm:flex items-center space-x-1.5 px-2 sm:px-2.5 py-1 sm:py-1.5 bg-success-soft border border-primary-3 rounded-full text-xs text-primary-2 font-semibold cursor-default pressable flex-shrink-0" id="topbar-health" data-tooltip="Clúster PostgreSQL 16 — estado en tiempo real" data-tooltip-pos="bottom">
+            <span class="dot-ok"></span>
+            <span class="font-mono text-[10px] sm:text-[11px] tabular-nums whitespace-nowrap">PG 16 · 1.4ms</span>
+          </div>
+          <div class="hidden lg:flex items-center -space-x-2 flex-shrink-0" data-tooltip="Integrantes activos de la sesión" data-tooltip-pos="bottom">
+            <div class="w-7 h-7 rounded-full bg-sidebar-2 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white shadow-xs font-mono">RM</div>
+            <div class="w-7 h-7 rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white shadow-xs font-mono">JP</div>
+            <div class="w-7 h-7 rounded-full bg-warning text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white shadow-xs font-mono">AC</div>
+            <div class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 text-[10px] font-semibold flex items-center justify-center ring-2 ring-white border border-line shadow-xs font-mono tabular-nums">+3</div>
+          </div>
+          <button aria-label="Notificaciones del sistema" class="icon-btn w-9 h-9 flex items-center justify-center text-slate-700 bg-white border border-line rounded-lg hover:bg-slate-50 hover:border-slate-300 shadow-xs pressable flex-shrink-0 relative" type="button" data-tooltip="Notificaciones y alertas del sistema" data-tooltip-pos="bottom">
+            <span class="material-symbols-outlined !text-[18px] text-slate-500">notifications</span>
+          </button>
+        </div>
+      </header>
 
-          <section class="section card card-pad">
-            <div class="section-title"><div><h2>Ruta rápida</h2></div></div>
+      <div class="content flex-1 overflow-y-auto p-3.5 sm:p-5 lg:p-7 space-y-4 sm:space-y-6">
+        <section id="view-home" class="app-view">
+          <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4" data-purpose="executive-overview-stats">
+            <div class="bg-white border border-line rounded-xl p-4 sm:p-5 shadow-sm hover:shadow-fluent-hover duration-200 hover:border-primary/50 relative group card-sweep animate-view-in stagger-1 flex flex-col justify-between">
+              <div class="absolute -right-6 -top-6 w-24 h-24 bg-gradient-to-br from-primary/10 to-transparent rounded-full blur-xl pointer-events-none group-hover:scale-125 transition-transform duration-300"></div>
+              <div>
+                <div class="flex items-center justify-between gap-3 relative z-10">
+                  <div class="flex items-center space-x-2 min-w-0">
+                    <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate">Plataforma / Salud</span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
+                  </div>
+                  <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-[#ECFDF5] to-[#E8F5ED] border border-primary-3 flex items-center justify-center text-primary shadow-xs flex-shrink-0 group-hover:scale-110 transition-transform duration-200">
+                    <span class="material-symbols-outlined !text-[20px]">monitor_heart</span>
+                  </div>
+                </div>
+                <div class="flex items-baseline space-x-2 mt-2">
+                  <span class="text-2xl sm:text-[28px] font-extrabold text-slate-900 font-mono tracking-tight tabular-nums leading-tight" id="health-status">Verificando…</span>
+                </div>
+                <span class="block text-xs font-medium text-slate-400 mt-1" id="health-detail">API y base principal</span>
+              </div>
+            </div>
+            <div class="bg-white border border-line rounded-xl p-4 sm:p-5 shadow-sm hover:shadow-fluent-hover duration-200 hover:border-primary/50 relative group card-sweep animate-view-in stagger-2 flex flex-col justify-between">
+              <div class="absolute -right-6 -top-6 w-24 h-24 bg-gradient-to-br from-accent/10 to-transparent rounded-full blur-xl pointer-events-none group-hover:scale-125 transition-transform duration-300"></div>
+              <div>
+                <div class="flex items-center justify-between gap-3 relative z-10">
+                  <div class="flex items-center space-x-2 min-w-0">
+                    <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate">Rol activo</span>
+                  </div>
+                  <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-[#F0F0FE] to-white border border-accent/30 flex items-center justify-center text-accent shadow-xs flex-shrink-0 group-hover:scale-110 transition-transform duration-200">
+                    <span class="material-symbols-outlined !text-[20px]">badge</span>
+                  </div>
+                </div>
+                <div class="flex items-baseline space-x-2 mt-2">
+                  <span class="text-md sm:text-lg lg:text-xl font-extrabold text-slate-900 tracking-tight leading-tight" id="role-stat">—</span>
+                </div>
+                <span class="block text-xs font-medium text-slate-400 mt-1">Funciones filtradas por RBAC</span>
+              </div>
+            </div>
+            <div class="bg-white border border-line rounded-xl p-4 sm:p-5 shadow-sm hover:shadow-fluent-hover duration-200 hover:border-primary/50 relative group card-sweep animate-view-in stagger-3 flex flex-col justify-between">
+              <div class="absolute -right-6 -top-6 w-24 h-24 bg-gradient-to-br from-primary/10 to-transparent rounded-full blur-xl pointer-events-none group-hover:scale-125 transition-transform duration-300"></div>
+              <div>
+                <div class="flex items-center justify-between gap-3 relative z-10">
+                  <div class="flex items-center space-x-2 min-w-0">
+                    <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate">Permisos efectivos</span>
+                  </div>
+                  <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-[#ECFDF5] to-white border border-primary-3 flex items-center justify-center text-primary shadow-xs flex-shrink-0 group-hover:scale-110 transition-transform duration-200">
+                    <span class="material-symbols-outlined !text-[20px]">grid_view</span>
+                  </div>
+                </div>
+                <div class="flex items-baseline space-x-2 mt-2">
+                  <span class="text-2xl sm:text-[28px] font-extrabold text-slate-900 font-mono tracking-tight tabular-nums leading-tight" id="permission-count">0</span>
+                </div>
+                <span class="block text-xs font-medium text-slate-400 mt-1">Aplicados también en backend</span>
+              </div>
+            </div>
+            <div class="bg-white border border-line rounded-xl p-4 sm:p-5 shadow-sm hover:shadow-fluent-hover duration-200 hover:border-primary/50 relative group card-sweep animate-view-in stagger-4 flex flex-col justify-between">
+              <div class="absolute -right-6 -top-6 w-24 h-24 bg-gradient-to-br from-warning/10 to-transparent rounded-full blur-xl pointer-events-none group-hover:scale-125 transition-transform duration-300"></div>
+              <div>
+                <div class="flex items-center justify-between gap-3 relative z-10">
+                  <div class="flex items-center space-x-2 min-w-0">
+                    <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate">Red local</span>
+                  </div>
+                  <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-[#FFFBEB] to-white border border-warning/30 flex items-center justify-center text-warning shadow-xs flex-shrink-0 group-hover:scale-110 transition-transform duration-200">
+                    <span class="material-symbols-outlined !text-[20px]">lan</span>
+                  </div>
+                </div>
+                <div class="flex items-baseline space-x-2 mt-2">
+                  <span class="text-md sm:text-lg font-extrabold text-slate-900 font-mono tracking-tight tabular-nums leading-tight truncate" id="network-url">—</span>
+                </div>
+                <span class="block text-xs font-medium text-slate-400 mt-1">Interfaz HTTP compartida</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="bg-white border border-line rounded-[12px] shadow-fluent animate-view-in stagger-5 p-4 sm:p-5">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-sm font-bold text-slate-900 tracking-tight">Ruta rápida</h2>
+            </div>
             <div class="quick-route">
               <article class="quick-step"><span class="quick-step-number">1</span><h3>Conecta una base</h3><p>Registra PostgreSQL o MySQL/MariaDB, prueba la conexión y guárdala de forma segura.</p><button class="btn btn-secondary btn-sm" type="button" data-guide-view="connections">Ir a conexiones</button></article>
-              <article class="quick-step"><span class="quick-step-number">2</span><h3>Explora los datos</h3><p>Abre una conexión, elige esquema y tabla y consulta registros reales sin escribir SQL.</p><button class="btn btn-secondary btn-sm" type="button" data-guide-view="connections">Abrir explorador</button></article>
+              <article class="quick-step"><span class="quick-step-number">2</span><h3>Explora los datos</h3><p>Abre una conexión, elige esquema y tabla y consulta registros reales sin escribir SQL.</p><button class="btn btn-secondary btn-sm" type="button" data-guide-view="data">Abrir explorador</button></article>
               <article class="quick-step"><span class="quick-step-number">3</span><h3>Diseña cambios</h3><p>Crea tablas, columnas, relaciones e índices con el asistente visual Diseñar → Validar → Aplicar.</p><button class="btn btn-secondary btn-sm" type="button" data-guide-view="designer">Ir al diseñador</button></article>
               <article class="quick-step"><span class="quick-step-number">4</span><h3>Publica un servicio</h3><p>Expón únicamente los datos autorizados como API y genera una clave técnica independiente.</p><button class="btn btn-secondary btn-sm" type="button" data-guide-view="services">Ir a APIs</button></article>
             </div>
@@ -455,43 +373,42 @@
             <div class="grid grid-3" id="role-actions"></div>
           </section>
 
-          <section class="section grid grid-2">
-            <article class="card card-pad">
+          <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <article class="bg-white border border-line rounded-[12px] shadow-fluent p-4 sm:p-5">
               <div class="section-title"><div><h2 id="process-title">Proceso del rol</h2><p id="process-subtitle">Secuencia de trabajo adaptada al documento de roles.</p></div></div>
               <ol class="process-list" id="role-process"></ol>
             </article>
-            <article class="card card-pad">
+            <article class="bg-white border border-line rounded-[12px] shadow-fluent p-4 sm:p-5">
               <div class="section-title"><div><h2>Límite operativo</h2><p>Lo que este perfil no debe hacer.</p></div></div>
               <p id="role-limit" class="muted" style="line-height:1.7;margin:0"></p>
               <div class="notice notice-info" id="role-result" style="margin-top:18px"></div>
             </article>
           </section>
 
-          <section class="section card card-pad">
+          <section class="bg-white border border-line rounded-[12px] shadow-fluent p-4 sm:p-5">
             <div class="section-title"><div><h2>Flujo de trabajo conjunto</h2><p>Cadena de colaboración para un nuevo módulo o servicio de datos.</p></div></div>
             <div class="flow-wrap"><div class="flow-track" id="workflow-track"></div></div>
           </section>
         </section>
-
         <!-- EXPLORADOR DE DATOS -->
-        <section id="view-data" class="app-view hidden" style="display: flex; flex-direction: column; height: calc(100vh - 64px); margin: -24px; background: white;">
+        <section id="view-data" class="app-view hidden" style="display: flex; flex-direction: column; height: calc(100vh - 132px); background: white; border: 1px solid #E2E8F0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(15,42,30,.06);">
           
           <!-- ESTILOS INTERNOS PARA EL ÁRBOL Y PESTAÑAS -->
           <style>
-            .active-tree-item { background: #e0f2fe !important; color: #1e3a8a !important; font-weight: bold !important; }
-            .db-tab { padding: 8px 16px; font-size: 13px; font-weight: 700; color: #64748b; border: none; background: transparent; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
-            .db-tab:hover { color: #1e293b; }
-            .db-tab.active-tab { color: #1d4ed8; background: white; border-top: 1px solid #e2e8f0; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 2px solid #2563eb; border-radius: 6px 6px 0 0; }
+            .active-tree-item { background: #E8F5ED !important; color: #1B3B2B !important; font-weight: bold !important; box-shadow: inset 0 0 0 1px #C7E7D4 !important; border-radius: 8px; }
+            .db-tab { padding: 8px 16px; font-size: 13px; font-weight: 700; color: #64748B; border: none; background: transparent; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
+            .db-tab:hover { color: #1B3B2B; }
+            .db-tab.active-tab { color: #1B3B2B; background: white; border: 1px solid #E2E8F0; border-bottom: 2px solid #48A870; border-radius: 6px 6px 0 0; box-shadow: 0 -4px 8px -4px rgba(15,42,30,.06); }
           </style>
 
           <!-- Header Superior / Migas de pan (Breadcrumbs) INTERACTIVAS -->
-          <header style="height: 60px; background: white; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0;">
-              <div style="display: flex; gap: 8px; font-size: 14px; font-weight: 500; color: #64748b; align-items: center;" id="breadcrumb-container">
-                  <span id="bc-db" style="cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='#1d4ed8'" onmouseout="this.style.color='#64748b'">Base Conectada</span>
-                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
-                  <span id="bc-schema" style="cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='#1d4ed8'" onmouseout="this.style.color='#64748b'">dbgs_schema</span>
-                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
-                  <span id="breadcrumb-table" style="color: #1d4ed8; font-weight: 700;">catalogos</span>
+          <header style="height: 60px; background: white; border-bottom: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0;">
+              <div style="display: flex; gap: 6px; font-size: 13px; font-weight: 500; color: #64748b; align-items: center;" id="breadcrumb-container">
+                  <span id="bc-db" class="crumb" style="cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='#1B3B2B'" onmouseout="this.style.color='#64748b'">Base Conectada</span>
+                  <span class="material-symbols-outlined !text-[14px] text-slate-300">chevron_right</span>
+                  <span id="bc-schema" class="crumb" style="cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='#1B3B2B'" onmouseout="this.style.color='#64748b'">dbgs_schema</span>
+                  <span class="material-symbols-outlined !text-[14px] text-slate-300">chevron_right</span>
+                  <span id="breadcrumb-table" style="color: #1B3B2B; font-weight: 700; background: #E8F5ED; border: 1px solid #C7E7D4; border-radius: 8px; padding: 2px 9px; font-family: 'JetBrains Mono', monospace; font-size: 11px;">catalogos</span>
               </div>
           </header>
 
@@ -811,6 +728,82 @@ CREATE INDEX idx_catalogos_codigo ON dbgs_schema.catalogos(codigo);</div>
             <div id="designer-validation" class="section hidden"></div>
           </section>
         </section>
+
+        <!-- USUARIOS Y ROLES (módulo integrado en la SPA) -->
+        <section id="view-users" class="app-view hidden">
+          <div class="page-head hero-head">
+            <div>
+              <p class="kicker">Directorio de acceso</p>
+              <h1>Gestión de usuarios</h1>
+            </div>
+            <span class="role-pill" id="viewer-role">Validando permiso…</span>
+          </div>
+
+          <div class="grid grid-4" style="margin-bottom:18px">
+            <article class="card card-pad stat"><span>Total registrados</span><strong id="count-total">—</strong><span>Humanos y técnicos</span></article>
+            <article class="card card-pad stat"><span>Activos</span><strong id="count-active">—</strong><span>Acceso habilitado</span></article>
+            <article class="card card-pad stat"><span>Inactivos</span><strong id="count-inactive">—</strong><span>Acceso deshabilitado</span></article>
+            <article class="card card-pad stat"><span>Tipos de rol</span><strong id="count-roles">—</strong><span>Perfiles registrados</span></article>
+          </div>
+
+          <nav class="user-tabs" aria-label="Secciones de usuarios">
+            <button type="button" class="user-tab active" data-user-tab="directory">Directorio</button>
+            <button type="button" class="user-tab hidden" id="tab-create-user" data-user-tab="create">Nuevo usuario</button>
+            <button type="button" class="user-tab" data-user-tab="roles">Roles y distribución</button>
+          </nav>
+
+          <section class="user-tab-panel" id="users-tab-directory">
+            <article class="card card-pad">
+              <div class="section-title">
+                <div><h2>Directorio</h2><p>Busca por usuario, correo, perfil o estado sin mezclar los distintos tipos de administradores.</p></div>
+                <button class="btn btn-secondary btn-sm" id="refresh-users">Actualizar</button>
+              </div>
+              <div class="toolbar" style="margin-bottom:14px">
+                <input class="input" id="filter-q" placeholder="Buscar usuario, correo o rol…" style="min-width:280px">
+                <select class="select" id="filter-role"><option value="">Todos los roles</option></select>
+                <select class="select" id="filter-status"><option value="">Todos los estados</option><option value="active">Activos</option><option value="inactive">Inactivos</option></select>
+              </div>
+              <div class="table-shell">
+                <table>
+                  <thead><tr><th>Usuario</th><th>Correo</th><th>Tipo de rol</th><th>Clase</th><th>Estado</th><th>Creado</th><th>Acciones</th></tr></thead>
+                  <tbody id="users-body"><tr><td colspan="7" class="panel-empty">Cargando usuarios…</td></tr></tbody>
+                </table>
+              </div>
+            </article>
+          </section>
+
+          <section class="user-tab-panel hidden" id="users-tab-create">
+            <div class="user-create-grid">
+              <article class="card card-pad hidden" id="create-user-card" style="width: 100%;">
+                <div class="section-title">
+                  <div><h2>Crear nuevo usuario</h2><p>Alta visual con validación de rol y contraseña. No necesitas editar SQL ni archivos.</p></div>
+                  <span class="badge badge-admin">Administrador de plataforma</span>
+                </div>
+                <form id="create-user-form">
+                  <div class="form-grid" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+                    <div class="field"><label>Usuario</label><input class="input" id="new-username" maxlength="100" autocomplete="off" placeholder="maria.perez" required></div>
+                    <div class="field"><label>Correo</label><input class="input" id="new-email" type="email" maxlength="150" placeholder="maria@institucion.gob.ve" required></div>
+                    <div class="field"><label>Tipo de usuario</label><select class="select" id="new-role" required><option value="">Seleccionar rol…</option></select></div>
+                    <div class="field"><label>Contraseña inicial</label><input class="input" id="new-password" type="password" minlength="10" autocomplete="new-password" required></div>
+                  </div>
+                  <div class="toolbar" style="margin-top:16px">
+                    <label class="checkbox-line" style="margin:0"><input id="new-technical" type="checkbox"> Cuenta técnica</label>
+                    <label class="checkbox-line" style="margin:0"><input id="new-active" type="checkbox" checked> Usuario activo</label>
+                    <button class="btn btn-primary btn-sm" type="submit">Crear usuario</button>
+                  </div>
+                  <div class="notice notice-info" id="create-user-message">La contraseña debe tener al menos 10 caracteres.</div>
+                </form>
+              </article>
+            </div>
+          </section>
+
+          <section class="user-tab-panel hidden" id="users-tab-roles">
+            <article class="card card-pad">
+              <div class="section-title"><div><h2>Distribución por tipo de usuario</h2><p>Resumen visual de perfiles administrativos, técnicos y de consulta.</p></div></div>
+              <div class="grid grid-3" id="role-summary"></div>
+            </article>
+          </section>
+        </section>
       </div>
 
       <!-- MODAL PARA AÑADIR REGISTRO -->
@@ -862,28 +855,50 @@ CREATE INDEX idx_catalogos_codigo ON dbgs_schema.catalogos(codigo);</div>
   
   <!-- SCRIPT PARA INTERACCIÓN DEL MENÚ DE USUARIO Y BARRA LATERAL -->
   <script>
-    // Mostrar/Ocultar Tarjeta de usuario con animación
-    document.getElementById('user-menu-btn').addEventListener('click', function(e) {
-      e.stopPropagation();
-      document.getElementById('user-dropdown').classList.toggle('show');
-    });
-
-    // Cerrar la tarjeta al hacer clic afuera
-    document.addEventListener('click', function(event) {
-      const dropdown = document.getElementById('user-dropdown');
-      const btn = document.getElementById('user-menu-btn');
-      if (dropdown && dropdown.classList.contains('show')) {
-        if (!dropdown.contains(event.target) && !btn.contains(event.target)) {
-          dropdown.classList.remove('show');
-        }
+    (function () {
+      // Desktop sidebar collapse/expand + localStorage persistence
+      function isSidebarCollapsed() { return document.getElementById('main-sidebar').classList.contains('sidebar-collapsed'); }
+      function setSidebarCollapsed(collapsed) {
+        document.getElementById('main-sidebar').classList.toggle('sidebar-collapsed', collapsed);
+        document.documentElement.classList.toggle('sidebar-collapsed', collapsed);
+        try { localStorage.setItem('dtg_sidebar_collapsed', collapsed ? '1' : '0'); } catch (e) {}
       }
-    });
+      window.toggleSidebarCollapse = function toggleSidebarCollapse() {
+        if (window.innerWidth <= 1024) { toggleSidebar(); return; }
+        setSidebarCollapsed(!isSidebarCollapsed());
+      };
 
-    // Lógica fluida para colapsar/expandir la barra lateral
-    document.getElementById('toggle-sidebar-btn').addEventListener('click', function() {
-      document.getElementById('sidebar').classList.toggle('collapsed');
-      document.querySelector('.app-shell').classList.toggle('sidebar-collapsed');
-    });
+      // Mobile sidebar open/close
+      window.toggleSidebar = function toggleSidebar(open) {
+        document.getElementById('main-sidebar').classList.toggle('open', open);
+        document.getElementById('sidebar-backdrop').classList.toggle('open', open);
+      };
+
+      // Desktop toggle: enlazado vía onclick en el markup (toggleSidebarCollapse)
+      // Mobile hamburger
+      document.getElementById('mobile-menu-btn')?.addEventListener('click', () => toggleSidebar(true));
+      // Mobile backdrop close
+      document.getElementById('sidebar-backdrop')?.addEventListener('click', () => toggleSidebar(false));
+
+      // Auto-close drawer on larger screens if window is resized
+      window.addEventListener('resize', () => {
+        if (window.innerWidth > 1024) {
+          document.getElementById('main-sidebar')?.classList.remove('open');
+          document.getElementById('sidebar-backdrop')?.classList.remove('open');
+        }
+      }, { passive: true });
+
+      // User dropdown toggle
+      const userBtn = document.getElementById('user-menu-btn');
+      const userAccountBtn = document.getElementById('user-account-btn');
+      const dropdown = document.getElementById('user-account-dropdown');
+      function toggleUserDropdown(show) {
+        if (dropdown) dropdown.classList.toggle('hidden', !show);
+      }
+      userBtn?.addEventListener('click', (e) => { e.stopPropagation(); toggleUserDropdown(!!dropdown?.classList.contains('hidden')); });
+      userAccountBtn?.addEventListener('click', (e) => { e.stopPropagation(); toggleUserDropdown(!!dropdown?.classList.contains('hidden')); });
+      document.addEventListener('click', (e) => { if (dropdown && !dropdown.contains(e.target)) toggleUserDropdown(false); });
+    })();
   </script>
 
   
@@ -982,6 +997,7 @@ CREATE INDEX idx_catalogos_codigo ON dbgs_schema.catalogos(codigo);</div>
       if (name === 'designer') loadDesignerConnections();
       if (name === 'services') loadServices();
       if (name === 'backups') loadBackups();
+      if (name === 'users') loadUsersView();
     }
     window.openView = openView;
 
@@ -992,9 +1008,8 @@ CREATE INDEX idx_catalogos_codigo ON dbgs_schema.catalogos(codigo);</div>
       const icon = ({users:'♙',health:'●',connections:'⇄',designer:'◇',services:'↗',data:'▦',audit:'◎',workflow:'→'})[target] || '•';
       article.innerHTML = `<div><div class="action-icon">${icon}</div><h3>${escapeText(title)}</h3><p>${escapeText(text)}</p></div><footer><button class="btn btn-secondary btn-sm">Abrir <span aria-hidden="true">→</span></button></footer>`;
       article.querySelector('button').addEventListener('click', () => {
-        if (target === 'users') return window.location.href = '/usuarios.html';
         if (target === 'health') return refreshHealth();
-        if (['data','audit','connections','designer','services'].includes(target)) return openView(target);
+        if (['data','audit','connections','designer','services','users'].includes(target)) return openView(target);
         document.getElementById('workflow-track')?.scrollIntoView({behavior:'smooth', block:'center'});
       });
       return article;
@@ -1010,6 +1025,7 @@ CREATE INDEX idx_catalogos_codigo ON dbgs_schema.catalogos(codigo);</div>
       if (apodo === 'superadmin' || apodo === 'admin') apodo = 'Administrador Principal';
       else if (apodo === 'dba') apodo = 'Especialista de Datos';
       else apodo = apodo.charAt(0).toUpperCase() + apodo.slice(1);
+      document.getElementById('user-menu-btn')?.setAttribute('data-tooltip', apodo + ' (' + profile.username + '@datagov.ve)');
 
       document.getElementById('user-card-name').textContent = apodo;
       document.getElementById('sidebar-user').textContent = profile.username + '@datagov.ve';
@@ -1065,19 +1081,17 @@ CREATE INDEX idx_catalogos_codigo ON dbgs_schema.catalogos(codigo);</div>
           }
       }
       
-      // Mantenemos tu redirección del botón de usuarios intacta
-      document.getElementById('nav-users').onclick = () => window.location.href = '/usuarios.html';
-      // ---------------------------------------------------------
-
+      // Mantenemos el enrutamiento SPA: #nav-users se resuelve vía data-view="users"
       window.syncModuleTabs?.();
     }
 
     async function refreshHealth() {
       const el = document.getElementById('health-status');
       const detail = document.getElementById('health-detail');
+      const topbarHealth = document.getElementById('topbar-health');
       
       el.textContent = 'Midiendo pulso...';
-      el.className = 'muted';
+      el.classList.remove('text-[#22C55E]', 'text-[#F59E0B]', 'text-[#EF4444]', 'muted', 'status-ok');
       
       try {
         // La ruta correcta según el archivo proto de Lucho
@@ -1085,23 +1099,25 @@ CREATE INDEX idx_catalogos_codigo ON dbgs_schema.catalogos(codigo);</div>
         
         if (res.status === 'SERVING' || res.status === 'UP') {
             el.textContent = 'Operativa';
-            el.className = 'status-ok'; // Verde
+            el.classList.add('text-[#22C55E]');
             
             if (res.database && res.database.status === 'UP') {
                 // Atrapamos la variable tanto en camelCase (gRPC) como en snake_case
                 const latencia = res.database.latencyMs || res.database.latency_ms || 0;
                 detail.textContent = `Latencia PostgreSQL: ${Number(latencia).toFixed(2)} ms`;
+                if (topbarHealth) topbarHealth.querySelector('.font-mono').textContent = `PG 16 · ${Number(latencia).toFixed(1)}ms`;
             } else {
                 detail.textContent = `Base de datos desconectada`;
+                if (topbarHealth) topbarHealth.querySelector('.font-mono').textContent = `base desconectada`;
             }
         } else {
             el.textContent = 'Degradada';
-            el.style.color = '#f59e0b'; // Naranja
+            el.classList.add('text-[#F59E0B]');
             detail.textContent = 'El motor reporta fallas internas';
         }
       } catch (error) {
         el.textContent = 'Caída';
-        el.style.color = '#ef4444'; // Rojo
+        el.classList.add('text-[#EF4444]');
         // Ahora si falla, te dirá exactamente por qué (ej. Error HTTP 401 o Failed to fetch)
         detail.textContent = error.message || 'Sin conexión con el servidor Go';
       }
@@ -1202,7 +1218,7 @@ CREATE INDEX idx_catalogos_codigo ON dbgs_schema.catalogos(codigo);</div>
 
             return `<tr style="background: ${bg}; transition: background 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='${bg}'">
                 <td style="padding: 12px 16px; font-size: 13px; color: #64748b; border-bottom: 1px solid #f1f5f9; white-space: nowrap;">${escapeText(fechaFmt)}</td>
-                <td style="padding: 12px 16px; font-size: 13px; font-weight: bold; color: #1d4ed8; border-bottom: 1px solid #f1f5f9;">${escapeText(username)}</td>
+                <td style="padding: 12px 16px; font-size: 13px; font-weight: bold; color: #1B3B2B; border-bottom: 1px solid #f1f5f9;">${escapeText(username)}</td>
                 <td style="padding: 12px 16px; font-size: 13px; color: #1e293b; font-weight: 600; border-bottom: 1px solid #f1f5f9;">${escapeText(operacion)}</td>
                 <td style="padding: 12px 16px; font-size: 13px; color: #475569; font-family: monospace; border-bottom: 1px solid #f1f5f9;">${escapeText(recurso)}</td>
                 
@@ -2357,7 +2373,6 @@ CREATE INDEX idx_catalogos_codigo ON dbgs_schema.catalogos(codigo);</div>
       setupMobileMenu();
       document.querySelectorAll('[data-guide-view]').forEach(button => button.addEventListener('click', async () => { const target=button.dataset.guideView; const nav=document.querySelector(`.nav-link[data-view="${target}"]`); if (!nav || nav.classList.contains('hidden')) { await panelAlert('Esta función no está habilitada para tu rol actual.', 'Función no disponible', 'warning'); return; } openView(target); }));
       document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => openView(button.dataset.view)));
-      document.getElementById('nav-users').addEventListener('click', () => window.open('/usuarios.html', 'turimiquire_usuarios'));
       
       
       document.getElementById('refresh-audit').addEventListener('click', loadAudit);
@@ -3046,6 +3061,212 @@ CREATE INDEX idx_catalogos_codigo ON dbgs_schema.catalogos(codigo);</div>
     };
 
     document.getElementById('btn-apply-retention')?.addEventListener('click', window.verifyRetention);
+  </script>
+
+  <script>
+    // =========================================================================
+    // MÓDULO USUARIOS Y ROLES (integrado en la SPA del dashboard)
+    // Directorio, alta de usuarios y distribución por perfiles.
+    // =========================================================================
+    (function () {
+      let users = [];
+      let roles = [];
+
+      function openUserTab(name) {
+        document.querySelectorAll('.user-tab-panel').forEach(panel => panel.classList.add('hidden'));
+        document.getElementById(`users-tab-${name}`)?.classList.remove('hidden');
+        document.querySelectorAll('.user-tab').forEach(tab => tab.classList.toggle('active', tab.dataset.userTab === name));
+      }
+
+      function renderUsers() {
+        const q = document.getElementById('filter-q').value.trim().toLowerCase();
+        const role = document.getElementById('filter-role').value;
+        const status = document.getElementById('filter-status').value;
+        const filtered = users.filter(user => {
+          const haystack = `${user.username} ${user.email} ${user.role} ${user.role_description || ''}`.toLowerCase();
+          if (q && !haystack.includes(q)) return false;
+          if (role && user.role !== role) return false;
+          if (status === 'active' && !user.active) return false;
+          if (status === 'inactive' && user.active) return false;
+          return true;
+        });
+        const body = document.getElementById('users-body');
+        if (!filtered.length) {
+          body.innerHTML = '<tr><td colspan="7" class="panel-empty">No hay usuarios que coincidan con los filtros.</td></tr>';
+          return;
+        }
+        body.innerHTML = filtered.map(user => {
+          const isAdmin = ['ADMIN_PLATFORM','DBA'].includes(user.role);
+          const roleBadge = isAdmin ? 'badge badge-admin' : 'badge';
+          return `<tr>
+            <td><strong>${escapeText(user.username)}</strong></td>
+            <td>${escapeText(user.email)}</td>
+            <td><span class="${roleBadge}">${escapeText(roleLabel(user.role))}</span></td>
+            <td>${user.is_technical ? '<span class="badge badge-tech">Técnica</span>' : 'Humana'}</td>
+            <td>${user.active ? '<span class="badge badge-ok">Activo</span>' : '<span class="badge badge-off">Inactivo</span>'}</td>
+            <td>${escapeText(formatDate(user.created_at))}</td>
+            <td>${hasPermission(profile,'usuarios:admin') && profile.id !== user.id ? `<button class="btn ${user.active?'btn-danger':'btn-secondary'} btn-sm user-state" data-id="${escapeText(user.id)}" data-active="${user.active}">${user.active?'Desactivar':'Reactivar'}</button>` : '—'}</td>
+          </tr>`;
+        }).join('');
+        body.querySelectorAll('.user-state').forEach(button => button.addEventListener('click', async () => {
+          const id = button.dataset.id;
+          const active = button.dataset.active === 'true';
+          try {
+            if (active) {
+              if (!(await panelConfirm('El usuario no podrá iniciar nuevas sesiones hasta que sea reactivado.', 'Desactivar usuario', {danger:true, confirmText:'Desactivar'}))) return;
+              await apiFetch(`/seguridad/usuarios/${encodeURIComponent(id)}`, {method:'PUT', body:JSON.stringify({estado:false})});
+            } else {
+              await apiFetch(`/seguridad/usuarios/${encodeURIComponent(id)}`, {method:'PUT', body:JSON.stringify({estado:true})});
+            }
+            await loadDirectory();
+          } catch (error) { await panelAlert(error.message, 'No se pudo actualizar el usuario', 'error'); }
+        }));
+      }
+
+      function renderRoleSummary() {
+        const container = document.getElementById('role-summary');
+        container.innerHTML = roles.map(role => `<article class="card card-pad stat">
+          <span>${escapeText(roleLabel(role.name))}</span>
+          <strong>${escapeText(role.user_count)}</strong>
+          <span>${escapeText(role.description || 'Perfil registrado')}</span>
+        </article>`).join('');
+        document.getElementById('count-roles').textContent = String(roles.length);
+      }
+
+      async function loadDirectory() {
+        const body = document.getElementById('users-body');
+        body.innerHTML = '<tr><td colspan="7" class="panel-empty"><span class="loading loading-spinner loading-sm"></span> Consultando directorio en el servidor...</td></tr>';
+
+        try {
+          // 1. OBTENEMOS LOS ROLES REALES DEL BACKEND
+          let rolesReales = [];
+          try {
+            const resRoles = await apiFetch('/seguridad/roles');
+            rolesReales = resRoles.roles || resRoles.Roles || [];
+          } catch (e) {
+            console.warn("No se pudieron cargar los roles.", e);
+          }
+
+          // 2. OBTENEMOS LOS USUARIOS REALES DEL BACKEND
+          try {
+            const resUsuarios = await apiFetch('/seguridad/usuarios');
+            let rawUsers = resUsuarios.usuarios || resUsuarios.Usuarios || [];
+
+            users = rawUsers.map(u => {
+              const rolId = u.rol_id || u.RolId || u.rolId;
+              const rolEncontrado = rolesReales.find(r => (r.id || r.ID) === rolId);
+              return {
+                id: u.id || u.ID || u.Id,
+                username: u.username || u.Username,
+                email: u.email || u.Email,
+                role: rolEncontrado ? rolEncontrado.nombre : (u.rol_nombre || u.RolNombre || u.rol || 'Sin Rol'),
+                is_technical: u.es_tecnico || u.EsTecnico || false,
+                active: u.estado !== false && u.Estado !== false,
+                created_at: u.fecha_creacion || u.FechaCreacion || u.created_at || new Date().toISOString()
+              };
+            });
+          } catch (e) {
+            console.error("Error cargando usuarios:", e);
+            users = [];
+            throw new Error("No se pudo conectar con la base de datos de usuarios.");
+          }
+
+          // 3. MAPEAMOS LOS ROLES REALES PARA LA INTERFAZ
+          roles = rolesReales.map(r => ({
+            name: r.nombre || r.name,
+            description: r.descripcion || r.description || 'Perfil registrado',
+            user_count: users.filter(u => u.role === (r.nombre || r.name)).length
+          }));
+
+          // 4. ACTUALIZAMOS LOS CONTADORES DE LA INTERFAZ
+          document.getElementById('count-total').textContent = users.length;
+          document.getElementById('count-active').textContent = users.filter(u => u.active).length;
+          document.getElementById('count-inactive').textContent = users.filter(u => !u.active).length;
+
+          // 5. LLENAMOS LOS MENÚS DESPLEGABLES (Filtros y Creación)
+          const select = document.getElementById('filter-role');
+          const current = select.value;
+          select.innerHTML = '<option value="">Todos los roles</option>' + roles.map(r => `<option value="${escapeText(r.name)}">${escapeText(roleLabel(r.name))}</option>`).join('');
+          if (roles.some(r => r.name === current)) select.value = current;
+
+          const createRole = document.getElementById('new-role');
+          if (createRole) {
+            const selected = createRole.value;
+            createRole.innerHTML = '<option value="">Seleccionar rol…</option>' + rolesReales.map(r => `<option value="${escapeText(r.id || r.ID)}">${escapeText(roleLabel(r.nombre))}</option>`).join('');
+            if (rolesReales.some(r => (r.id || r.ID) === selected)) createRole.value = selected;
+          }
+
+          // 6. DIBUJAMOS LA TABLA
+          renderUsers();
+          renderRoleSummary();
+        } catch (error) {
+          body.innerHTML = `<tr><td colspan="7" class="panel-empty" style="color:#ef4444;">${escapeText(error.message)}</td></tr>`;
+        }
+      }
+
+      window.loadUsersView = async function loadUsersView() {
+        if (!profile) return;
+        document.getElementById('viewer-role').textContent = roleLabel(profile.role);
+        if (hasPermission(profile, 'usuarios:admin')) {
+          document.getElementById('create-user-card').classList.remove('hidden');
+          document.getElementById('tab-create-user').classList.remove('hidden');
+        }
+        await loadDirectory();
+      };
+
+      document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.user-tab').forEach(tab => tab.addEventListener('click', () => openUserTab(tab.dataset.userTab)));
+        document.getElementById('refresh-users').addEventListener('click', loadDirectory);
+        ['filter-q','filter-role','filter-status'].forEach(id => document.getElementById(id).addEventListener(id === 'filter-q' ? 'input' : 'change', renderUsers));
+        document.getElementById('new-role')?.addEventListener('change', event => {
+          if (event.target.value === 'SERVICE_ACCOUNT') document.getElementById('new-technical').checked = true;
+        });
+        document.getElementById('create-user-form')?.addEventListener('submit', async event => {
+          event.preventDefault();
+          const message = document.getElementById('create-user-message');
+          const submitBtn = event.target.querySelector('button[type="submit"]');
+
+          const payload = {
+            username: document.getElementById('new-username').value.trim(),
+            email: document.getElementById('new-email').value.trim(),
+            password: document.getElementById('new-password').value,
+            rol_id: document.getElementById('new-role').value,
+            es_tecnico: document.getElementById('new-technical').checked
+          };
+
+          message.style.color = '#0c4a6e';
+          message.textContent = 'Validando y creando usuario en el servidor...';
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = 'Creando...';
+
+          try {
+            await apiFetch('/seguridad/usuarios', {
+              method: 'POST',
+              body: JSON.stringify(payload)
+            });
+
+            message.style.color = '#10b981';
+            message.textContent = `¡Usuario ${payload.username} creado con éxito en PostgreSQL!`;
+            event.target.reset();
+            document.getElementById('new-active').checked = true;
+
+            await loadDirectory();
+
+            setTimeout(() => {
+              openUserTab('directory');
+              message.style.color = '';
+              message.textContent = 'La contraseña debe tener al menos 10 caracteres.';
+            }, 1500);
+          } catch (error) {
+            message.style.color = '#ef4444';
+            message.textContent = 'Error: ' + error.message;
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Crear usuario';
+          }
+        });
+      });
+    })();
   </script>
 </body>
 </html>
